@@ -1,6 +1,5 @@
 from typing import List
 import pytest
-import logging as log
 from mosaicolabs.comm import MosaicoClient
 from testing.integration.helpers import (
     DataStreamItem,
@@ -105,14 +104,6 @@ def _query_sequences_mockup():
     """Generate synthetic data, create a sequence and pushes messages"""
     _client = MosaicoClient.connect(host=TESTS_HOST, port=TESTS_PORT)
     for sname, sdata in QUERY_SEQUENCES_MOCKUP.items():
-        # TODO: delete before production: make development easier when debugging tests
-        log.warning(
-            "There might be some errors from root:sequence_handler.py, following this warning. "
-            "They are due to asking for a non-existing sequence."
-        )
-        if _client.sequence_handler(sequence_name=sname) is not None:
-            continue
-
         with _client.sequence_create(
             sequence_name=sname,
             metadata=sdata["metadata"],

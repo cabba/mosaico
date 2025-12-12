@@ -21,25 +21,34 @@ class GPSStatus(Serializable, HeaderMixin):
 
     __msco_pyarrow_struct__ = pa.struct(
         [
-            pa.field("status", pa.int8(), metadata={"description": "Fix status."}),
+            pa.field(
+                "status",
+                pa.int8(),
+                nullable=False,
+                metadata={"description": "Fix status."},
+            ),
             pa.field(
                 "service",
                 pa.uint16(),
+                nullable=False,
                 metadata={"description": "Service used (GPS, GLONASS, etc)."},
             ),
             pa.field(
                 "satellites",
                 pa.int8(),
+                nullable=True,
                 metadata={"description": "Satellites visible/used."},
             ),
             pa.field(
                 "hdop",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Horizontal Dilution of Precision."},
             ),
             pa.field(
                 "vdop",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vertical Dilution of Precision."},
             ),
         ]
@@ -107,7 +116,10 @@ class NMEASentence(Serializable, HeaderMixin):
     __msco_pyarrow_struct__ = pa.struct(
         [
             pa.field(
-                "sentence", pa.string(), metadata={"description": "Raw ASCII sentence."}
+                "sentence",
+                pa.string(),
+                nullable=False,
+                metadata={"description": "Raw ASCII sentence."},
             ),
         ]
     )

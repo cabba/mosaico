@@ -106,6 +106,37 @@ def test_image_round_trip_integrity(format, encoding):
         pytest.fail(f"Content mismatch for {encoding} in {format} format!")
 
 
+@pytest.mark.parametrize(
+    "format", [f for f in ImageFormat if f not in Image.__supported_image_formats__]
+)
+@pytest.mark.parametrize(
+    "encoding",
+    list(_IMG_ENCODING_MAP.keys()),
+)
+def test_image_invalid_format(format, encoding):
+    """
+    Verifies that bytes encoded -> decoded are bit-to-bit identical to the source.
+    This proves the "Wide Grayscale" strategy works for floats and 16-bit ints.
+    """
+    width, height = 640, 480
+
+    log.debug("generating test img data")
+    # Generate Input Data
+    original_bytes, stride, _ = generate_test_data(width, height, encoding)
+
+    log.debug("encoding test img data")
+    # Encode (Compress)
+    with pytest.raises(ValueError, match=f"Invalid image format {format}"):
+        _ = Image.encode(
+            data=original_bytes,
+            stride=stride,
+            height=height,
+            width=width,
+            encoding=encoding,
+            format=format,
+        )
+
+
 def test_stride_padding_preservation():
     """
     Tests if the encoder preserves 'padding' bytes at the end of rows.
@@ -166,21 +197,6 @@ def test_endianness_metadata_passthrough():
         data=data, stride=4, height=1, width=1, encoding="32FC1", is_bigendian=False
     )
     assert img_le.is_bigendian is False
-
-
-def test_invalid_format():
-    """Test error report on format not-supported"""
-    data = [1, 2, 3, 4]
-
-    with pytest.raises(ValueError, match="Invalid image format"):
-        _ = Image.encode(
-            data=data,
-            stride=4,
-            height=1,
-            width=1,
-            encoding="32FC1",
-            format=ImageFormat.JPEG,
-        )
 
 
 def test_invalid_input_fallback():

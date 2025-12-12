@@ -15,16 +15,15 @@
 
 ## Architecture & Rationale
 
-The Query Module addresses the "stringly-typed" problem common in data filtering APIs. Rather than relying on error-prone, manually constructed dictionary keys (e.g., `"gps.pos.x": ...`), the module implements a **Fluent Interface** pattern powered by a **Query Proxy**.
+The Query Module addresses the "stringly-typed" problem common in data filtering APIs. Rather than relying on error-prone, manually constructed dictionary keys (e.g., `"gps.position.x": ...`), the module implements a **Fluent Interface** pattern powered by a **Query Proxy**.
 
 ### The `_QueryProxy` (`.Q`) Mechanism
 
 Every data model inheriting from `Serializable` (such as `IMU`, `GPS`, `Image`) is automatically injected with a static `.Q` attribute during class initialization. This attribute is an instance of `_QueryProxy`.
 
-1.  **Schema Mapping & Initialization**: During initialization, the system inspects the model's schema and generates a comprehensive dictionary structure. This structure maps specific field paths (e.g., `"imu.acceleration.x"`, `"gps.header.stamp.sec"`) to composed objects representing those fields and their base types.
-2.  **Type-Based Composition**: Each model's field is mapped to an instance of a dynamically composed class, determined by the field's data type (e.g., `int` or `float` maps to `_QueryableNumeric`; `bool` maps to `_QueryableBool`). This composition ensures that only operators valid for that specific data type (such as `.gt()` for numbers or `.match()` for strings) are exposed.
-3.  **Attribute Resolution**: Resolution occurs within the `__getattr__` method of the `.Q` instance. When an expression such as `IMU.Q.acceleration.x` is evaluated, the proxy resolves the attribute access to the corresponding string path (e.g., `"imu.acceleration.x"`). This path is used to retrieve the pre-composed field instance from the internal dictionary. The returned object then exposes the appropriate operator methods (e.g., `.eq()`, `.match()`) for query construction.
-4.  **Expression Generation**: Invoking an operator method (e.g., `.gt(5)`) generates a `QueryExpression` object. This object encapsulates the *intent* of the query, which is subsequently serialized into the JSON format expected by the Data Platform.
+1.  **Schema Mapping & Initialization**: During initialization, the system inspects the model's schema and generates a comprehensive dictionary structure. This structure maps specific field paths (e.g., `"imu.acceleration.x"`, `"gps.header.stamp.sec"`) to composed *queryable* objects, determined by the field's data type (e.g., `int` or `float` maps to `_QueryableNumeric`; `bool` maps to `_QueryableBool`). This composition ensures that only operators valid for that specific data type (such as `.gt()` for numbers or `.match()` for strings) are exposed.
+2.  **Attribute Resolution**: Resolution occurs within the `__getattr__` method of the `.Q` instance. When an expression such as `IMU.Q.acceleration.x` is evaluated, the proxy resolves the attribute access to the corresponding string path (e.g., `"imu.acceleration.x"`). This path is used to retrieve the pre-composed field instance from the internal dictionary. The returned object then exposes the appropriate operator methods (e.g., `.eq()`, `.match()`) for query construction.
+3.  **Expression Generation**: Invoking an operator method (e.g., `.gt(5)`) generates a `QueryExpression` object. This object encapsulates the *intent* of the query, which is subsequently serialized into the JSON format expected by the Data Platform.
 
 ## Query Construction Approaches
 
@@ -48,7 +47,7 @@ These high-level helper methods are built directly into the builder classes. Usa
 
 This interface provides full control over query construction. It accepts raw **Query Expressions** generated via the `.Q` proxy, enabling the application of any supported operator (`>`, `<`, `!=`, `in`, etc.) to specific fields.
 
-  * **Best for:** `user_metadata` and specific Ontology Data fields.
+  * **Best for:** specific Ontology Data fields and `user_metadata`.
   * **Composition:** Multiple expressions are combined using a logical **AND**.
   * **Initialization:** Expressions can be passed directly to the builder's constructor or added iteratively via method chaining.
 
@@ -86,8 +85,8 @@ Filters sequences based on high-level metadata.
 | :--- | :--- | :--- |
 | **`with_name(name)`** | `str` | Exact match for the sequence name. |
 | **`with_name_match(pattern)`** | `str` | Substring/Pattern match on the name (e.g., "drive\_2023"). |
-| **`with_created_timestamp(start, end)`** | `Time` | Filters sequences created within the given time range. |
-| **`with_expression(expr)`/Constructor** | `Expression` | **Only** for `Sequence.Q.user_metadata`. |
+| **`with_created_timestamp(start, end)`** | `Time` | Filters sequences created within the given time range. If only `start` is provided, acts as **greater-than**; if only `end` is provided, acts as **less-than**; if both are provided, acts as **between**.|
+| **`with_expression(expr)`/Constructor** | `Expression` | **Only** for `Sequence.Q.user_metadata`|
 
 ### `QueryTopic`
 
@@ -100,8 +99,25 @@ Filters specific topics within a sequence.
 | :--- | :--- | :--- |
 | **`with_name_match(pattern)`** | `str` | Substring match on the topic name (e.g., "camera/front"). |
 | **`with_ontology_tag(tag)`** | `str` | Performs an exact match on the data type tag. It is strongly recommended to programmatically retrieve the tag from the model class (e.g., `with_ontology_tag(GPS.ontology_tag())`) rather than using hardcoded strings. |
-| **`with_created_timestamp(start, end)`** | `Time` | Filters topics created within the given time range. |
+| **`with_created_timestamp(start, end)`** | `Time` | Filters topics created within the given time range. If only `start` is provided, acts as **greater-than**; if only `end` is provided, acts as **less-than**; if both are provided, acts as **between**. |
 | **`with_expression(expr)`/Constructor** | `Expression` | **Only** for `Topic.Q.user_metadata`. |
+
+
+> [\!NOTE]
+> **Querying `user_metadata` in Topic/Sequence**
+>
+> The `user_metadata` field supports all [available operators](https://www.google.com/search?q=%23supported-operators). To query a value, access the specific metadata key using bracket notation (`[]`) and chain the desired comparison method.
+>
+> For nested dictionaries, use **dot notation** (`.`) within the key string to traverse sub-fields.
+>
+> **Important:** You must use the exact key name defined in the metadata.
+>
+> **Examples:**
+>
+> ```python
+> Sequence.Q.user_metadata['driver'].match('Mark')
+> Sequence.Q.user_metadata['environment.visibility'].lt(50)  # Dot notation for nested fields
+> ```
 
 ### `QueryOntologyCatalog`
 
@@ -112,10 +128,9 @@ Filters the actual time-series data content inside the topics.
 
 | Method | Argument | Description |
 | :--- | :--- | :--- |
-| **`with_message_timestamp(type, start, end)`**| `Type`, `Time` | Filters by the message generation timestamp (middleware/robot platform time). |
-| **`with_data_timestamp(type, start, end)`** | `Type`, `Time` | Filters by the sensor's internal `header.stamp` (measurement generation time). |
-| **`with_expression(expr)`/Constructor** | `Expression` | Used for **all** ontology fields (`acceleration`, `position`, etc.). |
-
+| **`with_message_timestamp(type, start, end)`** | `Type`, `Time` | Filters by message reception timestamp (middleware/platform time). If only `start` is provided, acts as **greater-than**; if only `end` is provided, acts as **less-than**; if both are provided, acts as **between**. |
+| **`with_data_timestamp(type, start, end)`** | `Type`, `Time` | Filters by the sensor's internal `header.stamp` (measurement generation time). Follows the same logic as `with_message_timestamp`. |
+| **`with_expression(expr)` / Constructor** | `Expression` | Applies complex filters to **any** ontology field (e.g., `acceleration`, `position`). |
 
 ## Current Limitations
 
@@ -145,7 +160,7 @@ The current implementation imposes specific constraints on query structure. Thes
         .with_expression(IMU.Q.angular_velocity.x.between([0, 1]))
     ```
 
-2.  **Single Sensor Model per Query:** A `QueryOntologyCatalog` instance supports expressions from only one ontology type at a time. Mixing different sensor models in the same catalog query is not permitted.
+2.  **Single Sensor Model per Query:** A `QueryOntologyCatalog` instance supports expressions from only one ontology type at a time. Mixing different sensor models in the same catalog query is not permitted in the current version of the library.
 
     The following code is **NOT allowed**:
 

@@ -5,9 +5,6 @@ from .gps import GPS as GPS, GPSStatus as GPSStatus, NMEASentence as NMEASentenc
 from .image import (
     Image as Image,
     ImageFormat as ImageFormat,
-    CompressedImageCodec as CompressedImageCodec,
-    DefaultCodec as DefaultCodec,
-    VideoAwareCodec as VideoAwareCodec,
     CompressedImage as CompressedImage,
 )
 

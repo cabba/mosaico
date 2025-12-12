@@ -41,28 +41,31 @@ Each executor acts as a dedicated "lane," ensuring that heavy serialization task
 * **`__enter__ / __exit__`**: Automatically closes connections and thread pools when leaving the block.
 
 **Resource Factories**
-* **`sequence_create(self, sequence_name: str, metadata: dict, ...) -> SequenceWriter`**
-    Creates a new writer for uploading data.
+* **`sequence_create(sequence_name: str, metadata: dict, ...) -> SequenceWriter`**
+    Creates a [new writer](handlers.md#writing-data) for uploading data.
     * `sequence_name`: Unique identifier for the new recording.
     * `metadata`: Dictionary of tags (e.g., `{"robot": "spot", "location": "lab"}`).
     * `on_error`: Policy for handling write failures (`Delete` or `Report`).
-* **`sequence_handler(self, sequence_name: str) -> SequenceHandler`**
-    Retrieves a handler for an existing sequence (for reading metadata or streaming data). Caches the result to prevent redundant lookups.
-* **`topic_handler(self, sequence_name: str, topic_name: str) -> TopicHandler`**
-    Retrieves a handler for a specific topic within a sequence.
+* **`sequence_handler(sequence_name: str) -> SequenceHandler`**
+    Retrieves a [handler](handlers.md#reading--handling-data) for an existing sequence (for reading metadata or streaming data). Caches the result to prevent redundant lookups.
+* **`topic_handler(sequence_name: str, topic_name: str) -> TopicHandler`**
+    Retrieves a [handler](handlers.md#reading--handling-data) for a specific topic within a sequence.
 
 **Data Operations**
-* **`query(self, *queries: QueryableProtocol) -> List[QueryResponseItem]`**
-    Executes queries against the data catalogs - Platform entities (i.e. Sequence or Topic) or Ontology catalog. Accepts `Query` builder objects.
-* **`sequence_delete(self, sequence_name: str)`**
+* **`query(*queries: QueryableProtocol) -> List[QueryResponseItem]`**
+    Executes [queries](queries.md) against the data catalogs - Platform entities (i.e. Sequence or Topic) or Ontology catalog. Accepts `Query` builder objects.
+* **`sequence_delete(sequence_name: str)`**
     Permanently removes a sequence and all its associated data from the server.
 
-    **Note on Immutability:** Mosaico sequences are designed to be immutable once successfully committed. Therefore, deletion is strictly limited to **incomplete or malformed sequences** resulting from:
-    1.  A write operation where the error policy was set to `Report` (leaving partial data).
-    2.  An unexpected connection drop or system failure during the writing process, that instantly closes the communication with the server.
-    
-    In these specific "unlocked" states, the sequence can be cleaned up. Attempting to delete a successfully committed (locked) sequence is forbidden and will result in an error.
+    > [!NOTE]
+    > **Note on Immutability** 
+    > 
+    > Mosaico sequences are designed to be immutable once successfully committed (see also [Core Concepts](../../CORE_CONCEPTS.md#data-lifetime-and-integrity)). Therefore, deletion is strictly limited to **incomplete or malformed sequences** resulting from:
+    > 1.  A write operation where the error policy was set to `Report` (leaving partial data).
+    > 2.  An unexpected connection drop or system failure during the writing process, that instantly closes the communication with the server.
+    >     
+    > In these specific "unlocked" states, the sequence can be cleaned up. Attempting to delete a successfully committed (locked) sequence is forbidden and will result in an error.
 
 **Lifecycle**
-* **`close(self)`**
+* **`close()`**
     Manually shuts down all pools and connections. Called automatically by the context manager (if the instance was created in a `with` block).
