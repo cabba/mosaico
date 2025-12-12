@@ -82,6 +82,8 @@ poetry run python any_script.py
 
 ## Quick Start
 
+This guide assumes familiarity with the terminology and core concepts of the Mosaico framework. If you are new to the platform, we strongly recommend reviewing the [**Core Concepts**](../CORE_CONCEPTS.md) section first, for a deep dive into the project's philosophy and how data is structured, stored, and managed.
+
 ###  ROS Injection
 The SDK comes with a quick-start built-in CLI tool to inject ROS bags directly into the platform.
 

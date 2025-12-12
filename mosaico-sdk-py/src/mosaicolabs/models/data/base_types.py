@@ -26,6 +26,7 @@ class Integer8(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.int8(),
+                nullable=False,
                 metadata={"description": "8-bit Integer data"},
             ),
         ]
@@ -41,6 +42,7 @@ class Integer16(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.int16(),
+                nullable=False,
                 metadata={"description": "16-bit Integer data"},
             ),
         ]
@@ -56,6 +58,7 @@ class Integer32(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.int32(),
+                nullable=False,
                 metadata={"description": "32-bit Integer data"},
             ),
         ]
@@ -71,6 +74,7 @@ class Integer64(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.int64(),
+                nullable=False,
                 metadata={"description": "64-bit Integer data"},
             ),
         ]
@@ -86,6 +90,7 @@ class Unsigned8(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.uint8(),
+                nullable=False,
                 metadata={"description": "8-bit Unsigned data"},
             ),
         ]
@@ -112,6 +117,7 @@ class Unsigned16(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.uint16(),
+                nullable=False,
                 metadata={"description": "16-bit Unsigned data"},
             ),
         ]
@@ -132,6 +138,7 @@ class Unsigned32(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.uint32(),
+                nullable=False,
                 metadata={"description": "32-bit Unsigned data"},
             ),
         ]
@@ -152,6 +159,7 @@ class Unsigned64(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.uint64(),
+                nullable=False,
                 metadata={"description": "64-bit Unsigned data"},
             ),
         ]
@@ -172,6 +180,7 @@ class Floating16(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.float16(),
+                nullable=False,
                 metadata={"description": "16-bit Floating-point data"},
             ),
         ]
@@ -187,6 +196,7 @@ class Floating32(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.float32(),
+                nullable=False,
                 metadata={"description": "32-bit Floating-point data"},
             ),
         ]
@@ -202,6 +212,7 @@ class Floating64(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.float64(),
+                nullable=False,
                 metadata={"description": "64-bit Floating-point data"},
             ),
         ]
@@ -217,6 +228,7 @@ class Boolean(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.bool_(),
+                nullable=False,
                 metadata={"description": "Boolean data"},
             ),
         ]
@@ -232,6 +244,7 @@ class String(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.string(),
+                nullable=False,
                 metadata={"description": "String data"},
             ),
         ]
@@ -250,6 +263,7 @@ class LargeString(Serializable, HeaderMixin):
             pa.field(
                 "data",
                 pa.large_string(),
+                nullable=False,
                 metadata={"description": "Large string data"},
             ),
         ]

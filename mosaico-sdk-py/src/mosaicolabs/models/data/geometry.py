@@ -14,7 +14,6 @@ This module defines vectors, points, quaternions, and spatial transforms.
 
 from typing import Optional
 import pyarrow as pa
-from pydantic import model_validator
 
 from ..base_model import BaseModel
 from ..covariance_mixin import CovarianceMixin
@@ -33,16 +32,22 @@ class _Vector2dStruct(BaseModel):
     Contains only data fields and schema, no transport logic.
     """
 
+    # OPTIONALITY NOTE
+    # All fields are explicitly set to `nullable=True`. This prevents Parquet V2
+    # readers from incorrectly deserializing a `None` _Vector2dStruct field in a class
+    # as a default-initialized object (e.g., getting _Vector2dStruct(0, ...) instead of None).
     __msco_pyarrow_struct__ = pa.struct(
         [
             pa.field(
                 "x",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector x component"},
             ),
             pa.field(
                 "y",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector y component"},
             ),
         ]
@@ -73,21 +78,28 @@ class _Vector3dStruct(BaseModel):
     Contains only data fields and schema, no transport logic.
     """
 
+    # OPTIONALITY NOTE
+    # All fields are explicitly set to `nullable=True`. This prevents Parquet V2
+    # readers from incorrectly deserializing a `None` _Vector3dStruct field in a class
+    # as a default-initialized object (e.g., getting _Vector3dStruct(0, ...) instead of None).
     __msco_pyarrow_struct__ = pa.struct(
         [
             pa.field(
                 "x",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector x component"},
             ),
             pa.field(
                 "y",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector y component"},
             ),
             pa.field(
                 "z",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector z component"},
             ),
         ]
@@ -119,26 +131,34 @@ class _Vector4dStruct(BaseModel):
     Contains only data fields and schema, no transport logic.
     """
 
+    # OPTIONALITY NOTE
+    # All fields are explicitly set to `nullable=True`. This prevents Parquet V2
+    # readers from incorrectly deserializing a `None` _Vector4dStruct field in a class
+    # as a default-initialized object (e.g., getting _Vector4dStruct(0, ...) instead of None).
     __msco_pyarrow_struct__ = pa.struct(
         [
             pa.field(
                 "x",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector x component"},
             ),
             pa.field(
                 "y",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector y component"},
             ),
             pa.field(
                 "z",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector z component"},
             ),
             pa.field(
                 "w",
                 pa.float64(),
+                nullable=True,
                 metadata={"description": "Vector w component"},
             ),
         ]
@@ -276,13 +296,13 @@ class Transform(
             pa.field(
                 "translation",
                 Vector3d.__msco_pyarrow_struct__,
-                nullable=True,
+                nullable=False,
                 metadata={"description": "3D translation vector"},
             ),
             pa.field(
                 "rotation",
                 Quaternion.__msco_pyarrow_struct__,
-                nullable=True,
+                nullable=False,
                 metadata={"description": "Quaternion representing rotation."},
             ),
             pa.field(
@@ -294,26 +314,14 @@ class Transform(
         ]
     )
 
-    translation: Optional[Vector3d] = None
+    translation: Vector3d
     """3D translation vector."""
 
-    rotation: Optional[Quaternion] = None
+    rotation: Quaternion
     """Quaternion representing rotation."""
 
     target_frame_id: Optional[str] = None
     """Target frame identifier."""
-
-    @model_validator(mode="after")
-    def check_at_least_one_exists(self) -> "Transform":
-        """
-        Validates that the transform is not empty.
-
-        Raises:
-            ValueError: If both `translation` and `rotation` are None.
-        """
-        if self.translation is None and self.rotation is None:
-            raise ValueError("User must provide at least 'translation' or 'rotation'.")
-        return self
 
 
 class Pose(
@@ -331,32 +339,20 @@ class Pose(
             pa.field(
                 "position",
                 Point3d.__msco_pyarrow_struct__,
-                nullable=True,
+                nullable=False,
                 metadata={"description": "3D translation vector"},
             ),
             pa.field(
                 "orientation",
                 Quaternion.__msco_pyarrow_struct__,
-                nullable=True,
+                nullable=False,
                 metadata={"description": "Quaternion representing rotation."},
             ),
         ]
     )
 
-    position: Optional[Point3d] = None
+    position: Point3d
     """3D translation vector"""
 
-    orientation: Optional[Quaternion] = None
+    orientation: Quaternion
     """Quaternion representing rotation."""
-
-    @model_validator(mode="after")
-    def check_at_least_one_exists(self) -> "Pose":
-        """
-        Validates that the Pose is not empty.
-
-        Raises:
-            ValueError: If both `position` and `orientation` are None.
-        """
-        if self.position is None and self.orientation is None:
-            raise ValueError("User must provide at least 'position' or 'orientation'.")
-        return self

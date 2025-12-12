@@ -12,7 +12,7 @@
 
 The **ROS Bridge** module serves as the ingestion gateway for ROS (Robot Operating System) data into the Mosaico Data Platform. Its primary function is to solve the interoperability challenges associated with ROS bag files—specifically format fragmentation (ROS 1 `.bag` vs. ROS 2 `.mcap`/`.db3`) and the lack of strict schema enforcement in custom message definitions.
 
-The core philosophy of the module is **"Adaptation, Not Just Parsing."** Rather than simply extracting raw dictionaries from ROS messages, the bridge actively translates them into the standardized **Mosaico Ontology**. For example, a `geometry_msgs/Pose` is validated, normalized, and instantiated as a strongly-typed `mosaicolabs.models.data.geometry.Pose` object before ingestion.
+The core philosophy of the module is **"Adaptation, Not Just Parsing."** Rather than simply extracting raw dictionaries from ROS messages, the bridge actively translates them into the standardized **Mosaico Ontology**. For example, a `geometry_msgs/Pose` is validated, normalized, and instantiated as a strongly-typed `mosaicolabs.models.data.Pose` object before ingestion.
 
 ## Architecture
 
@@ -89,10 +89,10 @@ A data class defining the configuration for the injection process.
 | `file_path` | `Path` | Path to the input bag file (`.mcap`, `.db3`, `.bag`). |
 | `sequence_name` | `str` | The name of the target sequence to create on the server. |
 | `metadata` | `dict` | User-defined metadata to attach to the sequence (e.g., `{"driver": "TestDriver"}`). |
-| `ros_distro` | `Stores` | (Optional) The target ROS distribution (e.g., `Stores.ROS2_HUMBLE`). Defaults to `EMPTY`/Auto. |
+| `ros_distro` | `Stores` | (Optional) The target ROS distribution (e.g., `Stores.ROS2_HUMBLE`). Defaults to `EMPTY`. |
 | `topics` | `List[str]` | (Optional) A list of topics to filter. Supports glob patterns (e.g., `["/cam/*"]`). |
 | `custom_msgs` | `List` | A list of tuples `(package, path, store)` to register custom `.msg` definitions. |
-| `on_error` | `OnErrorPolicy` | Behavior when writing fails (`Delete` sequence or `Report` error). |
+| `on_error` | `OnErrorPolicy` | Behavior when sequence writing fails (`Delete` sequence or `Report` error). |
 
 #### CLI Usage
 
@@ -100,10 +100,10 @@ The module includes a command-line interface for quick ingestion tasks.
 
 ```bash
 # Basic Usage
-mosaico-ros-injector ./data.mcap --name "Test_Run_01"
+mosaico.ros_injector ./data.mcap --name "Test_Run_01"
 
 # Advanced Usage: Filtering topics and adding metadata
-mosaico-ros-injector ./data.db3 \
+mosaico.ros_injector ./data.db3 \
   --name "Test_Run_01" \
   --topics /camera/front/* /gps/fix \
   --metadata ./metadata.json \
@@ -200,9 +200,8 @@ if __name__ == "__main__":
 ### `ROSTypeRegistry`
 
 For complex projects with many custom message definitions, passing them repeatedly via the `custom_msgs` argument can become unwieldy. Instead, you can use the **`ROSTypeRegistry`** to pre-load definitions globally at the start of your application.
-This approach decouples **configuration** (defining what data looks like) from **execution** (loading the data).
 
-  * **`register_directory(package_name, dir_path, store=None)`**: Batch registers all `.msg` files found in a directory under a specific package name. The regisytry will automatically infer type names as `package_name/msg/{filename}`
+  * **`register_directory(package_name, dir_path, store=None)`**: Batch registers all `.msg` files found in a directory under a specific package name. The regisytry will automatically infer type names as `{package_name}/msg/{filename}`
   * **`register(msg_type, source, store=None)`**: Registers a single message type definition.
 
 #### Centralized Custom Message Registration
@@ -246,8 +245,6 @@ def register_project_messages():
     print("Custom message definitions registered successfully.")
 
 ```
-
-**Simplified Injection Call**
 
 Once registered, the `RosbagInjector` (and the underlying `ROSLoader`) automatically detects and uses these definitions. There is no longer the need to pass the `custom_msgs` list in the `ROSInjectionConfig`.
 
@@ -310,19 +307,39 @@ While the underlying `rosbags` library supports the majority of standard ROS 2 b
 
 ## Supported Message Types
 
-The following ROS message types are currently supported by the standard library adapters; adapters are populated frequently, so if some is missing try checking on the repository for updates first.
+***ROS-Specific Data Models***
+
+In addition to mapping standard ROS messages to the core Mosaico ontology, the `ros-bridge` module implements two specialized data models. These are defined specifically for this module to handle ROS-native concepts that are not yet part of the official Mosaico standard:
+
+* **`FrameTransform`**: Designed to handle coordinate frame transformations (modeled after `tf2_msgs/msg/TFMessage`). It encapsulates a list of `Transform` objects to manage spatial relationships.
+* **`BatteryState`**: Modeled after `sensor_msgs/msg/BatteryState`, this class captures comprehensive power supply metrics. It includes core data (voltage, current, capacity, percentage) and detailed metadata such as power supply health, technology status, and individual cell readings.
+
+> **Note:** Although these are provisional additions, both `FrameTransform` and `BatteryState` inherit from `Serializable` and `HeaderMixin`. This ensures they remain fully compatible with Mosaico’s existing serialization and header management infrastructure.
+
+### Supported Message Types Table
 
 | ROS Message Type | Mosaico Ontology Type | Adapter |
 | :--- | :--- | :--- |
-| `sensor_msgs/Image`, `CompressedImage` | `Image`, `CompressedImage` | `ImageAdapter` |
-| `sensor_msgs/Imu` | `IMU` | `IMUAdapter` |
-| `sensor_msgs/NavSatFix` | `GPS` | `GPSAdapter` |
-| `sensor_msgs/CameraInfo` | `CameraInfo` | `CameraInfoAdapter` |
-| `sensor_msgs/RegionOfInterest` | `ROI` | `ROIAdapter` |
-| `sensor_msgs/BatteryState` | `BatteryState` | `BatteryStateAdapter` |
-| `sensor_msgs/JointState` | `RobotJoint` | `RobotJointAdapter` |
-| `nav_msgs/Odometry` | `MotionState` | `OdometryAdapter` |
 | `geometry_msgs/Pose`, `PoseStamped`... | `Pose` | `PoseAdapter` |
 | `geometry_msgs/Twist`, `TwistStamped`... | `Velocity` | `TwistAdapter` |
 | `geometry_msgs/Accel`, `AccelStamped`... | `Acceleration` | `AccelAdapter` |
+| `geometry_msgs/Vector3`, `Vector3Stamped` | `Vector3d` | `Vector3Adapter` |
+| `geometry_msgs/Point`, `PointStamped` | `Point3d` | `PointAdapter` |
+| `geometry_msgs/Quaternion`, `QuaternionStamped` | `Quaternion` | `QuaternionAdapter` |
+| `geometry_msgs/Transform`, `TransformStamped` | `Transform` | `TransformAdapter` |
+| `geometry_msgs/Wrench`, `WrenchStamped` | `Velocity` | `WrenchAdapter` |
+| `nav_msgs/Odometry` | `MotionState` | `OdometryAdapter` |
 | `nmea_msgs/Sentence` | `NMEASentence` | `NMEASentenceAdapter` |
+| `sensor_msgs/Image`, `CompressedImage` | `Image`, `CompressedImage` | `ImageAdapter`, `CompressedImageAdapter` |
+| `sensor_msgs/Imu` | `IMU` | `IMUAdapter` |
+| `sensor_msgs/NavSatFix` | `GPS`, `GPSStatus` | `GPSAdapter`, `NavSatStatusAdapter` |
+| `sensor_msgs/CameraInfo` | `CameraInfo` | `CameraInfoAdapter` |
+| `sensor_msgs/RegionOfInterest` | `ROI` | `ROIAdapter` |
+| `sensor_msgs/JointState` | `RobotJoint` | `RobotJointAdapter` |
+| `sensor_msgs/BatteryState` | `BatteryState` (ROS-specific)| `BatteryStateAdapter` |
+| `std_msgs/msg/String`| `String`| `_GenericStdAdapter` |
+| `std_msgs/msg/Int8(16,32,64)` | `Integer8(16,32,64)`| `_GenericStdAdapter` |
+| `std_msgs/msg/UInt8(16,32,64)` | `Unsigned8(16,32,64)`| `_GenericStdAdapter` |
+| `std_msgs/msg/Float32(64)` | `Floating32(64)`| `_GenericStdAdapter` |
+| `std_msgs/msg/Bool` | `Boolean`| `_GenericStdAdapter` |
+| `tf2_msgs/msg/TFMessage` | `FrameTransform` (ROS-specific)| `FrameTransformAdapter` |

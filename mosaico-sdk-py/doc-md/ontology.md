@@ -112,7 +112,7 @@ accel_msg = Vector3d(
 )
 
 # This is a valid payload for a TopicWriter
-writer.push(Message(timestamp=ts, data=accel_msg))
+writer.push(Message(timestamp_ns=ts, data=accel_msg))
 
 # Sending an error message string as a timestamped message
 error_msg = String(
@@ -121,7 +121,7 @@ error_msg = String(
 )
 
 # This is another valid payload for a TopicWriter
-writer.push(Message(timestamp=ts, data=accel_msg))
+writer.push(Message(timestamp_ns=ts, data=error_msg))
 ```
 
 #### 2\. Embedded Usage (Specific Attributes)
@@ -156,8 +156,8 @@ The `Message` class is the **universal transport envelope** for all data within 
 
 While logically a `Message` contains a `data` object (e.g., an `IMU` or `Image`), physically on the wire (PyArrow/Parquet), the fields are **flattened**.
 
-  * **Logical:** `Message(timestamp=123, data=IMU(acc_x=1.0))`
-  * **Physical:** `Struct(timestamp=123, acc_x=1.0)`
+  * **Logical:** `Message(timestamp_ns=123, data=IMU(acceleration=Vector3d(x=1.0,...)))`
+  * **Physical:** `Struct(timestamp_ns=123, acceleration, ...)`
 
 This flattening is handled automatically by the `encode()` and `get_schema()` methods. This ensures zero-overhead access to nested data during queries while maintaining a clean object-oriented API in Python.
 
@@ -175,12 +175,12 @@ This flattening is handled automatically by the `encode()` and `get_schema()` me
   * **`create(cls, tag: str, **kwargs) -> Message`**
     Factory method to instantiate a Message from a flat dictionary of arguments (typical when reading from Parquet/Arrow).
 
-      * **Logic:** It inspects the registered class for the given `tag`, separates the arguments meant for the envelope (`timestamp_ns`) from those meant for the payload (`acc_x`), and constructs the full object tree.
+      * **Logic:** It inspects the registered class for the given `tag`, separates the arguments meant for the envelope (`timestamp_ns`) from those meant for the payload, and constructs the full object tree.
       * **Args:**
           * `tag`: The string identifier of the payload type (e.g., `"imu"`).
           * `**kwargs`: A merged dictionary containing all fields.
 
-  * **`encode(self) -> Dict[str, Any]`**
+  * **`encode() -> Dict[str, Any]`**
     Serializes the object tree into a flat dictionary suitable for PyArrow. It merges the envelope fields and the payload fields into a single level.
 
   * **`get_schema(cls, data_cls: Type[Serializable]) -> pa.Schema`**
@@ -191,7 +191,7 @@ This flattening is handled automatically by the `encode()` and `get_schema()` me
 
 #### Public API
 
-  * **`get_data(self, target_type: Type[T]) -> T`**
+  * **`get_data(target_type: Type[T]) -> T`**
     A type-safe accessor for the payload. It runtime-checks that the `data` attribute matches the expected `target_type` and returns it with proper type hinting for IDE autocompletion.
 
     ```python
@@ -201,7 +201,7 @@ This flattening is handled automatically by the `encode()` and `get_schema()` me
     print(imu.acceleration.x)
     ```
 
-  * **`ontology_type(self) -> Type[Serializable]`**
+  * **`ontology_type() -> Type[Serializable]`**
     Retrieves the Python class type of the ontology object stored in the data field. This accesses the `__class_type__` of the underlying data, allowing for dynamic type inspection of the message payload.
 
     ```python
@@ -210,7 +210,7 @@ This flattening is handled automatically by the `encode()` and `get_schema()` me
     # Returns the class, e.g., <class 'IMU'>
     ```
 
-  * **`ontology_tag(self) -> str`**
+  * **`ontology_tag() -> str`**
     Returns the unique ontology tag name associated with the object in the data field. This provides a string-based identifier for the data type, useful for logging or routing logic without importing the specific class.
 
     ```python
@@ -227,74 +227,131 @@ These are the reusable mathematical and geometric building blocks used to constr
 ### Base Types (`base_types.py`)
 Wrappers for Python primitives that allow them to be sent as timestamped `Messages`. All wrappers contain a single field:
 
-* **`data`**: The primitive value. Types include:
-    * **Integers:** `Integer8`, `Integer16`, `Integer32`, `Integer64` (signed), and `Unsigned8/16/32/64`.
-    * **Floats:** `Floating16`, `Floating32`, `Floating64`.
-    * **Others:** `Boolean`, `String`, `LargeString` (for >2GB text).
+**Fields**
+  * **`data`**: The primitive value. Types include:
+      * **Integers:** `Integer8`, `Integer16`, `Integer32`, `Integer64` (signed), and `Unsigned8/16/32/64`.
+      * **Floats:** `Floating16`, `Floating32`, `Floating64`.
+      * **Others:** `Boolean`, `String`, `LargeString` (for >2GB text).
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 ### Geometry (`geometry.py`)
-Defines spatial types.
+Defines spatial/geometric types.
 
 #### Vectors & Points
-* **`Vector2d`** / **`Point2d`**:
-    * **`x`** (`float64`): X component.
-    * **`y`** (`float64`): Y component.
-* **`Vector3d`** / **`Point3d`**:
-    * **`x`** (`float64`): X component.
-    * **`y`** (`float64`): Y component.
-    * **`z`** (`float64`): Z component.
-* **`Vector4d`**:
-    * **`x`**, **`y`**, **`z`**, **`w`** (`float64`): Components.
+Semantically represent vectors or points in space.
+
+**Fields**
+  * **`Vector2d`** / **`Point2d`**:
+      * **`x`** (`float64`): X component.
+      * **`y`** (`float64`): Y component.
+      * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+      * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+      * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
+  * **`Vector3d`** / **`Point3d`**:
+      * **`x`** (`float64`): X component.
+      * **`y`** (`float64`): Y component.
+      * **`z`** (`float64`): Z component.
+      * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+      * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+      * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
+  * **`Vector4d`**:
+      * **`x`**, **`y`**, **`z`**, **`w`** (`float64`): Components.
+      * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+      * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+      * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
 
 #### `Quaternion`
 Semantically represents a Rotation.
-* **`x`**, **`y`**, **`z`**, **`w`** (`float64`): Quaternion components.
+
+**Fields**
+  * **`x`**, **`y`**, **`z`**, **`w`** (`float64`): Quaternion components.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+  * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+  * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
 
 #### `Transform`
 Represents a spatial transformation between two coordinate frames.
-* **`translation`** (`Vector3d`): 3D translation vector.
-* **`rotation`** (`Quaternion`): Quaternion representing rotation.
-* **`target_frame_id`** (`string`): Target frame identifier.
+
+**Fields**
+  * **`translation`** (`Vector3d`): 3D translation vector.
+  * **`rotation`** (`Quaternion`): Quaternion representing rotation.
+  * **`target_frame_id`** (`string`): Target frame identifier.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+  * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+  * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
 
 #### `Pose`
 Represents an object's position and orientation in space.
-* **`position`** (`Point3d`): 3D position point.
-* **`orientation`** (`Quaternion`): Quaternion representing orientation.
+
+**Fields**
+  * **`position`** (`Point3d`): 3D position point.
+  * **`orientation`** (`Quaternion`): Quaternion representing orientation.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+  * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+  * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
 
 ### Kinematics (`kinematics.py`)
 
 #### `Velocity`
 Represents 6-Degree-of-Freedom Velocity (Twist).
-* **`linear`** (`Vector3d`): 3D linear velocity vector.
-* **`angular`** (`Vector3d`): 3D angular velocity vector.
+
+**Fields**
+  * **`linear`** (`Vector3d`, ***Optional***): 3D linear velocity vector.
+  * **`angular`** (`Vector3d`, ***Optional***): 3D angular velocity vector.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+  * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+  * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
+
+> **Note**: The `linear` and `angular` fields are marked `Optional` to allow for partial definitions (e.g., specifying only linear velocity) without enforcing dummy values for the unused component and compromising the semantic meaning of the message. The fields are subject to strict model validation: user must provide either `linear`, `angular`, or both. Providing neither will result in a validation error, ensuring the semantic integrity of the type.
 
 #### `Acceleration`
 Represents 6-Degree-of-Freedom Acceleration.
-* **`linear`** (`Vector3d`): 3D linear acceleration vector.
-* **`angular`** (`Vector3d`): 3D angular acceleration vector.
+
+**Fields**
+  * **`linear`** (`Vector3d`, ***Optional***): 3D linear acceleration vector.
+  * **`angular`** (`Vector3d`, ***Optional***): 3D angular acceleration vector.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+  * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+  * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
+
+> **Note**: The `linear` and `angular` fields are marked `Optional` to allow for partial definitions (e.g., specifying only linear acceleration) without enforcing dummy values for the unused component and compromising the semantic meaning of the message. The fields are subject to strict model validation: user must provide either `linear`, `angular`, or both. Providing neither will result in a validation error, ensuring the semantic integrity of the type.
 
 #### `MotionState`
 A complete kinematic snapshot.
-* **`pose`** (`Pose`): 6D pose.
-* **`velocity`** (`Velocity`): 6D velocity.
-* **`acceleration`** (`Acceleration`): 6D acceleration.
-* **`target_frame_id`** (`string`): Target frame identifier.
+
+**Fields**
+  * **`pose`** (`Pose`): 6D pose.
+  * **`velocity`** (`Velocity`): 6D velocity.
+  * **`target_frame_id`** (`string`): Target frame identifier.
+  * **`acceleration`** (`Acceleration`, ***Optional***): 6D acceleration.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+  * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+  * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
 
 ### Dynamics (`dynamics.py`)
 
 #### `ForceTorque`
 Represents a "Wrench" applied at a specific point.
-* **`force`** (`Vector3d`): 3D linear force vector ($N$).
-* **`torque`** (`Vector3d`): 3D torque vector ($N \cdot m$).
+
+**Fields**
+
+  * **`force`** (`Vector3d`): 3D linear force vector ($N$).
+  * **`torque`** (`Vector3d`): 3D torque vector ($N \cdot m$).
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
+  * **`covariance`** (`list[float64]`, ***Optional***): Row-major representation of the covariance matrix.
+  * **`covariance_type`** (`int16`, ***Optional***): Enum integer representing the covariance parameterization.
 
 ### ROI (`roi.py`)
 
 #### `ROI`
 A Region of Interest in an image.
-* **`offset`** (`Vector2d`): Top-Left corner ($x, y$) of the ROI.
-* **`height`** (`uint32`): Height in pixels.
-* **`width`** (`uint32`): Width in pixels.
-* **`do_rectify`** (`bool`): True if the ROI applies to the rectified image. False if it applies to the raw image.
+
+**Fields**
+  * **`offset`** (`Vector2d`): Top-Left corner ($x, y$) of the ROI.
+  * **`height`** (`uint32`): Height in pixels.
+  * **`width`** (`uint32`): Width in pixels.
+  * **`do_rectify`** (`bool`, ***Optional***): True if the ROI applies to the rectified image. False if it applies to the raw image.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 
 ## Sensors Ontology
@@ -308,15 +365,17 @@ The Camera module provides the following data classes.
 #### `CameraInfo`
 Meta-information for interpreting images from a calibrated camera. Mirrors standard robotics camera models.
 
-* **`height`** (`uint32`): Height in pixels of the image with which the camera was calibrated.
-* **`width`** (`uint32`): Width in pixels of the image with which the camera was calibrated.
-* **`distortion_model`** (`string`): The distortion model used (e.g., 'plumb_bob', 'rational_polynomial').
-* **`distortion_parameters`** (`list[float64]`): The distortion coefficients ($k_1, k_2, t_1, t_2, k_3...$). Size depends on the model.
-* **`intrinsic_parameters`** (`list[float64]`, size 9): The 3x3 Intrinsic Matrix ($K$) flattened row-major. Projects 3D points in the camera coordinate frame to 2D pixel coordinates.
-* **`rectification_parameters`** (`list[float64]`, size 9): The 3x3 Rectification Matrix ($R$) flattened row-major. Used for stereo cameras to align the two image planes.
-* **`projection_parameters`** (`list[float64]`, size 12): The 3x4 Projection Matrix ($P$) flattened row-major. Projects 3D world points directly into the rectified image pixel coordinates.
-* **`binning`** ([`Vector2d`](#vectors--points)): Hardware binning factor ($x, y$). If null, assumes (0, 0) (no binning).
-* **`roi`** (`ROI`): Region of Interest. Used if the image is a sub-crop of the full resolution.
+**Fields:**
+  * **`height`** (`uint32`): Height in pixels of the image with which the camera was calibrated.
+  * **`width`** (`uint32`): Width in pixels of the image with which the camera was calibrated.
+  * **`distortion_model`** (`string`): The distortion model used (e.g., 'plumb_bob', 'rational_polynomial').
+  * **`distortion_parameters`** (`list[float64]`): The distortion coefficients ($k_1, k_2, t_1, t_2, k_3...$). Size depends on the model.
+  * **`intrinsic_parameters`** (`list[float64]`, size 9): The 3x3 Intrinsic Matrix ($K$) flattened row-major. Projects 3D points in the camera coordinate frame to 2D pixel coordinates.
+  * **`rectification_parameters`** (`list[float64]`, size 9): The 3x3 Rectification Matrix ($R$) flattened row-major. Used for stereo cameras to align the two image planes.
+  * **`projection_parameters`** (`list[float64]`, size 12): The 3x4 Projection Matrix ($P$) flattened row-major. Projects 3D world points directly into the rectified image pixel coordinates.
+  * **`binning`** ([`Vector2d](#vectors--points), ***Optional***): Hardware binning factor ($x, y$). If null, assumes (0, 0) (no binning).
+  * **`roi`** (`ROI`, ***Optional***): Region of Interest. Used if the image is a sub-crop of the full resolution.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 ### Image (`image.py`)
 
@@ -324,34 +383,28 @@ Meta-information for interpreting images from a calibrated camera. Mirrors stand
 Represents uncompressed pixel data with explicit memory layout control. It includes helper methods to convert to/from standard Python `PIL` images.
 
 **Fields:**
-* **`data`** (`binary`): The flattened image memory buffer.
-* **`format`** (`string`): Container format (e.g., 'raw', 'png').
-* **`width`** (`int32`): Image width in pixels.
-* **`height`** (`int32`): Image height in pixels.
-* **`stride`** (`int32`): Bytes per row. Essential for alignment.
-* **`is_bigendian`** (`bool`): True if data is Big-Endian. Defaults to system endianness if null.
-* **`encoding`** (`string`): Pixel format (e.g., 'bgr8', 'mono16').
+  * **`data`** (`binary`): The flattened image memory buffer.
+  * **`format`** (`string`): Container format (e.g., 'raw', 'png').
+  * **`width`** (`int32`): Image width in pixels.
+  * **`height`** (`int32`): Image height in pixels.
+  * **`stride`** (`int32`): Bytes per row. Essential for alignment.
+  * **`encoding`** (`string`): Pixel format (e.g., 'bgr8', 'mono16').
+  * **`is_bigendian`** (`bool`, ***Optional***): True if data is Big-Endian. Defaults to system endianness if null.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 **Methods:**
 * **`from_pillow(cls, pil_image: PIL.Image, ...) -> Image`**
-    Factory method that automatically handles data flattening, stride calculation, and type casting (e.g., converting a float32 Depth map to the correct byte representation).
-* **`to_pillow(self) -> PIL.Image`**
+    Factory method that automatically handles data flattening, stride calculation, and type casting (e.g., converting a float32 Depth map to the correct byte representation). The function accepts the preferred serialization format; the allowed formats are `png` or `raw` (lossless representation). If None, `png` is selected.
+* **`to_pillow() -> PIL.Image`**
     Converts the raw binary data back into a standard Pillow Image object. Handles complex logic like reshuffling BGR to RGB, handling big-endian systems, and reshaping 1D buffers back to 2D arrays.
 * **`encode(cls, data: List[int], stride: int, ...) -> Image`**
-    Low-level factory to create an Image instance directly from a raw byte list and dimensions. Implements the "Wide Grayscale" trick for saving complex types into standard containers.
-* **`decode(self) -> List[int]`**
+    Low-level factory to create an Image instance directly from a raw byte list and dimensions. Implements the "Wide Grayscale" trick for saving complex types into standard containers. The function accepts the preferred serialization format; the allowed formats are `png` or `raw` (lossless representation). If None, `png` is selected.
+* **`decode() -> List[int]`**
     Returns the raw, flattened integer list of pixel data, decoding any transport container (like PNG) if necessary.
 
 #### *The "Wide Grayscale" Concept*
 
-The **Wide Grayscale** strategy is a technique used by the SDK to losslessly store image data (such as 32-bit floating-point depth maps or 16-bit raw sensor data) inside standard image containers like PNG.
-
-Standard image encoders (like typical PNG or JPEG libraries) are designed for visual data (RGB or standard 8-bit grayscale). When you try to save scientific data using them, they often introduce errors:
-* **Bit-Depth Reduction:** A `float32` might be cast to `uint8`, losing precision.
-* **Color Correction:** Some encoders apply gamma correction or color space conversions that alter the raw values.
-* **Padding Loss:** High-performance computing buffers often have "padding" bytes at the end of each row for memory alignment. Standard encoders discard this, which can break optimized pipelines (like CUDA or SIMD) upon reloading.
-
-Instead of treating the data as "pixels" with semantic meaning (colors), the SDK treats the image memory as a **raw byte stream**.
+The **Wide Grayscale** strategy is a technique used by the SDK to losslessly store image data (such as 32-bit floating-point depth maps or 16-bit raw sensor data) inside standard image containers like PNG. Instead of treating the data as "pixels" with semantic meaning (colors), the SDK treats the image memory as a **raw byte stream**.
 
 1.  **Reinterpretation:** The original buffer (e.g., a 100x100 image of `float32`) is viewed simply as a list of bytes. Since each `float32` is 4 bytes, a single row of 100 pixels becomes 400 bytes.
 2.  **Reshaping:** This byte stream is reshaped into a new 2D matrix where:
@@ -364,44 +417,56 @@ To the PNG encoder, it looks like a very wide, boring grayscale image. To the SD
 
 #### `CompressedImage`
 
-Container for encoded binary blobs (JPEG, PNG, H.264). Unlike the raw `Image` class, this class delegates the actual compression and decompression logic to a pluggable **Codec** system.
+Container for encoded binary blobs. Unlike the raw `Image` class, this class delegates the actual compression and decompression logic to a pluggable **Codec** system.
 
 **Fields:**
 
   * **`data`** (`binary`): The serialized (compressed) image data as bytes.
   * **`format`** (`string`): The compression format identifier (e.g., 'jpeg', 'png').
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (timestamp, frame_id).
 
 **Methods:**
 
-  * **`from_image(cls, image: PIL.Image, format: str = 'jpeg', codec: Optional[CompressedImageCodec] = None, ...) -> CompressedImage`**
+  * **`from_image(cls, image: PIL.Image, format: str = 'png', ...) -> CompressedImage`**
     Factory method that compresses a Pillow image into a binary blob.
+    
+    > [!NOTE]
+    > **`ImageFormat` limitations**
+    >
+    > Accepted image formats are strictly typed via `Enum`; the formats currently accepted are: JPEG, PNG, TIFF, H.264. Future releases will relax this assumptions and allow more formats (with custom codecs).
 
-      * **`codec` Argument**: This optional argument allows for **Dependency Injection**.
-          * **Default Behavior (`None`):** The method looks up a registered codec in the global factory `_IMG_CODECS_FACTORY` based on the `format` string (e.g., uses `DefaultCodec` for 'png').
-          * **Custom Behavior:** You can pass an instance of your own custom `CompressedImageCodec` subclass. This is useful for using proprietary compression algorithms or overriding the standard behavior for a specific one-off operation without registering it globally.
 
-  * **`to_image(self, codec: Optional[CompressedImageCodec] = None) -> Optional[PIL.Image]`**
-    Decompresses the internal binary data into a usable Pillow Image object. Like `from_image`, it supports injecting a specific `codec` instance to handle the decompression logic.
+      <!-- TODO: uncomment when updating policy with customizable codecs -->
+      <!-- * **`codec` Argument**: This optional argument allows for **Dependency Injection**.
+          * **Default Behavior (`None`):** The method looks up a registered codec based on the `format` string (e.g., uses `DefaultCodec` for 'png'). The following image formats are currently available:
+            * `jpeg`, `png`, `tiff`, `h264`, `hevc`
+          * **Custom Behavior:** User can pass an instance of your his custom `CompressedImageCodec` subclass. This is useful for using proprietary compression algorithms or overriding the standard behavior for a specific one-off operation without registering it globally. -->
 
-**Architecture: The Codec Strategy**
+  * **`to_image() -> Optional[PIL.Image]`**
+    Decompresses the internal binary data into a usable Pillow Image object.
+    
+
+<!-- TODO: uncomment when updating policy with customizable codecs -->
+<!-- **Architecture: The Codec Strategy**
+
 The class uses the **Strategy Pattern** via the `CompressedImageCodec` abstract base class. This allows the SDK to support standard formats (via Pillow) and video formats (via PyAV) while allowing users to inject custom compression logic.
 
 **`CompressedImageCodec` (Abstract Base Class)**
 
-  * **`decode(self, data: bytes, format: str) -> PIL.Image`**:
+  * **`decode(data: bytes, format: str) -> PIL.Image`**:
     Must be implemented to convert a binary blob back into a usable image object.
-  * **`encode(self, image: PIL.Image, format: str, **kwargs) -> bytes`**:
+  * **`encode(image: PIL.Image, format: str, **kwargs) -> bytes`**:
     Must be implemented to compress an image object into a binary blob.
 
 #### Example: Using a Custom Codec
 
 ```python
 class MyCustomRLE(CompressedImageCodec):
-    def encode(self, image, format, **kwargs):
+    def encode(image, format, **kwargs):
         # Implement custom Run-Length Encoding logic...
         return b"..." 
 
-    def decode(self, data, format):
+    def decode(data, format):
         # Implement custom decoding logic...
         return PIL.Image.new("RGB", (100, 100))
 
@@ -411,55 +476,68 @@ my_blob = CompressedImage.from_image(
     format="rle", 
     codec=MyCustomRLE()
 )
-```
+``` -->
+
 ### IMU (`imu.py`)
 
 #### `IMU`
 Aggregates inertial measurements.
 
-* **`acceleration`** (`Vector3d`): Linear acceleration vector [$a_x, a_y, a_z$] in $m/s^2$.
-* **`angular_velocity`** (`Vector3d`): Angular velocity vector [$\omega_x, \omega_y, \omega_z$] in $rad/s$.
-* **`orientation`** (`Quaternion`, optional): Estimated orientation [$q_x, q_y, q_z, q_w$].
+**Fields**
+  * **`acceleration`** (`Vector3d`): Linear acceleration vector in $m/s^2$.
+  * **`angular_velocity`** (`Vector3d`): Angular velocity vector in $rad/s$.
+  * **`orientation`** (`Quaternion`, ***Optional***): Estimated orientation quaternion.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 ### GPS / GNSS (`gps.py`)
 
 #### `GPS`
 A processed navigation solution.
 
-* **`position`** (`Point3d`): Lat/Lon/Alt (WGS 84).
-* **`velocity`** (`Vector3d`): Velocity vector [North, East, Alt] in $m/s$.
-* **`status`** (`GPSStatus`): Receiver status info.
+**Fields**
+  * **`position`** (`Point3d`): Lat/Lon/Alt (WGS 84).
+  * **`velocity`** (`Vector3d`, ***Optional***): Velocity vector [North, East, Alt] in $m/s$.
+  * **`status`** (`GPSStatus`, ***Optional***): Receiver status info.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 #### `GPSStatus`
 Status of the GNSS receiver and satellite fix.
 
-* **`status`** (`int8`): Fix status.
-* **`service`** (`uint16`): Service used (GPS, GLONASS, etc).
-* **`satellites`** (`int8`): Satellites visible/used.
-* **`hdop`** (`float64`): Horizontal Dilution of Precision.
-* **`vdop`** (`float64`): Vertical Dilution of Precision.
+**Fields**
+  * **`status`** (`int8`): Fix status.
+  * **`service`** (`uint16`): Service used (GPS, GLONASS, etc).
+  * **`satellites`** (`int8`, ***Optional***): Satellites visible/used.
+  * **`hdop`** (`float64`, ***Optional***): Horizontal Dilution of Precision.
+  * **`vdop`** (`float64`, ***Optional***): Vertical Dilution of Precision.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 #### `NMEASentence`
 Raw ASCII strings output by GNSS receivers.
 
-* **`sentence`** (`string`): Raw ASCII sentence (e.g., `$GPGGA...`).
+**Fields**
+  * **`sentence`** (`string`): Raw ASCII sentence (e.g., `$GPGGA...`).
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 ### Magnetometer (`magnetometer.py`)
 
 #### `Magnetometer`
 Magnetic field measurement data.
 
-* **`magnetic_field`** (`Vector3d`): Magnetic field vector [$m_x, m_y, m_z$] in microTesla ($\mu T$).
+**Fields**
+  * **`magnetic_field`** (`Vector3d`): Magnetic field vector [$m_x, m_y, m_z$] in microTesla ($\mu T$).
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 ### Robot (`robot.py`)
 
 #### `RobotJoint`
 Snapshot of robot joint states. Arrays must be index-aligned.
 
-* **`names`** (`list[string]`): Names of the different robot joints.
-* **`positions`** (`list[float64]`): Positions ($rad$ or $m$) of the different robot joints.
-* **`velocities`** (`list[float64]`): Velocities ($rad/s$ or $m/s$) of the different robot joints.
-* **`efforts`** (`list[float64]`): Efforts ($N$ or $N \cdot m$) applied to the different robot joints.
+**Fields**
+  * **`names`** (`list[string]`): Names of the different robot joints.
+  * **`positions`** (`list[float64]`): Positions ($rad$ or $m$) of the different robot joints.
+  * **`velocities`** (`list[float64]`): Velocities ($rad/s$ or $m/s$) of the different robot joints.
+  * **`efforts`** (`list[float64]`): Efforts ($N$ or $N \cdot m$) applied to the different robot joints.
+  * **`header`** (`Header`, ***Optional***): Standard metadata header (stamp, frame_id).
 
 
 ## Customizing the Data Ontology
@@ -472,7 +550,7 @@ To define a new data type that is fully compatible with the Mosaico platform (va
 
 Your class **must** inherit from `mosaicolabs.models.Serializable`. This base class handles auto-registration, factory creation, and query proxy generation.
 
-  * **Timestamps & Headers:** If your data represents a time-stamped event or sensor reading, it is **highly recommended** to also inherit from `HeaderMixin` instead of defining your own timestamp fields. This injects the standard `header` field (timestamp, frame\_id, seq), ensuring your data aligns with the rest of the ecosystem (e.g., for time-synchronization).
+  * **Timestamps & Headers:** If your data represents a time-stamped event or sensor reading, it is **highly recommended** to also inherit from `HeaderMixin` instead of defining your own timestamp fields. This injects the standard `header` field (stamp, frame_id, seq), ensuring your data aligns with the rest of the ecosystem (e.g., for time-synchronization).
   * **Uncertainty:** If your data includes measurement uncertainty, inherit from `CovarianceMixin` to standardize how covariance matrices are stored.
 
 ### 2\. Define the Schema (`__msco_pyarrow_struct__`)
@@ -483,7 +561,10 @@ You must define a class-level attribute named `__msco_pyarrow_struct__`. This is
 
 Define the actual Python fields for your class using standard type hints (Pydantic style).
 
-> **Important Note:** The names of your Python fields **must match exactly** the names defined in your PyArrow schema.
+> [!NOTE]
+> **Naming** 
+>
+> The names of your Python fields **must match exactly** the names defined in your PyArrow schema.
 
 
 ### Example: `EnvironmentSensor`

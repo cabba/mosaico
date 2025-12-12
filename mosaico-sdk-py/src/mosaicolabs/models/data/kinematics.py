@@ -134,6 +134,7 @@ class MotionState(
             pa.field(
                 "pose",
                 Pose.__msco_pyarrow_struct__,
+                nullable=False,
                 metadata={
                     "description": "6D pose with optional time and covariance info."
                 },
@@ -141,6 +142,7 @@ class MotionState(
             pa.field(
                 "velocity",
                 Velocity.__msco_pyarrow_struct__,
+                nullable=False,
                 metadata={
                     "description": "6D velocity with optional time and covariance info."
                 },
@@ -148,12 +150,13 @@ class MotionState(
             pa.field(
                 "target_frame_id",
                 pa.string(),
-                nullable=True,
+                nullable=False,
                 metadata={"description": "Target frame identifier."},
             ),
             pa.field(
                 "acceleration",
                 Acceleration.__msco_pyarrow_struct__,
+                nullable=True,
                 metadata={
                     "description": "6D acceleration with optional time and covariance info."
                 },

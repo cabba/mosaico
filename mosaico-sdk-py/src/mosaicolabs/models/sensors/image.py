@@ -14,7 +14,7 @@ from enum import Enum
 import logging as log
 import io
 import sys
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 # dependencies for video handling
 import av
@@ -125,8 +125,14 @@ class Image(Serializable, HeaderMixin):
             pa.field(
                 "stride",
                 pa.int32(),
-                nullable=True,
+                nullable=False,
                 metadata={"description": "Bytes per row. Essential for alignment."},
+            ),
+            pa.field(
+                "encoding",
+                pa.string(),
+                nullable=False,
+                metadata={"description": "Pixel format (e.g., 'bgr8', 'mono16')."},
             ),
             pa.field(
                 "is_bigendian",
@@ -135,12 +141,6 @@ class Image(Serializable, HeaderMixin):
                 metadata={
                     "description": "True if data is Big-Endian. Defaults to system endianness if null."
                 },
-            ),
-            pa.field(
-                "encoding",
-                pa.string(),
-                nullable=True,
-                metadata={"description": "Pixel format (e.g., 'bgr8', 'mono16')."},
             ),
         ]
     )
@@ -170,13 +170,6 @@ class Image(Serializable, HeaderMixin):
 
     is_bigendian: Optional[bool] = None
     """Store if the original data is Big-Endian. Optional field."""
-
-    def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-        if self.format not in self.__supported_image_formats__:
-            raise ValueError(
-                f"Invalid image format {self.format}. Supported formats {self.__supported_image_formats__}"
-            )
 
     @classmethod
     def encode(
@@ -212,13 +205,18 @@ class Image(Serializable, HeaderMixin):
             height (int): Image height.
             width (int): Image width.
             encoding (str): Pixel format string.
-            format (ImageFormat): Target container ('raw', 'png', etc.).
+            format (ImageFormat): Target container ('raw' or 'png').
 
         Returns:
             Image: An instantiated object.
         """
         if not format:
             format = _DEFAULT_IMG_FORMAT
+
+        if format not in cls.__supported_image_formats__:
+            raise ValueError(
+                f"Invalid image format {format}. Supported formats {cls.__supported_image_formats__}"
+            )
 
         raw_bytes = bytes(data)
 
@@ -376,11 +374,17 @@ class Image(Serializable, HeaderMixin):
             pil_image (PILImage.Image): Source image.
             header (Optional[Header]): Metadata.
             target_encoding (Optional[str]): Target pixel format (e.g., "bgr8").
-            output_format (Optional[ImageFormat]): Storage container (e.g., PNG).
+            output_format (Optional[ImageFormat]): ('raw' or 'png').
 
         Returns:
             Image: Populated data object.
         """
+
+        if output_format not in cls.__supported_image_formats__:
+            raise ValueError(
+                f"Invalid image format {output_format}. Supported formats {cls.__supported_image_formats__}"
+            )
+
         arr = np.array(pil_image)
 
         # Default encoding inference
@@ -427,7 +431,7 @@ class Image(Serializable, HeaderMixin):
         )
 
 
-class CompressedImageCodec(ABC):
+class _CompressedImageCodec(ABC):
     """
     Abstract Strategy interface for encoding and decoding compressed binary image data.
 
@@ -480,7 +484,7 @@ class CompressedImageCodec(ABC):
 
 # --- Registry System ---
 
-_IMG_CODECS_FACTORY: Dict[str, CompressedImageCodec] = {}
+_IMG_CODECS_FACTORY: Dict[str, _CompressedImageCodec] = {}
 
 
 def register_codec(formats: Iterable[ImageFormat]):
@@ -506,7 +510,7 @@ def register_codec(formats: Iterable[ImageFormat]):
 
 
 @register_codec([ImageFormat.JPEG, ImageFormat.PNG, ImageFormat.TIFF])
-class DefaultCodec(CompressedImageCodec):
+class _DefaultCodec(_CompressedImageCodec):
     """
     Standard codec implementation using the Pillow (PIL) library.
     Handles common image formats like JPEG, PNG, and TIFF.
@@ -521,7 +525,7 @@ class DefaultCodec(CompressedImageCodec):
             image.load()
             return image
         except Exception as e:
-            log.error(f"DefaultCodec decode error: {e}")
+            log.error(f"_DefaultCodec decode error: {e}")
             return None
 
     def encode(self, image: PILImage.Image, format: ImageFormat, **kwargs) -> bytes:
@@ -531,15 +535,15 @@ class DefaultCodec(CompressedImageCodec):
             image.save(buf, format=format.value.upper(), **kwargs)
             return buf.getvalue()
         except Exception as e:
-            log.error(f"DefaultCodec encode error: {e}")
+            log.error(f"_DefaultCodec encode error: {e}")
             raise ValueError(f"Encoding failed: {e}")
 
 
 @register_codec([ImageFormat.H264, ImageFormat.HEVC])
-class VideoAwareCodec(DefaultCodec):
+class _VideoAwareCodec(_DefaultCodec):
     """
     Advanced codec that uses PyAV to decode video frames if available,
-    falling back to DefaultCodec logic for unsupported formats.
+    falling back to _DefaultCodec logic for unsupported formats.
     """
 
     # Store decoder contexts for each video format (e.g., {"h264": <Context>, "hevc": <Context>})
@@ -609,7 +613,7 @@ class VideoAwareCodec(DefaultCodec):
                 )
                 return None
 
-        # --- Fallback to DefaultCodec (e.g., JPEG, PNG) ---
+        # --- Fallback to _DefaultCodec (e.g., JPEG, PNG) ---
         else:
             return super().decode(data_bytes, format)
 
@@ -672,7 +676,9 @@ class CompressedImage(Serializable, HeaderMixin):
     """The compression format (e.g., 'jpeg', 'png')."""
 
     def to_image(
-        self, codec: Optional[CompressedImageCodec] = None
+        self,
+        # TODO: enable param when allowing generic formats (not via Enum)
+        # codec: Optional[CompressedImageCodec] = None,
     ) -> Optional[PILImage.Image]:
         """
         Decompresses the stored binary data into a usable PIL Image object.
@@ -687,7 +693,7 @@ class CompressedImage(Serializable, HeaderMixin):
         """
         if not self.data:
             return None
-        _codec = codec or _IMG_CODECS_FACTORY.get(self.format.value.lower())
+        _codec = _IMG_CODECS_FACTORY.get(self.format.value.lower())
         if not _codec:
             log.error(
                 f"No codec found for format '{self.format.value}'. "
@@ -702,7 +708,8 @@ class CompressedImage(Serializable, HeaderMixin):
         image: PILImage.Image,
         format: ImageFormat = ImageFormat.PNG,
         header: Optional[Header] = None,
-        codec: Optional[CompressedImageCodec] = None,
+        # TODO: enable param when allowing generic formats (not via Enum)
+        # codec: Optional[CompressedImageCodec] = None,
         **kwargs,
     ) -> "CompressedImage":
         """
@@ -723,7 +730,7 @@ class CompressedImage(Serializable, HeaderMixin):
             ValueError: If no codec is found or encoding fails.
         """
         fmt_lower = format.value.lower()
-        _codec = codec or _IMG_CODECS_FACTORY.get(fmt_lower)
+        _codec = _IMG_CODECS_FACTORY.get(fmt_lower)
         if not _codec:
             raise ValueError(
                 f"No codec found for format '{fmt_lower}'. "

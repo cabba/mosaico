@@ -8,7 +8,7 @@
 
 # Data Handling
 
-This guide details the core components for reading and writing data within the Mosaico library. The architecture is divided into two distinct workflows: **Writing** (creating new sequences and pushing data) and **Handling/Reading** (inspecting existing sequences and streaming data back).
+This guide details the core components for reading and writing data within the Mosaico library. The architecture is divided into two distinct workflows: [**Writing**](#writing-data) (creating new sequences and pushing data) and [**Handling/Reading**](#reading--handling-data) (inspecting existing sequences and streaming data back).
 
 All interactions start from the `MosaicoClient` (see [Client Architecture](./communication.md) documentation), which acts as the factory for these components.
 
@@ -16,7 +16,7 @@ All interactions start from the `MosaicoClient` (see [Client Architecture](./com
 
 ## Architecture Overview
 
-The library uses a hierarchical object model to manage data streams:
+The library uses a hierarchical object model to manage data streams (see also [Core Concepts](../../CORE_CONCEPTS.md#topics-and-sequences)):
 
   * **Sequence:** The top-level container. It represents a recording session or a logical grouping of data streams.
   * **Topic:** A specific stream within a sequence (e.g., "gps\_sensor", "video\_front"). Each topic carries data of a specific **Ontology** type.
@@ -35,7 +35,7 @@ Writing is performed inside a strict lifecycle managed by the `SequenceWriter`.
 
 ### Class: `SequenceWriter`
 
-The `SequenceWriter` acts as the orchestrator. It manages the connection pool, handles the sequence lifecycle on the server (Pending $\rightarrow$ Finalized), and creates child `TopicWriter`s.
+The `SequenceWriter` acts as the orchestrator. It handles the sequence lifecycle on the server (Pending $\rightarrow$ Finalized/Error), and creates child `TopicWriter`s.
 
 #### Key Features
 
@@ -47,28 +47,28 @@ The `SequenceWriter` acts as the orchestrator. It manages the connection pool, h
 
 **Lifecycle & Topic Management**
 
-  * **`topic_create(self, topic_name: str, metadata: dict[str, Any], ontology_type: Type[Serializable]) -> Optional[TopicWriter]`**
+  * **`topic_create(topic_name: str, metadata: dict[str, Any], ontology_type: Type[Serializable]) -> Optional[TopicWriter]`**
     Registers a new topic on the server and initializes a local writer for it. This method assigns resources (network connections and thread executors) from the client's pools to ensure parallel writing.
 
       * **`topic_name`**: The unique name for the topic within this sequence.
       * **`metadata`**: A dictionary of user-defined tags specific to this topic.
       * **`ontology_type`**: The class type of the data model (must be a subclass of `Serializable`).
 
-  * **`close(self) -> None`**
+  * **`close() -> None`**
     Explicitly finalizes the sequence. It sends the `SEQUENCE_FINALIZE` signal to the server, marking the data as immutable.
 
       * *Note*: This is automatically called when exiting the `with` block context.
 
-  * **`sequence_status(self) -> SequenceStatus`**
+  * **`sequence_status() -> SequenceStatus`**
     Returns the current state of the sequence (e.g., `Pending`, `Finalized`, `Error`).
 
-  * **`topic_exists(self, topic_name: str) -> bool`**
+  * **`topic_exists(topic_name: str) -> bool`**
     Checks if a local `TopicWriter` has already been created for the given name.
 
-  * **`list_topics(self) -> list[str]`**
+  * **`list_topics() -> list[str]`**
     Returns a list of names for all active topics currently managed by this writer.
 
-  * **`get_topic(self, topic_name: str) -> Optional[TopicWriter]`**
+  * **`get_topic(topic_name: str) -> Optional[TopicWriter]`**
     Retrieves the `TopicWriter` instance for a specific topic, if it exists.
 
 -----
@@ -81,7 +81,7 @@ The `TopicWriter` handles the actual data transmission for a single stream. It a
 
 **Data Ingestion**
 
-  * **`push(self, message: Optional[Message] = None, message_timestamp_ns: Optional[int] = None, ontology_obj: Optional[Serializable] = None, ...) -> None`**
+  * **`push(message: Optional[Message] = None, message_timestamp_ns: Optional[int] = None, ontology_obj: Optional[Serializable] = None, ...) -> None`**
     Adds a new record to the internal write buffer. If the buffer exceeds the configured limits (`max_batch_size_bytes` or `max_batch_size_records`), it triggers a flush to the server.
 
     *Usage Mode A (Recommended):*
@@ -96,7 +96,7 @@ The `TopicWriter` handles the actual data transmission for a single stream. It a
 
 **State Management**
 
-  * **`finalize(self, with_error: bool = False) -> None`**
+  * **`finalize(with_error: bool = False) -> None`**
     Flushes any pending data in the buffer and closes the underlying Flight stream.
       * **`with_error`**: If `True`, indicates the stream is closing due to an exception. This may alter flushing behavior (e.g., to avoid sending corrupted partial batches).
 
@@ -168,18 +168,18 @@ This is the handler to an existing sequence. It allows you to inspect what topic
 
 **Streamer Factories**
 
-  * **`get_data_streamer(self, force_new_instance: bool = False) -> SequenceDataStreamer`**
+  * **`get_data_streamer(force_new_instance: bool = False) -> SequenceDataStreamer`**
     Creates and returns a `SequenceDataStreamer` initialized to read the **entire** sequence. By default, it caches the streamer instance.
 
       * **`force_new_instance`**: If `True`, closes any existing streamer and creates a fresh one (useful for restarting iteration).
 
-  * **`get_topic_handler(self, topic_name: str, force_new_instance: bool = False) -> Optional[TopicHandler]`**
+  * **`get_topic_handler(topic_name: str, force_new_instance: bool = False) -> Optional[TopicHandler]`**
     Returns a `TopicHandler` for a specific child topic.
 
       * **`topic_name`**: The name of the topic to retrieve.
       * **`force_new_instance`**: If `True`, recreates the handler connection.
 
-  * **`close(self) -> None`**
+  * **`close() -> None`**
     Closes all cached topic handlers and active data streamers associated with this handler.
 
 -----
@@ -192,15 +192,15 @@ This is a unified iterator that connects to *all* topics in the sequence simulta
 
 **Iteration**
 
-  * **`next(self) -> Optional[tuple[str, Message]]`**
+  * **`next() -> Optional[tuple[str, Message]]`**
     Retrieves the next time-ordered record from the merged stream.
 
       * **Returns**: A tuple `(topic_name, message)` or `None` if the stream is exhausted.
 
-  * **`next_timestamp(self) -> Optional[float]`**
+  * **`next_timestamp() -> Optional[float]`**
     Peeks at the timestamp of the very next record in the merged timeline without consuming it. Useful for synchronizing external loops or checking stream progress.
 
-  * **`close(self) -> None`**
+  * **`close() -> None`**
     Closes the underlying Flight streams for all topics.
 
 #### Example Usage
@@ -302,14 +302,14 @@ If data from a single specific topic is needed (and its timing relative to other
     Returns the user dictionary associated with the topic.
   * **`topic_info`**
     Returns the full `Topic` data model (system info, schema, etc.).
-  * **`get_data_streamer(self, force_new_instance: bool = False) -> Optional[TopicDataStreamer]`**
+  * **`get_data_streamer(force_new_instance: bool = False) -> Optional[TopicDataStreamer]`**
     Creates a `TopicDataStreamer` to read data strictly from this single topic endpoint.
 
 #### TopicDataStreamer API Reference
 
-  * **`next(self) -> Optional[Message]`**
+  * **`next() -> Optional[Message]`**
     Returns the next `Message` object from the stream, or `None` if finished.
-  * **`next_timestamp(self) -> Optional[float]`**
+  * **`next_timestamp() -> Optional[float]`**
     Peeks at the timestamp of the next record without consuming it.
-  * **`name(self) -> str`**
+  * **`name() -> str`**
     Returns the topic name associated with this stream.

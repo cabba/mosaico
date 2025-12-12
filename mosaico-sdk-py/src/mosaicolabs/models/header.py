@@ -142,15 +142,17 @@ class Header(BaseModel):
     - Frame ID (spatial context)
     """
 
+    # OPTIONALITY NOTE
+    # All fields are explicitly set to `nullable=True`. This prevents Parquet V2
+    # readers from incorrectly deserializing a `None` Header field in a class
+    # as a default-initialized object (e.g., getting Header(0, ...) instead of None).
     __msco_pyarrow_struct__ = pa.struct(
         [
             pa.field(
                 "seq",
                 pa.uint32(),
                 nullable=True,
-                metadata={
-                    "description": "Sequence ID. Legacy field, often unused in modern systems."
-                },
+                metadata={"description": "Sequence ID. Legacy field."},
             ),
             pa.field(
                 "stamp",
@@ -162,9 +164,7 @@ class Header(BaseModel):
                 "frame_id",
                 pa.string(),
                 nullable=True,
-                metadata={
-                    "description": "Coordinate frame ID (e.g., 'map', 'camera_link' in ROS)."
-                },
+                metadata={"description": "Coordinate frame ID."},
             ),
         ]
     )
