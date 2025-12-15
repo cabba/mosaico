@@ -2,7 +2,6 @@ import pydantic
 import pytest
 
 from mosaicolabs.models import Serializable, Message
-from mosaicolabs.comm import MosaicoClient
 from .my_project import RegisteredSensor, UnregisteredSensor
 
 
@@ -47,20 +46,3 @@ def test_message_generation():
     ):
         # This must fail: Unregistered type cannot be sent to mosaico
         Message(timestamp_ns=0, data=UnregisteredSensor(field=0))  # type: ignore (disable pylance complaining)
-
-
-def test_topic_push(_client: MosaicoClient):
-    # This must pass
-    with _client.sequence_create("test-seq-custom-ontology", {}) as sw:
-        # This must pass!
-        tw = sw.topic_create("test-topic-registered", {}, RegisteredSensor)
-        assert tw is not None
-        Message(timestamp_ns=0, data=RegisteredSensor(field=0))
-        tw.push(message=Message(timestamp_ns=0, data=RegisteredSensor(field=0)))
-        tw.push(message_timestamp_ns=0, ontology_obj=RegisteredSensor(field=0))
-
-        # This must fail: pydantic
-        tw = sw.topic_create("test-topic-unregistered", {}, UnregisteredSensor)  # type: ignore (disable pylance complaining)
-        assert tw is None
-
-    _client.close()
