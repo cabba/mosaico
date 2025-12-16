@@ -8,8 +8,7 @@ use tokio::sync::{Mutex, Semaphore};
 
 use crate::{
     marshal::{self, ActionRequest, ActionResponse},
-    params,
-    query,
+    params, query,
     repo::{self, FacadeError, FacadeLayer, FacadeSequence, FacadeTopic},
     server::errors::ServerError,
     store, types,
@@ -298,7 +297,7 @@ pub async fn do_action(
         }
 
         // (cabba) FIXME: move this code in a QueryFacade in order to avoid using
-        // repo low level function directly, do this when the query system is finalized
+        //                repo low level function directly, do this when the query system is finalized
         ActionRequest::Query(data) => {
             info!("performing a query");
 
@@ -337,10 +336,8 @@ pub async fn do_action(
 
                 // Pre-fetch all topics needed for chunks to avoid N+1 queries
                 let topics_map: HashMap<i32, repo::TopicRecord> = if no_topic_filter {
-                    let chunk_topic_ids: Vec<i32> =
-                        chunks.iter().map(|c| c.topic_id).collect();
-                    let fetched_topics =
-                        repo::topic_find_by_ids(&mut cx, &chunk_topic_ids).await?;
+                    let chunk_topic_ids: Vec<i32> = chunks.iter().map(|c| c.topic_id).collect();
+                    let fetched_topics = repo::topic_find_by_ids(&mut cx, &chunk_topic_ids).await?;
                     // Also extend the original topics list
                     topics.extend(fetched_topics.iter().cloned());
                     fetched_topics
