@@ -9,7 +9,7 @@
 <br/>
 
 <p align="center">
-  <a href="https://github.com/mosaico-labs/mosaico/actions"><img src="https://github.com/mosaico-labs/mosaico/actions/workflows/tests.yml/badge.svg?branch=main" alt="Github Actions Badge"></a>
+  <a href="https://github.com/mosaico-labs/mosaico/actions"><img src="https://img.shields.io/github/actions/workflow/status/mosaico-labs/mosaico/ci.yml?branch=main&label=main" alt="Github Actions Badge"></a>
   <a href="https://discord.gg/2ajEM9TxMM"><img src="https://shields.io/discord/1413199575442784266" alt="discord" /></a>
 </p>
 
