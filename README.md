@@ -67,7 +67,7 @@ poetry install
 To run the testing pipeline use the provided script:
 
 ```bash
-./scripts/test_suite.sh
+./scripts/tests.sh
 ```
 
 The testing pipeline requires [Poetry](https://python-poetry.org/docs/), the [Rust](https://rust-lang.org/tools/install/) toolchain, and [Docker](https://docs.docker.com/engine/install/).
