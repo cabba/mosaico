@@ -4,7 +4,7 @@ The `SyncTransformer` is a stateful temporal resampler designed to solve the **H
 
 ## Architecture & Philosophy
 
-The `SyncTransformer` operates as a stateful processor that bridges the gaps between the windowed chunks yielded by the [`DataFrameExtractor`](https://www.google.com/search?q=./dataframe_extractor.md). Unlike standard resamplers that treat each data batch in isolation, this transformer maintains internal state to ensure signal continuity across batch boundaries.
+The `SyncTransformer` operates as a stateful processor that bridges the gaps between the windowed chunks yielded by the [`DataFrameExtractor`](./dataframe_extractor.md). Unlike standard resamplers that treat each data batch in isolation, this transformer maintains internal state to ensure signal continuity across batch boundaries.
 
 ### Key Design Principles
 
