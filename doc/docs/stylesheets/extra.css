@@ -27,13 +27,15 @@
     --md-accent-fg-color--transparent:   rgb(27, 27, 27);
     --md-accent-bg-color:                hsla(0, 0%, 100%, 1);
     --md-accent-bg-color--light:         hsla(0, 0%, 100%, 0.7);
-
+ 
     --md-footer-bg-color: var(var(--mosaico-bg));
 
     --md-typeset-a-color: var(--mosaico-purple-hi);
     --md-typeset-color:  var( --mosaico-primary-dim);
 
-    --md-code-bg-color: rgb(36, 36, 36);   
+    --md-code-bg-color: hsla(0, 0%, 14%, 1);
+    --md-code-bg-color--light: hsla(0, 0%, 14%, 0.7); 
+    --md-code-bg-color--lighter: hsla(0, 0%, 14%, 0.3);
 
     --md-shadow-z1:
     0 0.25rem 0.625rem hsla(304, 54%, 35%, 0.05),

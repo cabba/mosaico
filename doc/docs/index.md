@@ -46,7 +46,7 @@ Users can easily extend the platform by defining their own **Ontology Models**.(
 class GPS:
     latitude: Float
     longitude: Float
-    altitude: Float # (1)
+    altitude: Float # (1)!
 ```
 
 1. And some additional fields also can be extended the text to match some of the code
