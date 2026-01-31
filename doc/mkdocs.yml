@@ -50,27 +50,29 @@ nav:
     - API Reference:
       - SDK/API_reference/comm.md
       - SDK/API_reference/ml.md
-  - mosaicod:
-    - mosaicod/index.md
-    - mosaicod/control.md
-    - mosaicod/ingestion.md
-    - mosaicod/query.md
-    - mosaicod/retrieval.md
+  - Daemon:
+    - daemon/index.md
+    - daemon/control.md
+    - daemon/ingestion.md
+    - daemon/query.md
+    - daemon/retrieval.md
 
 extra_css:
   - stylesheets/extra.css
 
+extra:
+  generator: false
+
 theme:
   logo: assets/mosaico_logomark.svg
-  
+  favicon: assets/favicon.svg
+  name: material
   font:
     text: Manrope
-
   palette: 
     scheme: slate
     primary: custom
     accent: light blue
-
   features:
     - content.code.copy
     - content.code.annotate
@@ -79,5 +81,5 @@ theme:
     - navigation.path
     - navigation.indexes
     - navigation.tabs
-
-  name: material
+    - navigation.footer
+  

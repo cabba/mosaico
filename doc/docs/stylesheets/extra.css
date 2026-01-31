@@ -74,3 +74,11 @@
     color: white;
     font-weight: 500;
 }
+
+.md-footer {
+    background-color: var(--mosaico-bg);
+}
+
+.md-footer-meta {
+    background-color: var(--mosaico-bg);
+}

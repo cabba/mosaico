@@ -33,19 +33,6 @@ Topics represent the individual sensor streams (e.g., `camera/front`, `gps`) con
 | **`topic_delete`** | Removes a specific topic from a sequence, permitted only if the parent sequence is still unlocked. |
 | **`topic_system_info`** | Retrieves storage statistics specific to a single topic. |
 
-{/* This is not used in any system so is temporary removed from the doc 
-## Layer Management
-
-Mosaico introduces the concept of **Semantic Layers** to organize data evolution within the repository (e.g., "Raw" ingestion, "Processed" output, "Golden" validation datasets).
-
-| Action | Description |
-| --- | --- |
-| **`layer_create`** | Defines a new organizational layer in the system. |
-| **`layer_list`** | Enumerates all available layers currently configured. |
-| **`layer_update`** | Modifies the metadata (name or description) of an existing layer. |
-| **`layer_delete`** | Removes a layer definition from the catalog. | 
-*/}
-
 ## Notification System
 
 The platform includes a tagging mechanism to attach alerts or informational messages to resources. For example, if an exception is raised during an upload, the notification system automatically registers the event, ensuring the failure is logged and visible for troubleshooting.
