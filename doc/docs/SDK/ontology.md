@@ -269,6 +269,11 @@ meas = EnvironmentSensor(
 # writer.push(Message(timestamp_ns=ts, data=meas))
 
 ```
+<figure markdown="span">
+  ![Ontology customization example](../assets/ontology_customization.png)
+  <figcaption>Schema for defining a custom ontology model.</figcaption>
+</figure>
+
 
 
 ### Available Ontology Classes

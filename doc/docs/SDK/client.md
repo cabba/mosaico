@@ -43,7 +43,7 @@ with MosaicoClient.connect("localhost", 6726) as client:
 | :--- | :--- | :--- |
 | `connect(host, port, timeout)` | `MosaicoClient` | Establishes the connection to the server and initializes all data and processing pools. |
 | `close()` | `None` | Manually shuts down all pools and connections. Called automatically by the context manager (if the instance was created in a `with` block). |
-| `sequence_create(sequence_name, metadata, on_error, ...)` | `SequenceWriter` | Creates a [new writer](data-handling.md#writing-data) for uploading data. |
+| `sequence_create(sequence_name, metadata, on_error, ...)` | `SequenceWriter` | Creates a [new writer](data-handling.md#the-writing-workflow) for uploading data. |
 | `sequence_handler(sequence_name)` | `Optional[SequenceHandler]` | Retrieves a [handler](data-handling.md#the-reading-workflow) for an existing sequence. The method does not actually download the sequence data-stream. |
 | `topic_handler(sequence_name, topic_name)` | `Optional[TopicHandler]` | Retrieves a [handler](data-handling.md#the-reading-workflow) for a specific topic within a sequence. The method does not actually download the topic data-stream. |
 | `query(*queries, query)` | `Optional[QueryResponse]` | Executes [queries](query.md) against the platform catalogs. The provided queries are joined in AND condition. The method accepts a variable arguments of query builder objects or a pre-constructed *Query* object.|
