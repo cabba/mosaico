@@ -3,7 +3,7 @@ title: Machine Learning & Analytics
 description: Streamlining Data for Physical AI
 ---
 
-The **Mosaico ML** module serves as the high-performance bridge between the Mosaico Data Platform and the modern data science ecosystem. While the platform is optimized for high-speed raw message streaming, this module provides the abstractions necessary to transform asynchronous sensor data into tabular formats compatible with **Physical AI**, **Deep Learning**, and **Predictive Analytics**.
+The **Mosaico ML** module serves as the high-performance bridge between the Mosaico Data Platform and the modern Data Science ecosystem. While the platform is optimized for high-speed raw message streaming, this module provides the abstractions necessary to transform asynchronous sensor data into tabular formats compatible with **Physical AI**, **Deep Learning**, and **Predictive Analytics**.
 
 ### Data Challenges in Physical AI
 
@@ -36,10 +36,6 @@ The `DataFrameExtractor` is a specialized utility designed to convert Mosaico se
 
     Setting a very large `window_sec` will force the extractor to load the entire requested range into memory, which may exhaust available RAM.
 
-### Examples
-
-#### Basic Chunk Extraction
-
 This example demonstrates iterating through a sequence in 10-second tabular chunks.
 
 ```python
@@ -57,32 +53,33 @@ for df in extractor.to_pandas_chunks(window_sec=10.0):
 
 ```
 
-#### Ontology Reconstruction
-
 For complex types like images that require specialized decoding, Mosaico allows you to "inflate" a flattened DataFrame row back into a strongly-typed `Message` object.
 
 ```python
-from mosaicolabs.models import Message
+from mosaicolabs.models import Message, Image
 
 # Get data chunks
-for df in extractor.to_pandas_chunks(topics=["/sensors/imu_front"]):
+for df in extractor.to_pandas_chunks(topics=["/sensors/front/image_raw"]):
     for _, row in df.iterrows():
         # Reconstruct the full Message (envelope + payload) from a row
-        imu_msg = Message.from_dataframe_row(
+        img_msg = Message.from_dataframe_row(
             row=row,
-            topic_name="/sensors/imu_front",
+            topic_name="/sensors/front/image_raw",
         )
         
-        if imu_msg:
+        if img_msg:
+            img = img_msg.get_data(Image).to_pillow()
             # Access typed fields with IDE autocompletion
-            print(f"Time: {imu_msg.timestamp_ns}, Accel: {imu_msg.data.acceleration.x}")
+            print(f"Time: {img_msg.timestamp_ns}")
+            img.show()
+
 ```
 
 ## Sparse to Dense Representation
 
-The `SyncTransformer` is a stateful temporal resampler designed to solve the **Heterogeneous Sampling** problem inherent in robotics and Physical AI. 
+The `SyncTransformer` is a temporal resampler designed to solve the **Heterogeneous Sampling** problem inherent in robotics and Physical AI. 
 It aligns multi-rate sensor streams (for example, an IMU at 100Hz and a GPS at 5Hz) onto a uniform, fixed-frequency grid to prepare them for machine learning models.
-The `SyncTransformer` operates as a stateful processor that bridges the gaps between windowed chunks yielded by the `DataFrameExtractor`.
+The `SyncTransformer` operates as a processor that bridges the gaps between windowed chunks yielded by the `DataFrameExtractor`.
 Unlike standard resamplers that treat each data batch in isolation, this transformer maintains internal state to ensure signal continuity across batch boundaries.
 
 ### Key Design Principles
@@ -91,16 +88,6 @@ Unlike standard resamplers that treat each data batch in isolation, this transfo
 * **Semantic Integrity**: It respects the physical reality of data acquisition by yielding `None` for grid ticks that occur before a sensor's first physical measurement, avoiding data "hallucination".
 * **Vectorized Performance**: Internal kernels leverage high-speed lookups for high-throughput processing.
 * **Protocol-Based Extensibility**: The mathematical logic for resampling is decoupled through a `SynchPolicy` protocol, allowing for custom kernel injection.
-
-### Quick Reference
-
-| Method | Description |
-| --- | --- |
-| **`__init__`** | Initializes the transformer with a target frequency (`target_fps`) and a `SynchPolicy`. |
-| **`fit`** | Captures the initial timestamp from the first chunk to align the grid and initialize state. |
-| **`transform`** | Executes temporal resampling logic on a sparse chunk to produce a dense, grid-aligned DataFrame. |
-| **`fit_transform`** | Chains the `fit` and `transform` operations. |
-| **`reset`** | Clears internal temporal state and cached values to start a new session. |
 
 
 ### Implemented Synchronization Policies
@@ -122,6 +109,15 @@ Each policy defines a specific logic for how the transformer bridges temporal ga
 * **Behavior**: Ensures a grid tick only receives a value if a new measurement actually occurred within that specific grid interval; otherwise, it returns `None`.
 * **Best For**: Downsampling high-frequency data where a strict 1-to-1 relationship between windows and unique hardware events is required.
 
+### Quick Reference
+
+| Method | Description |
+| --- | --- |
+| **`__init__`** | Initializes the transformer with a target frequency (`target_fps`) and a `SynchPolicy`. |
+| **`fit`** | Captures the initial timestamp from the first chunk to align the grid and initialize state. |
+| **`transform`** | Executes temporal resampling logic on a sparse chunk to produce a dense, grid-aligned DataFrame. |
+| **`fit_transform`** | Chains the `fit` and `transform` operations. |
+| **`reset`** | Clears internal temporal state and cached values to start a new session. |
 
 ### Scikit-Learn Compatibility
 

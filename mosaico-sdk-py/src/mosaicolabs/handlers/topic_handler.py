@@ -8,7 +8,7 @@ and create readers (`TopicDataStreamer`).
 
 import json
 import pyarrow.flight as fl
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Dict, Optional, Tuple, Type
 
 from .endpoints import TopicParsingError, TopicResourceManifest
 from .topic_reader import TopicDataStreamer
@@ -176,7 +176,7 @@ class TopicHandler:
             )
 
     @property
-    def user_metadata(self):
+    def user_metadata(self) -> Dict[str, Any]:
         """Returns the user dictionary associated with the topic."""
         return self._topic.user_metadata
 
@@ -186,17 +186,22 @@ class TopicHandler:
         return self._topic
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Returns the topic name."""
         return self._topic.name
 
     @property
-    def timestamp_ns_min(self):
+    def sequence_name(self) -> str:
+        """Returns the topic name."""
+        return self._topic.sequence_name
+
+    @property
+    def timestamp_ns_min(self) -> Optional[int]:
         """Return the lowest timestamp in nanoseconds, for this topic"""
         return self._timestamp_ns_min
 
     @property
-    def timestamp_ns_max(self):
+    def timestamp_ns_max(self) -> Optional[int]:
         """Return the highest timestamp in nanoseconds, for this topic"""
         return self._timestamp_ns_max
 

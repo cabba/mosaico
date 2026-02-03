@@ -161,17 +161,17 @@ class SequenceHandler:
 
     # -------------------- Public methods --------------------
     @property
-    def topics(self):
+    def topics(self) -> List[str]:
         """Returns the list of topic names in the sequence."""
         return self._sequence.topics
 
     @property
-    def user_metadata(self):
+    def user_metadata(self) -> Dict[str, Any]:
         """Returns the user dictionary for the sequence."""
         return self._sequence.user_metadata
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Returns the sequence name."""
         return self._sequence.name
 

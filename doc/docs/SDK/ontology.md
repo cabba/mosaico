@@ -19,16 +19,12 @@ The ontology is designed to solve the "generic data" problem in robotics by ensu
 
 1. **Validatable**: Uses Pydantic for strict runtime type checking of sensor fields.
 2. **Serializable**: Automatically maps Python objects to efficient **PyArrow** schemas for high-speed binary transport.
-3. **Queryable**: Injects a fluent API (`.Q`) into every class, allowing you to filter databases based on physical values (e.g., `IMU.Q.acceleration.z > 9.8`).
+3. **Queryable**: Injects a fluent API (`.Q`) into every class, allowing you to filter databases based on physical values (e.g., `IMU.Q.acceleration.x > 6.0`).
 4. **Middleware-Agnostic**: Acts as an abstraction layer so that your analysis code doesn't care if the data originally came from ROS, a simulator, or a custom logger.
-
-> [!NOTE]
-> **Ontology Scope & Roadmap**
-> The current version focuses on **Robotics** and **Autonomous Systems** (IMU, GNSS, Cameras, Transforms). New types like Lidar, Radar, and Sonar are added frequently.
 
 ## The Building Blocks
 
-The ontology architecture relies on two primary abstractions: the **Factory** (`Serializable`) and the **Envelope** (`Message`).
+The ontology architecture relies on three primary abstractions: the **Factory** (`Serializable`), the **Envelope** (`Message`) and the **Mixins**
 
 ### 1. `Serializable` (The Factory)
 
@@ -44,13 +40,48 @@ When this happens, `Serializable` performs the following steps automatically:
 1.  **Validates Schema:** Checks if the subclass defined the PyArrow struct schema (`__msco_pyarrow_struct__`). 
 If missing, it raises an error at definition time (import time), preventing runtime failures later.
 2.  **Generates Tag:** If the class doesn't define `__ontology_tag__`, it auto-generates one from the class name (e.g., `MyCustomSensor` -> `"my_custom_sensor"`).
-3.  **Registers Class:** It adds the new class to the global `_SENSOR_REGISTRY`.
+3.  **Registers Class:** It adds the new class to the global types registry.
 4.  **Injects Query Proxy:** It dynamically adds a `.Q` attribute to the class, enabling the fluent query syntax (e.g., `MyCustomSensor.Q.voltage > 12.0`).
+
+#### Quick Reference
+| Method | Return | Description |
+| :--- | :--- | :--- |
+| **`create(tag,*args,**kwargs)`** | `Serializable`| The universal factory method to instantiate a model from raw data. |
+| **`list_registered()`** | `List[str]`| Returns all available ontology tags currently loaded in the system. |
+| **`is_registered(tag)`** | `bool` | Checks if a specific tag exists in the ontology registry. |
+| **`get_class_type(tag)`** | `Optional[Type["Serializable"]]` | Resolves a string identifier to the actual Python class object. |
+| **`ontology_tag()`** | `str` | Returns the unique string identifier for a class or instance. |
+
 
 ### 2. `Message` (The Envelope)
 
 The **`Message`** class is the universal transport envelope for all data within the Mosaico platform. 
 It acts as a wrapper that combines specific sensor data (the payload) with middleware-level metadata.
+
+```python
+from mosaicolabs import Message, Time, Header, Temperature
+# Use Case: Create a Temperature timestamped message with uncertainty
+meas_time = Time.now()
+temp_msg = Message(
+    timestamp_ns=msg_time.to_nanoseconds(), # here the message timestamp is the same as the measurement, but it can be different
+    data=Temperature.from_celsius(
+        value=57,
+        header=Header(stamp=meas_time, frame_id="comp_case"),
+        variance=0.03
+    )
+)
+```
+#### Quick Reference
+| Field/Method | Type/Return | Description |
+| :--- | :--- | :--- |
+| **`timestamp_ns`** | `int` | Middleware processing timestamp in nanoseconds (different from sensor acquisition time). |
+| **`data`** | `Serializable` | The polymorphic payload (e.g., an IMU object). |
+| **`message_header`** | `Optional[Header]` | Middleware-level header. |
+| **`get_data()`** | `Serializable` | A type-safe accessor that returns the payload bound to the specified ontology model. |
+| **`ontology_type()`** | `Type[Serializable]` | Retrieves the Python class type of the payload stored in the `data` field. |
+| **`ontology_tag()`** | `str` | Returns the unique string identifier (tag) for the payload (e.g., `"imu"`). |
+| **`from_dataframe_row()`** | `Message` | **(Static)** Reconstructs a full `Message` object from a flattened row produced by the [`DataFrameExtractor`](./bridges/ml.md#from-sequences-to-dataframes).
+
 While logically a `Message` contains a `data` object (e.g., an instance of an Ontology type), physically on the wire (PyArrow/Parquet), the fields are **flattened**.
 
   * **Logical:** `Message(timestamp_ns=123, data=IMU(acceleration=Vector3d(x=1.0,...)))`
@@ -59,15 +90,36 @@ While logically a `Message` contains a `data` object (e.g., an instance of an On
 This flattening is handled automatically by the class internal methods.
 This ensures zero-overhead access to nested data during queries while maintaining a clean object-oriented API in Python.
 
+
 ### 3. Mixins: Headers & Uncertainty
 
 Mosaico uses **Mixins** to inject standard fields across different data types, ensuring a consistent interface.
 Almost every class in the ontology, from high-level sensors down to elementary data primitives like `Vector3d` or `Float32`, 
 inherits from two Mixin classes, which inject standard fields into data models via composition, ensuring consistency across different sensor types:
-* **`HeaderMixin`**: Injects a standard `header` containing a sequence ID, a frame ID (e.g., `"base_link"`), and a high-precision acquisition timestamp (`stamp`).
-* **`CovarianceMixin`**: Injects uncertainty fields, typically used for flattened covariance matrices in sensor fusion applications.
 
-The integration of **`HeaderMixin`** and **`CovarianceMixin`** into the Mosaico Data Ontology enables a flexible dual-usage pattern: **Standalone Messages** and **Embedded Fields**. 
+* **`HeaderMixin`**: Injects a standard (Optional) `header` containing a sequence ID, a frame ID (e.g., `"base_link"`), and a high-precision acquisition timestamp (`stamp`).
+
+    | Field | Type | Description |
+    | :--- | :--- | :--- |
+    | **`stamp`** | `Time` | Time of data acquisition. |
+    | **`frame_id`** | `str` | Coordinate frame ID. |
+    | **`seq`** | `Optional[int]` | Sequence ID. Legacy field. |
+
+* **`CovarianceMixin`**: Injects multidimensional uncertainty fields, typically used for flattened covariance matrices in sensor fusion applications.
+
+    | Field | Type | Description |
+    | :--- | :--- | :--- |
+    | **`covariance`** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
+    | **`covariance_type`** | `Optional[int]` | Enum integer representing the covariance parameterization. |
+
+* **`VarianceMixin`**: Injects monodimensional uncertainty fields, useful for sensors with 1-dimensional uncertain data (like `Temperature` or `Pressure`).
+
+    | Field | Type | Description |
+    | :--- | :--- | :--- |
+    | **`variance`** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
+    | **`variance_type`** | `Optional[int]` | Enum integer representing the covariance parameterization. |
+
+The integration of **`HeaderMixin`** and **`Covariance/VarianceMixin`** into the Mosaico Data Ontology enables a flexible dual-usage pattern: **Standalone Messages** and **Embedded Fields**. 
 This design ensures that base geometric types can serve as either independent data streams or granular components of complex sensor models.
 
 #### Standalone Usage
@@ -75,7 +127,7 @@ This design ensures that base geometric types can serve as either independent da
 Because elementary types (such as `Vector3d`, `String`, or `Float32`) inherit directly from these mixins, they are "first-class" members of the ontology. 
 You can treat them as independent, timestamped messages without needing to wrap them in a more complex container.
 
-This is ideal for transmitting processed signals, debug values, or simple sensor readings that require their own metadata and uncertainty context.
+This is ideal for pushing processed signals, debug values, or simple sensor readings that require their own metadata and uncertainty context.
 
 ```python
 # Use Case: Sending a raw 3D vector as a timestamped message with uncertainty
@@ -87,8 +139,8 @@ accel_msg = Vector3d(
     covariance=[0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01]  # 3x3 Diagonal matrix
 )
 
-# This is a valid, independent payload for a TopicWriter
-writer.push(Message(timestamp_ns=ts, data=accel_msg))
+# `acc_writer` is a TopicWriter associated to the new sequence that is being uploaded.
+acc_writer.push(message=Message(timestamp_ns=ts, data=accel_msg)) # (1)!
 
 # Use Case: Sending a timestamped diagnostic error
 error_msg = String(
@@ -96,15 +148,18 @@ error_msg = String(
     header=Header(stamp=Time.now(), frame_id="base_link")
 )
 
-writer.push(Message(timestamp_ns=ts, data=error_msg))
-
+# `log_writer` is another TopicWriter associated to the new sequence that is being uploaded.
+log_writer.push(message=Message(timestamp_ns=ts, data=error_msg))
 ```
+
+1. The `push` command will be covered in the documentation of the Writers 
 
 #### Embedded Usage
 
 When these base types are used as internal fields within a larger structure (e.g., an `IMU` or `MotionState` model), the mixins allow you to attach metadata to specific *parts* of a message.
 
-In this context, while the parent object (the `IMU`) carries a global timestamp, the individual fields (like `acceleration`) can carry their own specific **covariance** matrices. To avoid data redundancy, the internal `header` of the embedded field is typically left as `None`, as it inherits the temporal context from the parent message.
+In this context, while the parent object (the `IMU`) carries a global timestamp, the individual fields (like `acceleration`) can carry their own specific **covariance** matrices.
+To avoid data redundancy, the internal `header` of the embedded field is typically left as `None`, as it inherits the temporal context from the parent message.
 
 ```python
 # Use Case: Embedding Vector3d inside a complex IMU message
@@ -126,6 +181,10 @@ imu_msg = IMU(
         covariance=[0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05] # Specific to velocity
     )
 )
+
+# as above, `imu_writer` is another TopicWriter associated to the new sequence that is being uploaded.
+imu_writer.push(imu_msg)
+
 ```
 ## Customizing the Ontology
 
@@ -211,35 +270,6 @@ meas = EnvironmentSensor(
 
 ```
 
-## Quick Reference
-
-### class `Serializable`
-
-| Method | Description |
-| --- | --- |
-| **`create()`** | The universal factory method to instantiate a model from raw data. |
-| **`list_registered()`** | Returns all available ontology tags currently loaded in the system. |
-| **`is_registered()`** | Checks if a specific tag exists in the ontology registry. |
-| **`get_class_type()`** | Resolves a string identifier to the actual Python class object. |
-| **`ontology_tag()`** | Returns the unique string identifier for a class or instance. |
-
-### Class `Message`
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| **`timestamp_ns`** | `int64` | The middleware processing timestamp in nanoseconds (Unix epoch). Represents when data was recorded/received. |
-| **`data`** | `Serializable` | The polymorphic payload containing the sensor-specific data (e.g., `IMU`, `Image`, `GPS`). |
-| **`message_header`** | `Header` (Optional) | An optional secondary header for middleware-specific metadata, distinct from the sensor's own internal header. |
-
-#### Public API (Data Consumption)
-
-| Method | Returns | Description |
-| --- | --- | --- |
-| **`get_data()`** | `T` (Payload) | A type-safe accessor that returns the payload bound to the specified ontology model. |
-| **`ontology_type()`** | `Type[Serializable]` | Retrieves the Python class type of the payload stored in the `data` field. |
-| **`ontology_tag()`** | `str` | Returns the unique string identifier (tag) for the payload (e.g., `"imu"`). |
-| **`from_dataframe_row()`** | `Optional[Message]` | **(Static)** Reconstructs a full `Message` object from a flattened row produced by the `DataFrameExtractor`. |
 
 ### Available Ontology Classes
 

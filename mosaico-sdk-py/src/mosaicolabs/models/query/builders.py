@@ -131,92 +131,94 @@ class QueryOntologyCatalog:
         self._expressions.append(expr)
         return self
 
-    def with_message_timestamp(
-        self,
-        ontology_type: object,
-        time_start: Optional[Time] = None,
-        time_end: Optional[Time] = None,
-    ) -> "QueryOntologyCatalog":
-        """Helper method to add a filter for the 'creation_unix_timestamp' field."""
-        # .between() expects a list [start, end]
-        if time_start is None and time_end is None:
-            raise ValueError(
-                "At least one among 'time_start' and 'time_end' is mandatory"
-            )
+    # TODO: improve this query on the server side (remove necessity of ontology_type). Commented for now
+    # def with_message_timestamp(
+    #     self,
+    #     ontology_type: object,
+    #     time_start: Optional[Time] = None,
+    #     time_end: Optional[Time] = None,
+    # ) -> "QueryOntologyCatalog":
+    #     """Helper method to add a filter for the 'creation_unix_timestamp' field."""
+    #     # .between() expects a list [start, end]
+    #     if time_start is None and time_end is None:
+    #         raise ValueError(
+    #             "At least one among 'time_start' and 'time_end' is mandatory"
+    #         )
 
-        ts_int = time_start.to_nanoseconds() if time_start else None
-        te_int = time_end.to_nanoseconds() if time_end else None
-        # special fields in data platform
-        if not hasattr(ontology_type, "__ontology_tag__"):
-            raise ValueError("Only Serializable types can be used as 'ontology_type'")
-        sensor_tag = getattr(ontology_type, "__ontology_tag__")
-        if ts_int and not te_int:
-            expr = _QueryCatalogExpression(f"{sensor_tag}.timestamp_ns", "$geq", ts_int)
-        elif te_int and not ts_int:
-            expr = _QueryCatalogExpression(f"{sensor_tag}.timestamp_ns", "$leq", te_int)
-        else:
-            if not ts_int or not te_int:
-                raise ValueError(
-                    "This is embarassing"
-                )  # will never happen (fix IDE complaining)
-            if ts_int > te_int:
-                raise ValueError("'time_start' must be less than 'time_end'.")
+    #     ts_int = time_start.to_nanoseconds() if time_start else None
+    #     te_int = time_end.to_nanoseconds() if time_end else None
+    #     # special fields in data platform
+    #     if not hasattr(ontology_type, "__ontology_tag__"):
+    #         raise ValueError("Only Serializable types can be used as 'ontology_type'")
+    #     sensor_tag = getattr(ontology_type, "__ontology_tag__")
+    #     if ts_int and not te_int:
+    #         expr = _QueryCatalogExpression(f"{sensor_tag}.timestamp_ns", "$geq", ts_int)
+    #     elif te_int and not ts_int:
+    #         expr = _QueryCatalogExpression(f"{sensor_tag}.timestamp_ns", "$leq", te_int)
+    #     else:
+    #         if not ts_int or not te_int:
+    #             raise ValueError(
+    #                 "This is embarassing"
+    #             )  # will never happen (fix IDE complaining)
+    #         if ts_int > te_int:
+    #             raise ValueError("'time_start' must be less than 'time_end'.")
 
-            expr = _QueryCatalogExpression(
-                f"{sensor_tag}.timestamp_ns", "$between", [ts_int, te_int]
-            )
-        return self.with_expression(expr)
+    #         expr = _QueryCatalogExpression(
+    #             f"{sensor_tag}.timestamp_ns", "$between", [ts_int, te_int]
+    #         )
+    #     return self.with_expression(expr)
 
-    def with_data_timestamp(
-        self,
-        ontology_type: type,
-        time_start: Optional[Time] = None,
-        time_end: Optional[Time] = None,
-    ) -> "QueryOntologyCatalog":
-        """Helper method to add a filter for the 'creation_unix_timestamp' field."""
-        # .between() expects a list [start, end]
-        if time_start is None and time_end is None:
-            raise ValueError(
-                "At least one among 'time_start' and 'time_end' is mandatory"
-            )
+    # TODO: improve this query on the server side (remove necessity of ontology_type). Commented for now
+    # def with_data_timestamp(
+    #     self,
+    #     ontology_type: type,
+    #     time_start: Optional[Time] = None,
+    #     time_end: Optional[Time] = None,
+    # ) -> "QueryOntologyCatalog":
+    #     """Helper method to add a filter for the 'creation_unix_timestamp' field."""
+    #     # .between() expects a list [start, end]
+    #     if time_start is None and time_end is None:
+    #         raise ValueError(
+    #             "At least one among 'time_start' and 'time_end' is mandatory"
+    #         )
 
-        # special fields in data platform
-        if not hasattr(ontology_type, "__ontology_tag__"):
-            raise ValueError(
-                f"Only Serializable types can be used as 'ontology_type' class '{ontology_type.__name__}'"
-            )
-        sensor_tag = getattr(ontology_type, "__ontology_tag__")
-        if time_start is not None and time_end is None:
-            expr1 = _QueryCatalogExpression(
-                f"{sensor_tag}.header.stamp.sec", "$geq", time_start.sec
-            )
-            expr2 = _QueryCatalogExpression(
-                f"{sensor_tag}.header.stamp.nanosec", "$geq", time_start.nanosec
-            )
-        elif time_end is not None and time_start is None:
-            expr1 = _QueryCatalogExpression(
-                f"{sensor_tag}.header.stamp.sec", "$leq", time_end.sec
-            )
-            expr2 = _QueryCatalogExpression(
-                f"{sensor_tag}.header.stamp.nanosec", "$leq", time_end.nanosec
-            )
-        else:
-            if not time_start or not time_end:
-                raise ValueError("This is embarassing")  # will never happen
-            if time_start.to_nanoseconds() > time_end.to_nanoseconds():
-                raise ValueError("'time_start' must be less than 'time_end'.")
+    #     # special fields in data platform
+    #     if not hasattr(ontology_type, "__ontology_tag__"):
+    #         raise ValueError(
+    #             f"Only Serializable types can be used as 'ontology_type' class '{ontology_type.__name__}'"
+    #         )
+    #     sensor_tag = getattr(ontology_type, "__ontology_tag__")
+    #     if time_start is not None and time_end is None:
+    #         expr1 = _QueryCatalogExpression(
+    #             f"{sensor_tag}.header.stamp.sec", "$geq", time_start.sec
+    #         )
+    #         expr2 = _QueryCatalogExpression(
+    #             f"{sensor_tag}.header.stamp.nanosec", "$geq", time_start.nanosec
+    #         )
+    #     elif time_end is not None and time_start is None:
+    #         expr1 = _QueryCatalogExpression(
+    #             f"{sensor_tag}.header.stamp.sec", "$leq", time_end.sec
+    #         )
+    #         expr2 = _QueryCatalogExpression(
+    #             f"{sensor_tag}.header.stamp.nanosec", "$leq", time_end.nanosec
+    #         )
+    #     else:
+    #         if not time_start or not time_end:
+    #             raise ValueError("This is embarassing")  # will never happen
+    #         if time_start.to_nanoseconds() > time_end.to_nanoseconds():
+    #             raise ValueError("'time_start' must be less than 'time_end'.")
 
-            expr1 = _QueryCatalogExpression(
-                f"{sensor_tag}.header.stamp.sec",
-                "$between",
-                [time_start.sec, time_end.sec],
-            )
-            expr2 = _QueryCatalogExpression(
-                f"{sensor_tag}.header.stamp.nanosec",
-                "$between",
-                [time_start.nanosec, time_end.nanosec],
-            )
-        return self.with_expression(expr1).with_expression(expr2)
+    #         expr1 = _QueryCatalogExpression(
+    #             f"{sensor_tag}.header.stamp.sec",
+    #             "$between",
+    #             [time_start.sec, time_end.sec],
+    #         )
+    #         expr2 = _QueryCatalogExpression(
+    #             f"{sensor_tag}.header.stamp.nanosec",
+    #             "$between",
+    #             [time_start.nanosec, time_end.nanosec],
+    #         )
+    #     return self.with_expression(expr1).with_expression(expr2)
 
     # compatibility with QueryProtocol
     def name(self) -> str:

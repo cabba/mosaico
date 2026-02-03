@@ -37,16 +37,16 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
 ## Quick reference
 <!-- TODO: fix and add links. -->
-| Method | Description |
-| --- | --- |
-| `connect()` | Establishes the connection to the server and initializes all data and processing pools. |
-| `close()` | Manually shuts down all pools and connections. Called automatically by the context manager (if the instance was created in a `with` block). |
-| `sequence_create()` | Creates a [new writer](handlers.md#writing-data) for uploading data. |
-| `sequence_handler()` | Retrieves a [handler](handlers.md#reading--handling-data) for an existing sequence. The method does not actually download the sequence data-stream. |
-| `topic_handler()` | Retrieves a [handler](handlers.md#reading--handling-data) for a specific topic within a sequence. The method does not actually download the topic data-stream. |
-| `query()` | Executes [queries](queries.md) against the data catalogs, i.e. Platform entities (i.e. Sequence or Topic) or Ontology catalog.|
-| `sequence_delete()` | Permanently removes a sequence and all its associated data from the server. |
-| `list_sequences()` | Retrieves the list of all sequences available on the server. |
-| `sequence_system_info()` | Retrieves system-level metadata for a specific sequence. The method queries the server for the physical state of the sequence, including its total storage footprint and creation history. |
-| `topic_system_info()` | Retrieves system-level metadata for a specific topic within a sequence. The method queries the server for the physical state of the sequence, including its total storage footprint and creation history. |
+| Method | Return | Description |
+| :--- | :--- | :--- |
+| `connect(host, port, timeout)` | `MosaicoClient` | Establishes the connection to the server and initializes all data and processing pools. |
+| `close()` | `None` | Manually shuts down all pools and connections. Called automatically by the context manager (if the instance was created in a `with` block). |
+| `sequence_create(sequence_name, metadata, on_error, ...)` | `SequenceWriter` | Creates a [new writer](data-handling.md#writing-data) for uploading data. |
+| `sequence_handler(sequence_name)` | `Optional[SequenceHandler]` | Retrieves a [handler](data-handling.md#reading--handling-data) for an existing sequence. The method does not actually download the sequence data-stream. |
+| `topic_handler(sequence_name, topic_name)` | `Optional[TopicHandler]` | Retrieves a [handler](handlers.md#reading--handling-data) for a specific topic within a sequence. The method does not actually download the topic data-stream. |
+| `query(*queries, query)` | `Optional[QueryResponse]` | Executes [queries](queries.md) against the platform catalogs. The provided queries are joined in AND condition. The method accepts a variable arguments of query builder objects or a pre-constructed *Query* object.|
+| `sequence_delete(sequence_name)` | `None` | Permanently removes a sequence and all its associated data from the server. |
+| `list_sequences()` | `List[str]` | Retrieves the list of all sequences available on the server. |
+| `sequence_system_info(sequence_name)` | `Optional[SystemInfo]` | Retrieves system-level metadata for a specific sequence. The method queries the server for the physical state of the sequence, including its total storage footprint and creation history. |
+| `topic_system_info(sequence_name, topic_name)` | `Optional[SystemInfo]` | Retrieves system-level metadata for a specific topic within a sequence. The method queries the server for the physical state of the sequence, including its total storage footprint and creation history. |
 
