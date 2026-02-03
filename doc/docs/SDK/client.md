@@ -28,6 +28,8 @@ This ensures that while one thread is serializing the *next* batch of data, anot
 **Best Practice:** It is recomended to always use the client inside a `with` context to ensure resources in all layers are cleanly released.
 
 ```python
+from mosaicolabs import MosaicoClient
+
 with MosaicoClient.connect("localhost", 6726) as client:
     # Logic goes here
     pass
@@ -42,10 +44,10 @@ with MosaicoClient.connect("localhost", 6726) as client:
 | `connect(host, port, timeout)` | `MosaicoClient` | Establishes the connection to the server and initializes all data and processing pools. |
 | `close()` | `None` | Manually shuts down all pools and connections. Called automatically by the context manager (if the instance was created in a `with` block). |
 | `sequence_create(sequence_name, metadata, on_error, ...)` | `SequenceWriter` | Creates a [new writer](data-handling.md#writing-data) for uploading data. |
-| `sequence_handler(sequence_name)` | `Optional[SequenceHandler]` | Retrieves a [handler](data-handling.md#reading--handling-data) for an existing sequence. The method does not actually download the sequence data-stream. |
-| `topic_handler(sequence_name, topic_name)` | `Optional[TopicHandler]` | Retrieves a [handler](handlers.md#reading--handling-data) for a specific topic within a sequence. The method does not actually download the topic data-stream. |
-| `query(*queries, query)` | `Optional[QueryResponse]` | Executes [queries](queries.md) against the platform catalogs. The provided queries are joined in AND condition. The method accepts a variable arguments of query builder objects or a pre-constructed *Query* object.|
-| `sequence_delete(sequence_name)` | `None` | Permanently removes a sequence and all its associated data from the server. |
+| `sequence_handler(sequence_name)` | `Optional[SequenceHandler]` | Retrieves a [handler](data-handling.md#the-reading-workflow) for an existing sequence. The method does not actually download the sequence data-stream. |
+| `topic_handler(sequence_name, topic_name)` | `Optional[TopicHandler]` | Retrieves a [handler](data-handling.md#the-reading-workflow) for a specific topic within a sequence. The method does not actually download the topic data-stream. |
+| `query(*queries, query)` | `Optional[QueryResponse]` | Executes [queries](query.md) against the platform catalogs. The provided queries are joined in AND condition. The method accepts a variable arguments of query builder objects or a pre-constructed *Query* object.|
+| `sequence_delete(sequence_name)` | `None` | Permanently removes a sequence and all its associated data from the server. The operation is allowed only on [unlocked sequences](../index.md#data-lifetime-and-integrity) |
 | `list_sequences()` | `List[str]` | Retrieves the list of all sequences available on the server. |
 | `sequence_system_info(sequence_name)` | `Optional[SystemInfo]` | Retrieves system-level metadata for a specific sequence. The method queries the server for the physical state of the sequence, including its total storage footprint and creation history. |
 | `topic_system_info(sequence_name, topic_name)` | `Optional[SystemInfo]` | Retrieves system-level metadata for a specific topic within a sequence. The method queries the server for the physical state of the sequence, including its total storage footprint and creation history. |

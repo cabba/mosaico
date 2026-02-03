@@ -49,6 +49,7 @@ nav:
     - SDK/query.md
     - Bridges:
         - SDK/bridges/ml.md
+        - SDK/bridges/ros.md
     - API Reference:
       - SDK/API_reference/comm.md
       - SDK/API_reference/ml.md

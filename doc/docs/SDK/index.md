@@ -9,7 +9,7 @@ Welcome to the **Mosaico SDK**, the primary gateway for interacting with the **M
 
 ## What is the Mosaico SDK?
 
-The Mosaico SDK is an authentic, high-performance Python interface designed specifically for managing **Physical AI and Robotics data**. Its purpose is to handle the complete lifecycle of information—from the moment it is captured by a sensor to the moment it is used to train a neural network or analyze a robot's behavior.
+The Mosaico SDK is a high-performance Python interface designed specifically for managing **Physical AI and Robotics data**. Its purpose is to handle the complete lifecycle of information—from the moment it is captured by a sensor to the moment it is used to train a neural network or analyze a robot's behavior.
 
 The SDK is built on the philosophy that robotics data is **unique**. Whether it comes from a autonomous car, a drone, or a factory arm, this data is multi-modal, highly frequent, and deeply interconnected in space and time. The Mosaico SDK provides the infrastructure to treat this data as a **"first-class citizen"** rather than just a collection of generic numbers. It understands the geometric and physical semantics of complex data types such as LIDAR point clouds, IMU readings, high-resolution camera feeds, and rigid-body transformations.
 
@@ -20,6 +20,7 @@ The SDK is built on the following core principles:
 ### 1. Middleware Independence
 
 Mosaico is **middleware-agnostic**. While the SDK provides robust tools for ROS, it exists because robotics data itself is complex, regardless of the collection method. The platform serves as a standardized hub that can ingest data from:
+
 * **Existing Frameworks**: Such as ROS 1, ROS 2, .mcap and .db3 files.
 * **Custom Collectors**: Proprietary data loggers or direct hardware drivers.
 * **Simulators**: Synthetic data generated in virtual environments.
