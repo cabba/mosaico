@@ -26,12 +26,25 @@ logger = get_logger(__name__)
 
 class SequenceHandler:
     """
-    Represents an existing Sequence on the Mosaico platform.
+    Represents a client-side handle for an existing Sequence on the Mosaico platform.
 
-    Acts as a container for accessing the sequence's metadata and its
-    child topics.
+    The `SequenceHandler` acts as a primary container for inspecting sequence-level metadata,
+    listing available topics, and accessing data reading interfaces like the
+    `SequenceDataStreamer`.
 
-    User intending getting an instance of this class, must use 'MosaicoClient.sequence_handler()' factory.
+    Important: Obtaining a Handler
+        Users should not instantiate this class directly. The recommended way to
+        obtain a handler is via the [`MosaicoClient.sequence_handler()`][mosaicolabs.comm.MosaicoClient.sequence_handler]
+        factory method.
+
+    Tip: Context Manager Usage
+        This class supports the context manager protocol to ensure that all
+        internal topic handlers and data streamers are gracefully closed.
+
+        ```python
+        with client.sequence_handler("my_drive_session") as handler:
+            print(f"Sequence '{handler.name}' contains topics: {handler.topics}")
+        ```
     """
 
     # -------------------- Constructor --------------------
@@ -44,9 +57,18 @@ class SequenceHandler:
         timestamp_ns_max: Optional[int],
     ):
         """
-        Internal constructor.
-        Users can retrieve an instance by using 'MosaicoClient.sequence_handler()` instead.
-        Internal library modules will call the 'connect()' function.
+        Internal constructor for SequenceHandler.
+
+        **Do not call this directly.** Users should retrieve instances via
+        [`MosaicoClient.sequence_handler()`][mosaicolabs.comm.MosaicoClient.sequence_handler],
+        while internal modules should use the [`connect()`][mosaicolabs.handlers.SequenceHandler.connect]
+        factory.
+
+        Args:
+            sequence_model: The underlying metadata and system info model for the sequence.
+            client: The active FlightClient for remote operations.
+            timestamp_ns_min: The lowest timestamp (in ns) available in this sequence.
+            timestamp_ns_max: The highest timestamp (in ns) available in this sequence.
         """
         self._fl_client: fl.FlightClient = client
         """The FlightClient used for remote operations."""
@@ -66,10 +88,12 @@ class SequenceHandler:
         cls, sequence_name: str, client: fl.FlightClient
     ) -> Optional["SequenceHandler"]:
         """
-        Factory method to create a handler.
-
+        Internal factory method to create a handler.
         Queries the server to build the `Sequence` model and discover all
         contained topics.
+
+        Important: **Do not call this directly**
+            Users can retrieve an instance by using [`MosaicoClient.sequence_handler()`][mosaicolabs.comm.MosaicoClient.sequence_handler] instead.
 
         Args:
             sequence_name (str): Name of the sequence.
@@ -162,37 +186,49 @@ class SequenceHandler:
     # -------------------- Public methods --------------------
     @property
     def topics(self) -> List[str]:
-        """Returns the list of topic names in the sequence."""
+        """
+        Returns the list of topic names (data channels) available within this sequence.
+        """
         return self._sequence.topics
 
     @property
     def user_metadata(self) -> Dict[str, Any]:
-        """Returns the user dictionary for the sequence."""
+        """
+        Returns the user-defined metadata dictionary associated with this sequence.
+        """
         return self._sequence.user_metadata
 
     @property
     def name(self) -> str:
-        """Returns the sequence name."""
+        """
+        Returns the unique name of the sequence.
+        """
         return self._sequence.name
 
     @property
     def sequence_info(self) -> Sequence:
-        """Returns the full Sequence model."""
+        """
+        Returns the comprehensive [`Sequence`][mosaicolabs.models.platform.Sequence] model, including metadata and system diagnostics.
+        """
         return self._sequence
 
     @property
     def timestamp_ns_min(self) -> Optional[int]:
         """
-        Return the lowest timestamp in nanoseconds, among all the topics.
-        Returns optional to manage the degenerate case of topics with no data.
+        The lowest timestamp (nanoseconds) recorded in the sequence across all topics.
+
+        Returns `None` if the sequence contains no data or the timestamps
+        could not be derived.
         """
         return self._timestamp_ns_min
 
     @property
     def timestamp_ns_max(self) -> Optional[int]:
         """
-        Return the highest timestamp in nanoseconds, among all the topics.
-        Returns optional to manage the degenerate case of topics with no data.
+        The highest timestamp (nanoseconds) recorded in the sequence across all topics.
+
+        Returns `None` if the sequence contains no data or the timestamps
+        could not be derived.
         """
         return self._timestamp_ns_max
 
@@ -203,21 +239,27 @@ class SequenceHandler:
         end_timestamp_ns: Optional[int] = None,
     ) -> SequenceDataStreamer:
         """
-        Opens a reading channel and returns a `SequenceDataStreamer` for iterating over the sequence data.
+        Opens a reading channel for iterating over the sequence data.
 
-        The streamer allows for time-synchronized playback of multiple topics and supports temporal slicing
-        to retrieve data within a specific time window.
+        The returned [`SequenceDataStreamer`][mosaicolabs.handlers.SequenceDataStreamer] performs a K-way merge sort to provide
+        a single, time-synchronized chronological stream of messages from
+        multiple topics.
+
 
         Args:
-            topics (List[str], optional): A list of specific topic names to filter the stream.
-                If empty, the behavior depends on the implementation (typically streams all available topics).
-            start_timestamp_ns (int, optional): The **inclusive** lower bound for the time window (in nanoseconds).
-                The stream will begin from the message with the timestamp **greater than or equal to** this value.
-            end_timestamp_ns (int, optional): The **exclusive** upper bound for the time window (in nanoseconds).
-                The stream will stop at the message with the timestamp **strictly lower than** this value.
+            topics: A subset of topic names to stream. If empty, all topics
+                in the sequence are streamed.
+            start_timestamp_ns: The **inclusive** lower bound (t >= start) for the time window in nanoseconds.
+                The stream starts at the first message with a timestamp greater than or equal to this value.
+            end_timestamp_ns: The **exclusive** upper bound (t < end) for the time window in nanoseconds.
+                The stream stops at the first message with a timestamp strictly less than this value.
 
         Returns:
-            SequenceDataStreamer: An iterator yielding time-ordered messages from the requested topics.
+            A `SequenceDataStreamer` iterator yielding `(topic_name, message)` tuples.
+
+        Raises:
+            ValueError: If the provided topic names do not exist or if the
+                sequence contains no data.
         """
         if topics and any([t not in self.topics for t in topics]):
             raise ValueError(
@@ -240,20 +282,22 @@ class SequenceHandler:
         return self._data_streamer_instance
 
     def get_topic_handler(
-        self, topic_name: str, force_new_instance=False
+        self, topic_name: str, force_new_instance: bool = False
     ) -> TopicHandler:
         """
-        Get a specific `TopicHandler` for a child topic.
+        Get a specific [`TopicHandler`][mosaicolabs.handlers.TopicHandler] for a child topic.
 
         Args:
-            topic_name (str): Name of the child topic (without the parent sequence name).
-            force_new_instance (bool): If True, recreates the handler.
+            topic_name: The relative name of the topic (e.g., "/camera/front").
+            force_new_instance: If `True`, bypasses the internal cache and
+                recreates the handler.
 
         Returns:
-            TopicHandler: The handler
+            A `TopicHandler` dedicated to the specified topic.
 
         Raises:
-            ValueError: If topic doesn't exist.
+            ValueError: If the topic is not available in this sequence or
+                an internal connection error occurs.
         """
         if topic_name not in self._sequence.topics:
             raise ValueError(
@@ -281,7 +325,12 @@ class SequenceHandler:
         return th
 
     def close(self):
-        """Closes all cached topic handlers and streamers."""
+        """
+        Gracefully closes all cached topic handlers and active data streamers.
+
+        This method should be called to release network and memory resources
+        when the handler is no longer needed.
+        """
         for _, th in self._topic_handler_instances.items():
             th.close()
         self._topic_handler_instances.clear()

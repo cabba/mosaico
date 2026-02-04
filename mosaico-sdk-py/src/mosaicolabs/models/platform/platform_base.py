@@ -17,18 +17,25 @@ from ..query.generation.api import _QueryableModel
 
 class PlatformBase(pydantic.BaseModel, _QueryableModel):
     """
-    Abstract base class for Mosaico Sequence and Topic catalog entities.
+    Base class for Mosaico Sequence and Topic entities.
 
-    This class serves two purposes:
-    1.  **Data Container:** It holds standard system attributes (`created_datetime`,
-        `total_size_bytes`) that are common to both Sequences and Topics.
-    2.  **Query Interface:** By inheriting from `_QueryableModel`, it allows specific
-        fields (like `user_metadata`) to be used in client-side query construction
-        (e.g., `Sequence.Q.user_metadata["project"] == "Apollo"`).
+    The `PlatformBase` serves as a read-only view of a server-side resource.
+    It is designed to hold system-level metadata and enable fluid querying of
+    user-defined properties.
 
-    Note:
-        Instances of this class are typically created via factory methods processing
-        server responses, rather than direct instantiation by the user.
+
+    ### Core Functionality
+    1.  **System Metadata**: Consolidates attributes like storage size and locking
+        status that are common across the catalog.
+    2.  **Query Interface**: Inherits from `_QueryableModel` to support expressive
+        syntax for filtering resources (e.g., `Sequence.Q.user_metadata["env"] == "prod"`).
+
+    Note: Read-Only Entities
+        Instances of this class are factory-generated from server responses.
+        Users should not instantiate this class directly.
+
+    Attributes:
+        user_metadata: A dictionary of custom key-value pairs assigned by the user.
     """
 
     user_metadata: Dict[str, Any]
@@ -71,20 +78,25 @@ class PlatformBase(pydantic.BaseModel, _QueryableModel):
     # --- Shared Properties ---
     @property
     def name(self) -> str:
-        """Returns the unique resource name."""
+        """The unique identifier or resource name of the entity."""
         return self._name
 
     @property
     def created_datetime(self) -> datetime.datetime:
-        """Returns the UTC datetime when the resource was created on the server."""
+        """The UTC timestamp indicating when the entity was created on the server."""
         return self._created_datetime
 
     @property
     def is_locked(self) -> bool:
-        """Returns True if the resource is currently locked (e.g., being written to)."""
+        """
+        Indicates if the resource is currently locked.
+
+        A locked state typically occurs during active writing or maintenance operations,
+        preventing deletion or structural modifications.
+        """
         return self._is_locked
 
     @property
     def total_size_bytes(self) -> int:
-        """Returns the total storage size of the resource in bytes."""
+        """The total physical storage footprint of the entity on the server in bytes."""
         return self._total_size_bytes

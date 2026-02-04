@@ -1,15 +1,10 @@
 """
-Geometry Data Structures.
+This module defines the fundamental building blocks for spatial representation, including vectors, points, quaternions, and rigid-body transforms.
 
-This module defines vectors, points, quaternions, and spatial transforms.
+The module follows a **Two-Tier Architecture** to optimize both internal efficiency and public usability:
 
-* **_Struct classes**: Pure data containers inheriting only from `BaseModel`.
-    They define the fields (x, y, z) and the PyArrow schema. They are used when
-    embedding a vector *inside* another object (like `Transform`) to avoid
-    attaching unnecessary headers/timestamps to the inner fields.
-* **Public classes**: Inherit from the `_Struct`, plus `Serializable`,  `HeaderMixin`
-    and 'CovarianceMixin'. These can be assigned to Message.data field
-    to send data to the platform.
+* **Internal Structs (`_Struct`)**: Pure data containers that define the physical memory layout and the PyArrow schema. These are intended for embedding within larger composite objects (like a `Pose` or `Transform`) to avoid attaching redundant metadata headers or timestamps to every inner field.
+* **Public Classes**: High-level models that combine spatial data with Mosaico's transport and serialization logic. These inherit from the internal structs and inject support for auto-registration ([`Serializable`][mosaicolabs.models.serializable.Serializable]), temporal/spatial context ([`HeaderMixin`][mosaicolabs.models.mixins.HeaderMixin]), and uncertainty tracking ([`CovarianceMixin`][mosaicolabs.models.mixins.CovarianceMixin]).
 """
 
 from typing import Optional
@@ -27,8 +22,14 @@ from ..mixins import HeaderMixin, CovarianceMixin
 
 class _Vector2dStruct(BaseModel):
     """
-    Internal structure for 2D vectors.
-    Contains only data fields and schema, no transport logic.
+    The internal data layout for 2D spatial vectors.
+
+    This class serves as the schema definition for (x, y) coordinates.
+
+    Note: Nullability Handling
+        All fields are explicitly marked as `nullable=True` in the PyArrow schema.
+        This ensures that empty fields are correctly deserialized as `None` rather than
+        incorrectly being default-initialized to $0$ by Parquet readers.
     """
 
     # OPTIONALITY NOTE
@@ -58,13 +59,13 @@ class _Vector2dStruct(BaseModel):
     @classmethod
     def from_list(cls, data: list[float]):
         """
-        Helper to create instance from a list.
+        Creates a struct instance from a raw list.
 
         Args:
-            data (list[float]): A list containing exactly [x, y].
+            data: A list containing exactly 2 float values: [x, y].
 
         Raises:
-            ValueError: If list length is not 2.
+            ValueError: If the input list does not have a length of 2.
         """
         if len(data) != 2:
             raise ValueError("expected 2 values")
@@ -73,8 +74,16 @@ class _Vector2dStruct(BaseModel):
 
 class _Vector3dStruct(BaseModel):
     """
-    Internal structure for 3D vectors.
-    Contains only data fields and schema, no transport logic.
+    The internal data layout for 3D spatial vectors.
+
+    This class serves as the schema definition for (x, y, z) coordinates.
+    It is used as a nested component in composite models like [`Pose`][mosaicolabs.models.data.geometry.Pose]
+    or [`Transform`][mosaicolabs.models.data.geometry.Transform].
+
+    Note: Nullability Handling
+        All fields are explicitly marked as `nullable=True` in the PyArrow schema.
+        This ensures that empty fields are correctly deserialized as `None` rather than
+        incorrectly being default-initialized to $0$ by Parquet readers.
     """
 
     # OPTIONALITY NOTE
@@ -111,13 +120,13 @@ class _Vector3dStruct(BaseModel):
     @classmethod
     def from_list(cls, data: list[float]):
         """
-        Helper to create instance from a list.
+        Creates a struct instance from a raw list.
 
         Args:
-            data (list[float]): A list containing exactly [x, y, z].
+            data: A list containing exactly 3 float values: [x, y, z].
 
         Raises:
-            ValueError: If list length is not 3.
+            ValueError: If the input list does not have a length of 3.
         """
         if len(data) != 3:
             raise ValueError("expected 3 values")
@@ -126,8 +135,16 @@ class _Vector3dStruct(BaseModel):
 
 class _Vector4dStruct(BaseModel):
     """
-    Internal structure for 4D vectors (often used for Quaternions).
-    Contains only data fields and schema, no transport logic.
+    The internal data layout for 4D spatial vectors.
+
+    This class serves as the schema definition for (x, y, z, w) coordinates.
+    It is used as a nested component in composite models like [`Pose`][mosaicolabs.models.data.geometry.Pose]
+    or [`Transform`][mosaicolabs.models.data.geometry.Transform].
+
+    Note: Nullability Handling
+        All fields are explicitly marked as `nullable=True` in the PyArrow schema.
+        This ensures that empty fields are correctly deserialized as `None` rather than
+        incorrectly being default-initialized to $0$ by Parquet readers.
     """
 
     # OPTIONALITY NOTE
@@ -171,13 +188,13 @@ class _Vector4dStruct(BaseModel):
     @classmethod
     def from_list(cls, data: list[float]):
         """
-        Helper to create instance from a list.
+        Creates a struct instance from a raw list.
 
         Args:
-            data (list[float]): A list containing exactly [x, y, z, w].
+            data: A list containing exactly 4 float values: [x, y, z, w].
 
         Raises:
-            ValueError: If list length is not 4.
+            ValueError: If the input list does not have a length of 4.
         """
         if len(data) != 4:
             raise ValueError("expected 4 values")
@@ -196,8 +213,20 @@ class Vector2d(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Public 2D Vector data.
-    Use this class to instantiate a vector to be sent over the platform.
+    A public 2D Vector for platform-wide transmission.
+
+    This class combines the [x, y] coordinates with full Mosaico transport logic.
+    It is used to represent quantities such as velocity, acceleration, or directional forces.
+
+    Attributes:
+        x: Vector X component.
+        y: Vector Y component.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 2x2 covariance matrix representing
+            the uncertainty of the vector measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
+
     """
 
     pass
@@ -210,8 +239,21 @@ class Vector3d(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Public 3D Vector data.
-    Use this class to instantiate a vector to be sent over the platform.
+    A public 3D Vector for platform-wide transmission.
+
+    This class combines the [x, y, z] coordinates with full Mosaico transport logic.
+    It is used to represent quantities such as velocity, acceleration, or directional forces.
+
+    Attributes:
+        x: Vector X component.
+        y: Vector Y component.
+        z: Vector Z component.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 3x3 covariance matrix representing
+            the uncertainty of the vector measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
+
     """
 
     pass
@@ -224,8 +266,21 @@ class Vector4d(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Public 4D Vector data.
-    Use this class to instantiate a vector to be sent over the platform.
+    A public 4D Vector for platform-wide transmission.
+
+    This class combines the [x, y, z, w] coordinates with full Mosaico transport logic.
+    It is used to represent quantities such as velocity, acceleration, or directional forces.
+
+    Attributes:
+        x: Vector X component.
+        y: Vector Y component.
+        z: Vector Z component.
+        w: Vector W component.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 4x4 covariance matrix representing
+            the uncertainty of the vector measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
     """
 
     pass
@@ -238,8 +293,21 @@ class Point2d(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Semantically represents a Point in 2D space.
-    Structurally identical to Vector2d but distinguished for clarity in APIs.
+    Semantically represents a specific location (Point) in 2D space.
+
+    Structurally identical to a 2D Vector, but distinguished within the Mosaico API
+    to clarify intent in spatial operations. Use this class for
+    2D coordinate data that requires Mosaico transport logic.
+
+    Attributes:
+        x: Point X coordinate.
+        y: Point Y coordinate.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 2x2 covariance matrix representing
+            the uncertainty of the point measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
+
     """
 
     pass
@@ -252,8 +320,22 @@ class Point3d(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Semantically represents a Point in 3D space.
-    Structurally identical to Vector3d but distinguished for clarity in APIs.
+    Semantically represents a specific location (Point) in 3D space.
+
+    The `Point3d` class is used to instantiate a 3D coordinate message for
+    transmission over the platform. It is structurally identical
+    to a 3D Vector but is used to denote state rather than direction.
+
+    Attributes:
+        x: Point X coordinate.
+        y: Point Y coordinate.
+        z: Point Z coordinate.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 3x3 covariance matrix representing
+            the uncertainty of the point measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
+
     """
 
     pass
@@ -266,8 +348,22 @@ class Quaternion(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Semantically represents a Rotation Quaternion (x, y, z, w).
-    Structurally identical to Vector4d.
+    Represents a rotation in 3D space using normalized quaternions.
+
+    Structurally identical to a 4D vector [x, y, z, w], but semantically denotes
+    an orientation. This representation avoids the gimbal lock
+    issues associated with Euler angles.
+
+    Attributes:
+        x: Vector X component.
+        y: Vector Y component.
+        z: Vector Z component.
+        w: Vector W component.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 4x4 covariance matrix representing
+            the uncertainty of the quaternion measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
     """
 
     pass
@@ -284,10 +380,21 @@ class Transform(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Represents a spatial transformation between two coordinate frames (Translation + Rotation).
+    Represents a rigid-body transformation between two coordinate frames.
 
-    This is often used to describe the position of a ontology relative to the robot base,
-    or the robot base relative to the world map.
+    A transform consists of a translation followed by a rotation. It is
+    typically used to describe the kinematic relationship between components
+    (e.g., "Camera to Robot Base").
+
+    Attributes:
+        translation: A `Vector3d` describing the linear shift.
+        rotation: A `Quaternion` describing the rotational shift.
+        target_frame_id: The identifier of the destination coordinate frame.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 7x7 composed covariance matrix representing
+            the uncertainty of the Translation+Rotation.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -329,8 +436,20 @@ class Pose(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Represents the position and orientation of an object in space.
-    Similar to Transform, but semantically denotes state rather than a coordinate shift.
+    Represents the position and orientation of an object in a global or local frame.
+
+    While similar to a [`Transform`][mosaicolabs.models.data.geometry.Transform], a
+    `Pose` semantically denotes the **state** of an object (its current location
+    and heading) rather than the mathematical shift between two frames.
+
+    Attributes:
+        position: A `Point3d` representing the object's coordinates.
+        orientation: A `Quaternion` representing the object's heading.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 7x7 composed covariance matrix representing
+            the uncertainty of the Translation+Rotation.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
     """
 
     __msco_pyarrow_struct__ = pa.struct(

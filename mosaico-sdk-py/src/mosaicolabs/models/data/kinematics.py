@@ -24,11 +24,23 @@ class Velocity(
     CovarianceMixin,  # Adds Covariance matrix support
 ):
     """
-    Represents 6-Degree-of-Freedom Velocity (Twist).
+    Represents 6-Degree-of-Freedom Velocity, commonly referred to as a Twist.
 
-    Composed of:
-    - Linear Velocity (v_x, v_y, v_z)
-    - Angular Velocity (omega_x, omega_y, omega_z)
+    The `Velocity` class describes the instantaneous motion of an object, split into
+    linear and angular components.
+
+    Attributes:
+        linear: Optional [`Vector3d`][mosaicolabs.models.data.geometry.Vector3d] linear velocity vector.
+        angular: Optional [`Vector3d`][mosaicolabs.models.data.geometry.Vector3d] angular velocity vector.
+        header: Optional metadata header providing temporal and spatial context.
+        covariance: Optional flattened 3x3 covariance matrix representing
+            the uncertainty of the point measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
+
+    Note: Input Validation
+        A valid `Velocity` object must contain at least a `linear` or an `angular`
+        component; providing neither will raise a `ValueError`.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -75,9 +87,21 @@ class Acceleration(
     """
     Represents 6-Degree-of-Freedom Acceleration.
 
-    Composed of:
-    - Linear Acceleration (a_x, a_y, a_z)
-    - Angular Acceleration (alpha_x, alpha_y, alpha_z)
+    This class provides a standardized way to transmit linear and angular
+    acceleration data to the platform.
+
+    Attributes:
+        linear: Optional 3D linear acceleration vector ($a_x, a_y, a_z$).
+        angular: Optional 3D angular acceleration vector ($\alpha_x, \alpha_y, \alpha_z$).
+        header: Optional metadata header providing acquisition context.
+        covariance: Optional flattened 3x3 covariance matrix representing
+            the uncertainty of the point measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
+
+    Note: Input Validation
+        Similar to the [`Velocity`][mosaicolabs.models.data.kinematics.Velocity] class, an `Acceleration` instance requires
+        at least one non-null component (`linear` or `angular`).
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -124,8 +148,28 @@ class MotionState(
     """
     Aggregated Kinematic State.
 
-    This class groups Pose, Velocity, and Acceleration into a single atomic update.
-    Commonly used for trajectory tracking, state estimation outputs, or ground truth logging.
+    `MotionState` groups [`Pose`][mosaicolabs.models.data.geometry.Pose],
+    [`Velocity`][mosaicolabs.models.data.kinematics.Velocity], and optional
+    [`Acceleration`][mosaicolabs.models.data.kinematics.Acceleration] into a
+    single atomic update.
+
+    This is the preferred structure for:
+
+    * **Trajectory Tracking**: Recording the high-fidelity path of a robot or vehicle.
+    * **State Estimation**: Logging the output of Kalman filters or SLAM algorithms.
+    * **Ground Truth**: Storing reference data from simulation environments.
+
+    Attributes:
+        pose: The 6D pose representing current position and orientation.
+        velocity: The 6D velocity (Twist).
+        target_frame_id: A string identifier for the target coordinate frame.
+        acceleration: Optional 6D acceleration.
+        header: Standard metadata header for temporal synchronization.
+        covariance: Optional flattened NxN composed covariance matrix representing
+            the uncertainty of the Pose+Velocity+[Acceleration] measurement.
+        covariance_type: Enum integer representing the parameterization of the
+            covariance matrix.
+
     """
 
     __msco_pyarrow_struct__ = pa.struct(

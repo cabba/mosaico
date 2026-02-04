@@ -26,14 +26,29 @@ logger = get_logger(__name__)
 
 class SequenceWriter:
     """
-    Orchestrates the creation and writing of a Sequence.
+    Orchestrates the creation and data ingestion lifecycle of a Mosaico Sequence.
 
-    **Key Responsibilities:**
-    1.  **Lifecycle Management:** Sends creation, finalization, or abort signals to the server.
-    2.  **Resource Distribution:** Implements the "Multi-Lane" architecture. It pulls
-        network connections and thread executors from the `MosaicoClient` pools and
-        assigns them to new `TopicWriter` instances. This ensures isolation and
-        parallelism between topics (e.g., high-bandwidth video vs low-bandwidth telemetry).
+    The `SequenceWriter` is the central controller for high-performance data writing.
+    It manages the transition of a sequence through its lifecycle states: **Create** -> **Write** -> **Finalize**.
+
+    ### Key Responsibilities
+    * **Lifecycle Management**: Coordinates creation, finalization, or abort signals with the server.
+    * **Resource Distribution**: Implements a "Multi-Lane" architecture by distributing network connections
+        from a Connection Pool and thread executors from an Executor Pool to individual
+        [`TopicWriter`][mosaicolabs.handlers.TopicWriter]
+        instances. This ensures strict isolation and maximum parallelism between
+        diverse data streams.
+
+
+    Important: Usage Pattern
+        This class **must** be used within a `with` statement (Context Manager).
+        The context entry triggers sequence registration on the server, while the exit handles
+        automatic finalization or error cleanup based on the configured `OnErrorPolicy`.
+
+    Important: Obtaining a Writer
+        Do not instantiate this class directly. Use the
+        [`MosaicoClient.sequence_create()`][mosaicolabs.comm.MosaicoClient.sequence_create]
+        factory method.
     """
 
     # -------------------- Constructor --------------------
@@ -48,7 +63,19 @@ class SequenceWriter:
         config: WriterConfig,
     ):
         """
-        Internal constructor. Use `MosaicoClient.sequence_create()` instead.
+        Internal constructor for SequenceWriter.
+
+        **Do not call this directly.** Users must call
+        [`MosaicoClient.sequence_create()`][mosaicolabs.comm.MosaicoClient.sequence_create]
+        to obtain an initialized writer.
+
+        Args:
+            sequence_name: Unique name for the new sequence.
+            client: The primary control FlightClient.
+            connection_pool: Shared pool of data connections for parallel writing.
+            executor_pool: Shared pool of thread executors for asynchronous I/O.
+            metadata: User-defined metadata dictionary.
+            config: Operational configuration (e.g., error policies, batch sizes).
         """
         _validate_sequence_name(sequence_name)
         self._name: str = sequence_name
@@ -181,21 +208,22 @@ class SequenceWriter:
         ontology_type: Type[Serializable],
     ) -> Optional[TopicWriter]:
         """
-        Creates a new topic within the sequence.
+        Creates a new topic within the active sequence.
 
-        This method assigns a dedicated connection and executor from the pool
-        (if available) to the new topic, enabling parallel writing.
+        This method performs a "Multi-Lane" resource assignment, granting the new
+        [`TopicWriter`][mosaicolabs.handlers.TopicWriter], its own connection from the pool
+        and a dedicated executor for background serialization and I/O.
 
         Args:
-            topic_name (str): The name of the new topic.
-            metadata (dict[str, Any]): Topic-specific metadata.
-            ontology_type (Type[Serializable]): The data model class.
+            topic_name: The relative name of the new topic.
+            metadata: Topic-specific user metadata.
+            ontology_type: The `Serializable` data model class defining the topic's schema.
 
         Returns:
-            TopicWriter: A writer instance configured for this topic.
-            None: If any error occurs
+            A `TopicWriter` instance configured for parallel ingestion, or `None` if creation fails.
 
-
+        Raises:
+            RuntimeError: If called outside of a `with` block.
         """
         ACTION = FlightAction.TOPIC_CREATE
         self._check_entered()
@@ -290,14 +318,27 @@ class SequenceWriter:
         return writer
 
     def sequence_status(self) -> SequenceStatus:
-        """Returns the current status of the sequence."""
+        """
+        Returns the current operational status of the sequence.
+
+        Returns:
+            The [`SequenceStatus`][mosaicolabs.enum.SequenceStatus].
+        """
         return self._sequence_status
 
     def close(self):
         """
-        Explicitly finalizes the sequence.
+        Explicitly finalizes the sequence on the server.
 
-        Sends `SEQUENCE_FINALIZE` to the server, marking data as immutable.
+        Sends the `SEQUENCE_FINALIZE` signal, which instructs the server to mark all
+        ingested data as immutable.
+
+        Note: Automatic Finalization
+            This is called automatically on the `with` block exit.
+
+        Raises:
+            RuntimeError: If called outside of a `with` block.
+            Exception: If the server-side finalization fails.
         """
         self._check_entered()
         if self._sequence_status == SequenceStatus.Pending:
@@ -363,15 +404,34 @@ class SequenceWriter:
                 )
 
     def topic_exists(self, topic_name: str) -> bool:
-        """Checks if a local TopicWriter exists for the name."""
+        """
+        Checks if a [`TopicWriter`][mosaicolabs.handlers.TopicWriter] has already been initialized
+        for the given name.
+
+        Args:
+            topic_name: The name of the topic to check.
+
+        Returns:
+            True if the topic writer exists locally, False otherwise.
+        """
         return topic_name in self._topic_writers
 
     def list_topics(self) -> list[str]:
-        """Returns list of active topic names."""
+        """
+        Returns the list of all topic names currently managed by this writer.
+        """
         return [k for k in self._topic_writers.keys()]
 
     def get_topic(self, topic_name: str) -> Optional[TopicWriter]:
-        """Retrieves a TopicWriter instance, if it exists."""
+        """
+        Retrieves an existing [`TopicWriter`][mosaicolabs.handlers.TopicWriter] instance by name.
+
+        Args:
+            topic_name: The name of the topic writer to retrieve.
+
+        Returns:
+            The `TopicWriter` if it exists, otherwise `None`.
+        """
         return self._topic_writers.get(topic_name)
 
     def _close_topics(self, with_error: bool) -> None:

@@ -5,7 +5,7 @@ sidebar:
     order: 2
 ---
 
-The `MosaicoClient` is a resource manager designed to orchestrate three distinct **Layers** of communication and processing. 
+The [`MosaicoClient`][mosaicolabs.comm.MosaicoClient]. is a resource manager designed to orchestrate three distinct **Layers** of communication and processing. 
 This layered architecture ensures that high-throughput sensor data does not block critical control operations or application logic.
 
 ## Control Layer

@@ -21,17 +21,33 @@ logger = get_logger(__name__)
 
 class SequenceDataStreamer:
     """
-    Reads a multi-topic sequence as a unified stream.
+    A unified, time-ordered iterator for reading multi-topic sequences.
 
-    **Algorithm (K-Way Merge):**
-    This class maintains a list of `TopicDataStreamer` instances (one per topic).
-    On every iteration, it:
-    1. Peeks at the next timestamp of every active topic.
-    2. Selects the topic with the lowest timestamp.
-    3. Yields that record and advances that specific topic's stream.
+    The `SequenceDataStreamer` performs a **K-Way Merge** across multiple topic streams to
+    provide a single, coherent chronological view of an entire sequence.
+    This is essential when topics have different recording rates or asynchronous sampling
+    times.
 
-    This ensures that data is yielded in correct chronological order, even if
-    the topics were recorded at different rates.
+    ### Key Capabilities
+    * **Temporal Slicing**: Supports server-side filtering to stream data within specific
+        time windows (t >= start and t < end).
+    * **Peek-Ahead**: Provides the `next_timestamp()` method, allowing the system
+        to inspect chronological order without consuming the record—a core requirement
+        for the K-way merge sorting algorithm.
+
+    ### The Merge Algorithm
+    This class manages multiple internal [`TopicDataStreamer`][mosaicolabs.handlers.TopicDataStreamer]
+    instances. On every iteration, it:
+
+    1. **Peeks** at the next available timestamp from every active topic stream.
+    2. **Selects** the topic currently holding the lowest absolute timestamp.
+    3. **Yields** that specific record and advances only the "winning" topic stream.
+
+
+    Tip: Obtaining a Streamer
+        Do not instantiate this class directly. Use the
+        [`SequenceHandler.get_data_streamer()`][mosaicolabs.handlers.SequenceHandler.get_data_streamer]
+        method to obtain a configured instance.
     """
 
     def __init__(
@@ -42,9 +58,16 @@ class SequenceDataStreamer:
         topic_readers: Dict[str, TopicDataStreamer],
     ):
         """
-        Internal constructor.
-        Users can retrieve an instance by using 'get_data_streamer()` from a SequenceHandler instance instead.
-        Internal library modules will call the 'connect()' function.
+        Internal constructor for SequenceDataStreamer.
+
+        **Do not call this directly.** Internal library modules should use the
+        [`connect()`][mosaicolabs.handlers.SequenceDataStreamer.connect] factory.
+
+        Args:
+            sequence_name: The name of the sequence being streamed.
+            client: The active FlightClient for remote operations.
+            topic_readers: A dictionary mapping topic names to their respective
+                [`TopicDataStreamer`][mosaicolabs.handlers.TopicDataStreamer] instances.
         """
         self._name: str = sequence_name
         """The name of the handled sequence data stream"""
@@ -65,20 +88,32 @@ class SequenceDataStreamer:
         start_timestamp_ns: Optional[int],
         end_timestamp_ns: Optional[int],
         client: fl.FlightClient,
-    ):
+    ) -> "SequenceDataStreamer":
         """
-        Factory method to initialize the Sequence reader.
+        Internal factory method to initialize the Sequence reader merger.
 
-        Queries the server for all endpoints associated with the sequence and
-        opens a `TopicDataStreamer` for each one.
+        This method queries the server for the sequence's resource endpoints and
+        establishes individual data streams for each requested topic.
+
+        Important: **Do not call this directly**
+            Users must use  the
+            [`SequenceHandler.get_data_streamer()`][mosaicolabs.handlers.SequenceHandler.get_data_streamer]
+            method to obtain a configured instance.
 
         Args:
-            sequence_name (str): The sequence to read.
-            topics (list[str]): Retrieve the streams from these topics only; ignore the other.
-            client (fl.FlightClient): Connected client.
+            sequence_name: The sequence to read.
+            topics: A whitelist of topic names to include in the stream.
+                Other topics in the sequence will be ignored.
+            start_timestamp_ns: Optional inclusive lower bound for temporal slicing.
+            end_timestamp_ns: Optional exclusive upper bound for temporal slicing.
+            client: An established PyArrow Flight connection.
 
         Returns:
-            SequenceDataStreamer: The initialized merger.
+            SequenceDataStreamer: An initialized merger ready for iteration.
+
+        Raises:
+            ConnectionError: If the server-side flight descriptor cannot be retrieved.
+            RuntimeError: If no valid topic handlers could be opened for the sequence.
         """
         try:
             flight_info = cls._get_flight_info(
@@ -133,8 +168,10 @@ class SequenceDataStreamer:
 
     def __iter__(self) -> "SequenceDataStreamer":
         """
-        Initializes the K-Way merge by pre-loading (peeking) the first row
-        of every topic.
+        Initializes the K-Way merge iterator.
+
+        This pre-loads the first row of every topic stream to prepare the initial
+        comparison step.
         """
         for treader in self._topic_readers.values():
             if treader._rdstate.peeked_row is None:
@@ -144,7 +181,11 @@ class SequenceDataStreamer:
 
     def next(self) -> Optional[tuple[str, Message]]:
         """
-        Returns the next time-ordered record or None if finished.
+        Returns the next chronological record from the merged stream.
+
+        Returns:
+            Optional[tuple[str, Message]]: A tuple of `(topic_name, message_object)`,
+                or `None` if all topics are exhausted.
         """
         self._in_iter = True  # Safety: ensures direct next() calls also lock the state
         try:
@@ -154,12 +195,12 @@ class SequenceDataStreamer:
 
     def next_timestamp(self) -> Optional[float]:
         """
-        Peeks at the timestamp of the next time-ordered ontology measurement
-        across all topics without consuming the element (non-destructive peek).
+        Peeks at the timestamp of the next chronological measurement without
+        consuming the record.
 
         Returns:
-            The minimum timestamp (float) found across all active topics, or None
-            if all streams are exhausted.
+            The minimum timestamp (nanoseconds) found across all active topics,
+                or `None` if all streams are exhausted.
         """
         self._in_iter = (
             True  # Safety: ensures direct next_timestamp() calls also lock the state
@@ -184,7 +225,8 @@ class SequenceDataStreamer:
         Executes the merge step to return the next chronological record.
 
         Returns:
-            tuple[str, Message]: A tuple containing (topic_name, message_object).
+            tuple[str, Message]: A tuple containing the `topic_name` and the
+                reconstructed [`Message`][mosaicolabs.models.Message] object.
 
         Raises:
             StopIteration: If all underlying topic streams are exhausted.
@@ -266,7 +308,22 @@ class SequenceDataStreamer:
         return self._topic_readers
 
     def close(self):
-        """Closes all underlying topic streams."""
+        """
+        Gracefully terminates all underlying topic streams and releases allocated resources.
+
+        This method iterates through all active [`TopicDataStreamer`][mosaicolabs.handlers.TopicDataStreamer]
+        instances, ensuring that each remote connection is closed and local memory buffers
+        are cleared.
+
+        Note: Automatic Cleanup
+            In standard workflows, you do not need to call this manually. This function is
+            **automatically invoked** by the [`SequenceHandler.close()`][mosaicolabs.handlers.SequenceHandler.close]
+            method, which in turn is triggered by the `__exit__` logic of the parent
+            [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler] when used within a
+            `with` context.
+
+
+        """
         for treader in self._topic_readers.values():
             try:
                 treader.close()

@@ -24,11 +24,25 @@ logger = get_logger(__name__)
 
 class TopicDataStreamer:
     """
-    Streams data from a single topic.
+    An iterator that streams ontology records from a single topic.
 
-    This class wraps the PyArrow Flight reader. It fetches `RecordBatches` from the server
-    and yields individual `Message` objects. It also provides a `next_timestamp` method
-    to allow peek-ahead capabilities (used by sequence-level merging).
+    The `TopicDataStreamer` wraps a PyArrow Flight `DoGet` stream to fetch `RecordBatches`
+    from the server and reconstruct individual [`Message`][mosaicolabs.models.Message] objects.
+    It is designed for efficient row-by-row iteration while providing peek-ahead
+    capabilities for time-synchronized merging.
+
+    ### Key Capabilities
+    * **Temporal Slicing**: Supports server-side filtering to stream data within specific
+        time windows (t >= start and t < end).
+    * **Peek-Ahead**: Provides the `next_timestamp()` method, allowing the system
+        to inspect chronological order without consuming the record—a core requirement
+        for the K-way merge sorting performed by the [`SequenceDataStreamer`][mosaicolabs.handlers.SequenceDataStreamer].
+
+    Important: Obtaining a Streamer
+        Users should typically not instantiate this class directly.
+        The recommended way to obtain a streamer is via the
+        [`TopicHandler.get_data_streamer()`][mosaicolabs.handlers.TopicHandler.get_data_streamer]
+        method.
     """
 
     def __init__(
@@ -38,9 +52,16 @@ class TopicDataStreamer:
         state: _TopicReadState,
     ):
         """
-        Internal constructor.
-        Users can retrieve an instance by using 'get_data_streamer()` from a TopicHandler instance instead.
-        Internal library modules will call the 'connect()' function.
+        Internal constructor for TopicDataStreamer.
+
+        **Do not call this directly.** Internal library modules should use the
+        [`connect()`][mosaicolabs.handlers.TopicDataStreamer.connect] or
+        [`connect_from_ticket()`][mosaicolabs.handlers.TopicDataStreamer.connect_from_ticket]
+        factory methods instead.
+
+        Args:
+            client: The active FlightClient used for remote operations.
+            state: The internal state object managing the Arrow reader and peek buffers.
         """
         self._fl_client: fl.FlightClient = client
         """The FlightClient used for remote operations."""
@@ -55,18 +76,26 @@ class TopicDataStreamer:
         ticket: fl.Ticket,
     ) -> "TopicDataStreamer":
         """
-        Factory method to initialize a streamer, starting from a flight Ticket
+        Factory method to initialize a streamer using a pre-existing Flight Ticket.
+
+        This is the primary entry point for internal handlers that have already
+        performed resource discovery via `get_flight_info`.
+
+        Important: **Do not call this directly**
+            Users must use  the
+            [`TopicHandler.get_data_streamer()`][mosaicolabs.handlers.TopicHandler.get_data_streamer]
+            method to obtain a configured instance.
 
         Args:
-            client (fl.FlightClient): Connected Flight client.
-            topic_name (str): The name of the topic.
-            ticket (fl.Ticket): The opaque ticket (from `get_flight_info`) representing the data stream.
+            client: An established PyArrow Flight connection.
+            topic_name: The name of the topic to read.
+            ticket: The opaque authorization ticket representing the specific data stream.
 
         Returns:
-            TopicDataStreamer: An initialized reader.
+            An initialized `TopicDataStreamer` ready for iteration.
 
         Raises:
-            ConnectionError: if 'do_get' fails
+            ConnectionError: If the server fails to open the `do_get` stream.
         """
         # Initialize the Flight stream (DoGet)
         try:
@@ -98,26 +127,32 @@ class TopicDataStreamer:
         client: fl.FlightClient,
         start_timestamp_ns: Optional[int],
         end_timestamp_ns: Optional[int],
-    ):
+    ) -> "TopicDataStreamer":
         """
-        Factory method to initialize a streamer, via endpoint.
+        Factory method to initialize a streamer via an endpoint with optional temporal slicing.
+
+        This method performs its own resource discovery to identify the correct
+        endpoint and ticket before opening the data stream.
+
+        Important: **Do not call this directly**
+            Users must use  the
+            [`TopicHandler.get_data_streamer()`][mosaicolabs.handlers.TopicHandler.get_data_streamer]
+            method to obtain a configured instance.
 
         Args:
-            client (fl.FlightClient): Connected Flight client.
-            topic_name (str): The name of the topic.
-            sequence_name (str): The name of the parent sequence.
-            start_timestamp_ns (Optional[int]): The **inclusive** lower bound for the time window (in nanoseconds).
-                The stream will begin from the message with the timestamp **greater than or equal to** this value.
-            end_timestamp_ns (Optional[int]): The **exclusive** upper bound for the time window (in nanoseconds).
-                The stream will stop at the message with the timestamp **strictly lower than** this value.
+            topic_name: The name of the topic to read.
+            sequence_name: The name of the parent sequence.
+            client: An established PyArrow Flight connection.
+            start_timestamp_ns: The **inclusive** lower bound (t >= start) in nanoseconds.
+            end_timestamp_ns: The **exclusive** upper bound (t < end) in nanoseconds.
 
         Returns:
-            TopicDataStreamer: An initialized reader.
+            An initialized `TopicDataStreamer`.
 
         Raises:
-            ConnectionError: if 'get_flight_info' or 'do_get' fail
+            ConnectionError: If `get_flight_info` or `do_get` fail on the server.
+            ValueError: If the topic cannot be found within the specified sequence.
         """
-
         # Get FlightInfo (here we need just the Endpoints)
         try:
             flight_info = cls._get_flight_info(
@@ -147,12 +182,18 @@ class TopicDataStreamer:
         raise ValueError("Unable to init TopicDataStreamer")
 
     def name(self) -> str:
-        """Returns the topic name."""
+        """
+        Returns the name of the topic associated with this streamer.
+        """
         return self._rdstate.topic_name
 
     def next(self) -> Optional[Message]:
         """
-        Returns the next message or None if finished (Non-raising equivalent of __next__).
+        Returns the next message from the stream.
+
+        Returns:
+            Optional[Message]: The next message object, or `None` if the
+                stream is exhausted.
         """
         try:
             return self.__next__()
@@ -163,10 +204,11 @@ class TopicDataStreamer:
         """
         Peeks at the timestamp of the next record without consuming it.
 
-        This is used by `SequenceDataStreamer` to perform k-way merge sorting.
+        This method is critical for the [`SequenceDataStreamer`][mosaicolabs.handlers.SequenceDataStreamer]
+        to perform K-way merge sorting across multiple asynchronous topics.
 
         Returns:
-            Optional[float]: The next timestamp, or None if stream is empty.
+            The next timestamp in nanoseconds, or `None` if the stream is empty.
         """
         if self._rdstate.peeked_row is None:
             # Load the next row into the buffer
@@ -189,10 +231,13 @@ class TopicDataStreamer:
 
     def __next__(self) -> Message:
         """
-        Iterates the stream to return the next Message.
+        Iterates the stream to return the next chronological message.
+
+        Returns:
+            Message: The reconstructed message object.
 
         Raises:
-            StopIteration: When the stream is exhausted.
+            StopIteration: When the data stream is exhausted.
         """
         # Ensure a row is available in the peek buffer
         if self._rdstate.peeked_row is None:
@@ -214,7 +259,14 @@ class TopicDataStreamer:
         return Message.create(self._rdstate.ontology_tag, **row_dict)
 
     def close(self):
-        """Closes the underlying Flight stream."""
+        """
+        Gracefully terminates the underlying Flight stream and releases resources.
+
+        Note: Automatic Cleanup
+            This method is **automatically invoked** by the
+            [`TopicHandler.close()`][mosaicolabs.handlers.TopicHandler.close] method,
+            which is typically triggered by a context manager exit.
+        """
         try:
             self._rdstate.close()
         except Exception as e:

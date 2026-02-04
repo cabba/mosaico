@@ -35,6 +35,8 @@ plugins:
             separate_signature: true     
             merge_init_into_class: true 
             show_source: false
+            relative_crossrefs: true
+            signature_crossrefs: true
 
 nav:
   - Mosaico: index.md
@@ -52,6 +54,13 @@ nav:
         - SDK/bridges/ros.md
     - API Reference:
       - SDK/API_reference/comm.md
+      - SDK/API_reference/enum.md
+      - SDK/API_reference/handlers.md
+      - Models:
+        - SDK/API_reference/models/base.md
+        - SDK/API_reference/models/data.md
+        - SDK/API_reference/models/platform.md
+        - SDK/API_reference/models/query.md
       - SDK/API_reference/ml.md
   - Daemon:
     - daemon/index.md

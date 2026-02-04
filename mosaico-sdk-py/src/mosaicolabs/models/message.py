@@ -35,12 +35,16 @@ TSensor = TypeVar("TSensor", bound="Serializable")
 
 class Message(BaseModel):
     """
-    The universal container for data transmission.
+    The universal transport envelope for Mosaico data.
+
+    The `Message` class wraps a polymorphic [`Serializable`][mosaicolabs.models.Serializable]
+    payload with middleware metadata, such as recording timestamps and headers.
 
     Attributes:
-        timestamp_ns (int): Middleware processing timestamp in nanoseconds (different from sensor acquisition time).
-        message_header (Optional[Header]): Middleware-level header.
-        data (Serializable): The polymorphic payload (e.g., an IMU object).
+        timestamp_ns: Middleware processing timestamp in nanoseconds.
+        message_header: Optional middleware-level header.
+        data: The actual ontology data payload (e.g., an IMU or GPS instance).
+
     """
 
     # Define the Message schema (Envelope fields only)
@@ -74,8 +78,10 @@ class Message(BaseModel):
 
     def model_post_init(self, context: Any) -> None:
         """
-        Validates that the 'data' payload does not have fields that collide
-        with the Message envelope fields (e.g., 'timestamp_ns').
+        Validates the message structure after initialization.
+
+        Ensures that there are no field name collisions between the envelope
+        (e.g., `timestamp_ns`) and the data payload.
         """
         super().model_post_init(context)
         self._self_model_keys = {
@@ -91,7 +97,7 @@ class Message(BaseModel):
             )
 
     def ontology_type(self) -> Type[Serializable]:
-        """Retrieves the Python class type of the ontology object stored in the data field."""
+        """Retrieves the class type of the ontology object stored in the `data` field."""
         return self.data.__class_type__
 
     def ontology_tag(self) -> str:
@@ -102,10 +108,13 @@ class Message(BaseModel):
 
     def encode(self) -> Dict[str, Any]:
         """
-        Flattens the object into a dictionary suitable for PyArrow serialization.
+        Flattens the message and its payload into a dictionary for serialization.
 
-        Merges the Message fields ('timestamp_ns') and the Data fields
-        into a single flat dictionary.
+        This merges envelope fields and data fields into a single flat structure
+        compatible with PyArrow serialization.
+
+        Returns:
+            A dictionary containing all flattened message and payload data.
         """
         # Encode envelope fields
         columns_dict = {
@@ -126,9 +135,34 @@ class Message(BaseModel):
     @staticmethod
     def from_dataframe_row(row: pd.Series, topic_name: str) -> Optional["Message"]:
         """
-        Smart reconstruction factory.
+        Reconstructs a `Message` object from a flattened DataFrame row.
 
-        Returns None if the topic is not found or the ontology tag cannot be inferred.
+        In the Mosaico Data Platform, DataFrames represent topics using a nested naming
+        convention: `{topic}.{tag}.{field}`. This method performs
+        **Smart Reconstruction** by:
+
+        1. **Topic Validation**: Verifying if any columns associated with the `topic_name`
+           exist in the row.
+        2. **Tag Inference**: Inspecting the column headers to automatically determine
+           the original ontology tag (e.g., `"imu"`).
+        3. **Data Extraction**: Stripping prefixes and re-nesting the flat columns
+           into their original dictionary structures.
+        4. **Type Casting**: Re-instantiating the specific [`Serializable`][mosaicolabs.models.Serializable]
+           subclass and wrapping it in a `Message` envelope.
+
+        Args:
+            row: A single row from a Pandas DataFrame, representing a point in time
+                across one or more topics.
+            topic_name: The name of the specific topic to extract from the row.
+
+        Returns:
+            A reconstructed `Message` instance containing the typed ontology data,
+                or `None` if the topic is not present or the data is incomplete.
+
+        Note: Timestamp Handling
+            This method expects a global `timestamp_ns` column in the row to populate
+            the message envelope. If this column is missing or contains `NaN`, the
+            reconstruction will return `None`.
         """
         # Topic Presence Check
         # Check if any columns belonging to this topic exist in the row
@@ -199,18 +233,22 @@ class Message(BaseModel):
     @classmethod
     def create(cls, tag: str, **kwargs) -> "Message":
         """
-        Factory to create a Message containing a specific ontology type.
+        Factory method to create a Message and its specific ontology payload.
 
-        This method intelligently splits `kwargs` into:
-        1. Envelope arguments (timestamp_ns, message_header)
-        2. Payload arguments (passed to the ontology class constructor)
+        This method separates the provided keyword arguments into envelope-level
+        fields and payload-level fields based on the registered ontology tag.
 
         Args:
-            tag (str): The registered tag of the ontology data (e.g., "imu").
-            **kwargs: A flat dictionary containing both message and data fields.
+            tag: The registered ontology identifier (e.g., "imu").
+            **kwargs: A dictionary containing all required fields for both the
+                message and the data object.
 
         Returns:
-            Message: The populated message object.
+            A fully populated `Message` instance.
+
+        Raises:
+            ValueError: If the tag is not registered.
+            Exception: If required message fields are missing from `kwargs`.
         """
         # Validate Tag
         if tag not in _SENSOR_REGISTRY:
@@ -251,15 +289,16 @@ class Message(BaseModel):
     @classmethod
     def get_schema(cls, data_cls: Type["Serializable"]) -> pa.Schema:
         """
-        Generates the combined PyArrow Schema for a specific ontology type.
-
-        Merges the Message envelope schema with the specific Ontology schema.
+        Generates a combined PyArrow Schema for the message and a specific ontology.
 
         Args:
-            data_cls: The ontology class type.
+            data_cls: The specific `Serializable` subclass type.
 
         Returns:
-            pa.Schema: The combined schema.
+            A combined PyArrow Schema including both envelope and payload fields.
+
+        Raises:
+            ValueError: If field name collisions are detected in the schema.
         """
         # Collision check
         colliding_keys = set(cls.__msco_pyarrow_struct__.names) & set(
@@ -277,16 +316,16 @@ class Message(BaseModel):
 
     def get_data(self, target_type: Type[TSensor]) -> TSensor:
         """
-        Safe accessor for the data payload.
+        Safe, type-hinted accessor for the data payload.
 
         Args:
-            target_type (Type[TSensor]): The expected class of the data.
+            target_type: The expected `Serializable` subclass type.
 
         Returns:
-            TSensor: The data object, type-hinted for IDE support.
+            The data object cast to the requested type.
 
         Raises:
-            TypeError: If the actual data does not match the requested type.
+            TypeError: If the actual data type does not match the requested `target_type`.
         """
         if not isinstance(self.data, target_type):
             raise TypeError(

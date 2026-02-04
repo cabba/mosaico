@@ -16,19 +16,39 @@ from .header import Header
 
 class HeaderMixin(BaseModel):
     """
-    A Mixin that adds a `header` field to any data model inheriting from it.
+    A mixin that injects a standard `header` field into any inheriting ontology model.
 
-    **Mechanism:**
-    It uses the `__init_subclass__` hook to inspect the child class's existing
-    PyArrow struct, appends the 'header' field definition, and updates the struct.
-    This ensures that the PyArrow schema matches the Pydantic fields.
+    The `HeaderMixin` is used to add standard metadata (such as acquisition timestamps
+    or frame IDs) to a sensor model through composition. It ensures that the
+    underlying PyArrow schema remains synchronized with the Pydantic data model.
+
+    ### Dynamic Schema Injection
+    This mixin uses the `__init_subclass__` hook to perform a **Schema Append** operation:
+
+    1. It inspects the child class's existing `__msco_pyarrow_struct__`.
+    2. It appends a `header` field of type [`Header`][mosaicolabs.models.Header].
+    3. It reconstructs the final `pa.struct` for the class.
+
+    Attributes:
+        header: An optional [`Header`][mosaicolabs.models.Header] object containing standard metadata.
+
+    Important: Collision Safety
+        The mixin performs a collision check during class definition. If the child
+        class already defines a `header` field in its PyArrow struct, a `ValueError`
+        will be raised to prevent schema corruption.
     """
 
     header: Optional[Header] = None
+    """optional Header object containing standard metadata."""
 
     def __init_subclass__(cls, **kwargs):
         """
         Automatically updates the child class's PyArrow schema to include 'header'.
+
+        This method is triggered at class definition time.
+
+        Raises:
+            ValueError: If a field named 'header' already exists in the child's schema.
         """
         super().__init_subclass__(**kwargs)
 
@@ -64,16 +84,34 @@ class HeaderMixin(BaseModel):
 
 class CovarianceMixin(BaseModel):
     """
-    A Mixin that adds optional `covariance` and `covariance_type` fields to data models.
-    Useful for sensors like IMUs or Odometry that provide uncertainty measurements.
+    A mixin that adds uncertainty fields (`covariance` and `covariance_type`) to data models.
+
+    This is particularly useful for complex sensors like IMUs, Odometry, or GNSS
+    receivers that provide multidimensional uncertainty matrices along with
+    their primary measurements.
+
+    ### Injected Fields
+    * **`covariance`**: A flattened list of floats representing the covariance matrix.
+    * **`covariance_type`**: An integer enum representing the specific parameterization
+        used (e.g., fixed, diagonal, full).
+
+    Attributes:
+        covariance: Optional list of 64-bit floats representing the flattened matrix.
+        covariance_type: Optional 16-bit integer representing the covariance enum.
     """
 
     covariance: Optional[List[float]] = None
+    """Optional list of 64-bit floats representing the flattened matrix."""
+
     covariance_type: Optional[int] = None
+    """Optional 16-bit integer representing the covariance enum."""
 
     def __init_subclass__(cls, **kwargs):
         """
-        Automatically updates the child class's PyArrow schema to include covariance fields.
+        Dynamically appends covariance-related fields to the child class's PyArrow struct.
+
+        Raises:
+            ValueError: If 'covariance' or 'covariance_type' keys collide with existing fields.
         """
         super().__init_subclass__(**kwargs)
 
@@ -121,16 +159,32 @@ class CovarianceMixin(BaseModel):
 
 class VarianceMixin(BaseModel):
     """
-    A Mixin that adds optional `variance` and `variance_type` fields to data models.
-    Useful for sensors with 1-dimensional uncertain data.
+    A mixin that adds 1-dimensional uncertainty fields (`variance` and `variance_type`).
+
+    Recommended for sensors with scalar uncertain outputs, such as ultrasonic
+    rangefinders, temperature sensors, or individual encoders.
+
+    ### Injected Fields
+    * **`variance`**: Optional 64-bit float representing the variance of the data.
+    * **`variance_type`**: Optional 16-bit integer representing the variance parameterization.
+
+    Attributes:
+        variance: Optional 64-bit float representing the variance of the data.
+        variance_type: Optional 16-bit integer representing the variance parameterization.
     """
 
     variance: Optional[float] = None
+    """Optional 64-bit float representing the variance of the data."""
+
     variance_type: Optional[int] = None
+    """Optional 16-bit integer representing the variance parameterization."""
 
     def __init_subclass__(cls, **kwargs):
         """
-        Automatically updates the child class's PyArrow schema to include variance fields.
+        Dynamically appends variance-related fields to the child class's PyArrow struct.
+
+        Raises:
+            ValueError: If 'variance' or 'variance_type' keys collide with existing fields.
         """
         super().__init_subclass__(**kwargs)
 

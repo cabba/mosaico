@@ -34,18 +34,22 @@ logger = get_logger(__name__)
 
 class MosaicoClient:
     """
-    The main client for the Mosaico Data-Platform.
+    The gateway to the Mosaico Data Platform.
 
-    This class manages:
-    1.  **Network Resources:** A control connection and a pool of data connections.
-    2.  **Concurrency:** A pool of executors for handling async serialization/IO.
-    3.  **State:** Caching of handlers to prevent redundant object creation.
+    This class centralizes connection management, resource pooling, and serves as a
+    factory for specialized handlers. It is designed to manage the lifecycle of
+    both network connections and asynchronous executors efficiently.
 
-    Usage:
-        This class is designed to be used as a Context Manager:
+    Tip: Context Manager Usage
+        The `MosaicoClient` is best used as a context manager to ensure all
+        internal pools and connections are gracefully closed.
+
         ```python
-        with MosaicoClient.connect("localhost", 50051) as client:
-            # use client...
+        from mosaicolabs import MosaicoClient
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            sequences = client.list_sequences()
+            print(f"Available data: {sequences}")
         ```
     """
 
@@ -65,10 +69,24 @@ class MosaicoClient:
         sentinel: object,
     ):
         """
-        Internal initialization method.
+        **Internal Constructor** (do not call this directly): The `MosaicoClient` enforces a strict
+        factory pattern for security and proper resource setup.
+        Please use the [`connect()`][mosaicolabs.comm.MosaicoClient.connect] method
+        instead to obtain an initialized client.
 
-        **Do not call this directly.** Use `MosaicoClient.connect()` instead.
-        This constructor enforces the factory pattern by checking for a private sentinel.
+        Important: Sentinel Enforcement
+            This constructor checks for a private internal sentinel.
+            Attempting to instantiate this class manually will result in a
+            `RuntimeError`.
+
+        Args:
+            host: The remote server host.
+            port: The remote server port.
+            timeout: The connection timeout.
+            control_client: The primary PyArrow Flight control client.
+            connection_pool: Internal pool for data connections.
+            executor_pool: Internal pool for async I/O.
+            sentinel: Private object used to verify factory-based instantiation.
         """
         if sentinel is not MosaicoClient._CONNECT_SENTINEL:
             raise RuntimeError(
@@ -130,19 +148,31 @@ class MosaicoClient:
         timeout: int = 5,
     ) -> "MosaicoClient":
         """
-        Factory method to establish a connection to the Mosaico server.
+        The primary entry point to the Mosaico Data Platform.
+
+        This factory method is the **only recommended way** to obtain a valid
+        `MosaicoClient` instance. It orchestrates the
+        necessary handshake, initializes the primary control channel, and prepares
+        the internal resource pools.
+
+        Important: Factory Pattern
+            Direct instantiation via `__init__` is restricted through a sentinel
+            pattern and will raise a `RuntimeError`. This
+            ensures that every client in use has been correctly configured with a
+            valid network connection.
 
         Args:
-            host (str): The server host address.
-            port (int): The server port.
-            timeout (int): The waiting-for-connection timeout in seconds (default = 5s)
+            host (str): The server host address (e.g., "127.0.0.1" or "mosaico.local").
+            port (int): The server port (e.g., 6726).
+            timeout (int): Maximum time in seconds to wait for a connection response.
+                Defaults to 5.
 
         Returns:
-            MosaicoClient: An initialized client instance.
+            MosaicoClient: An initialized and connected client ready for operations.
 
         Raises:
-            fl.FlightUnavailableError: If the control connection cannot be established.
-            Exception: If pool initialization fails.
+            ConnectionError: If the server is unreachable or the handshake fails.
+            RuntimeError: If the class is instantiated directly instead of using this method.
         """
 
         # Establish the Control Connection
@@ -203,15 +233,17 @@ class MosaicoClient:
 
     def sequence_handler(self, sequence_name: str) -> Optional[SequenceHandler]:
         """
-        Retrieves a `SequenceHandler` for the given sequence.
+        Retrieves a [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler] for the given sequence.
 
-        Handlers are cached; subsequent calls for the same sequence return the existing object.
+        Handlers are cached; subsequent calls for the same sequence return the existing
+        object to avoid redundant handshakes.
 
         Args:
-            sequence_name (str): The name of the sequence.
+            sequence_name (str): The unique identifier of the sequence.
 
         Returns:
-            SequenceHandler: A handler for managing sequence operations.
+            Optional[SequenceHandler]: A handler for managing sequence operations,
+                or None if not found.
         """
         sh = self._sequence_handlers_cache.get(sequence_name)
         if sh is None:
@@ -231,17 +263,15 @@ class MosaicoClient:
         topic_name: str,
     ) -> Optional[TopicHandler]:
         """
-        Retrieves a `TopicHandler`.
-
-        Input must be the separate sequence and topic names.
+        Retrieves a [`TopicHandler`][mosaicolabs.handlers.TopicHandler] for a specific data channel.
 
         Args:
             sequence_name (str): The parent sequence name.
-            topic_name (str): The topic name.
+            topic_name (str): The specific topic name.
 
         Returns:
-            TopicHandler: A handler for managing topic operations.
-
+            Optional[TopicHandler]: A handler for managing topic operations,
+                or None if not found.
         """
         # normalize inputs to a unique resource string
         topic_resource_name = pack_topic_resource_name(sequence_name, topic_name)
@@ -270,14 +300,12 @@ class MosaicoClient:
         max_batch_size_records: Optional[int] = None,
     ) -> SequenceWriter:
         """
-        Creates a `SequenceWriter` to upload a new sequence.
-
-        The writer will utilize the client's connection and executor pools.
+        Creates a new sequence on the platform and returns a [`SequenceWriter`][mosaicolabs.handlers.SequenceWriter] for ingestion.
 
         Args:
             sequence_name (str): Unique name for the sequence.
-            metadata (dict[str, Any]): User-defined metadata.
-            on_error (OnErrorPolicy): Behavior on write failure (e.g., Delete partial data).
+            metadata (dict[str, Any]): User-defined metadata to attach.
+            on_error (OnErrorPolicy): Behavior on write failure. Defaults to `Delete`.
             max_batch_size_bytes (Optional[int]): Max bytes per Arrow batch.
             max_batch_size_records (Optional[int]): Max records per Arrow batch.
 
@@ -321,26 +349,27 @@ class MosaicoClient:
         del self._topic_handlers_cache[topic_resource_name]
 
     def clear_sequence_handlers_cache(self):
+        """
+        Clears the internal cache of [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler] objects.
+        """
         self._sequence_handlers_cache = {}
 
     def clear_topic_handlers_cache(self):
+        """
+        Clears the internal cache of [`TopicHandler`][mosaicolabs.handlers.TopicHandler] objects.
+        """
         self._topic_handlers_cache = {}
 
     def sequence_system_info(self, sequence_name: str) -> Optional[SystemInfo]:
         """
-        Retrieves system-level metadata for a specific sequence.
-
-        This method queries the server for the physical state of the sequence,
-        including its total storage footprint and creation history.
+        Retrieves system-level metadata and physical diagnostics for a specific sequence.
 
         Args:
-            sequence_name (str): The unique identifier of the sequence on the
-                Mosaico platform.
+            sequence_name (str): The unique identifier of the sequence.
 
         Returns:
-            Optional[SystemInfo]: A SystemInfo object containing the sequence
-                diagnostics if found, or None if the sequence does not exist
-                on the host.
+            Optional[SystemInfo]: Object containing storage size, creation time,
+                and lock status, or None if missing.
         """
         # Get System Info
         ACTION = FlightAction.SEQUENCE_SYSTEM_INFO
@@ -375,18 +404,13 @@ class MosaicoClient:
         """
         Retrieves system-level metadata for a specific topic within a sequence.
 
-        Useful for verifying the data integrity or storage consumption of
-        individual streams (e.g., a specific LIDAR or Camera topic) without
-        loading the entire sequence metadata.
-
         Args:
             sequence_name (str): The name of the sequence containing the topic.
-            topic_name (str): The specific topic name to query (e.g., "/front_cam/image_raw").
+            topic_name (str): The specific topic name to query.
 
         Returns:
-            Optional[SystemInfo]: A SystemInfo object containing the topic
-                diagnostics if found, or None if the sequence or topic
-                cannot be located.
+            Optional[SystemInfo]: Object containing storage diagnostics and
+                chunk counts, or None if missing.
         """
         # Get System Info
         ACTION = FlightAction.TOPIC_SYSTEM_INFO
@@ -420,10 +444,19 @@ class MosaicoClient:
 
     def sequence_delete(self, sequence_name: str):
         """
-        Deletes a layer definition from the server.
+        Permanently deletes a sequence and all its associated data from the server.
+
+        This operation is destructive and triggers a cascading deletion of all underlying
+        resources, including all topics and data chunks belonging to the sequence.
+        Once executed, all storage occupied by the sequence is freed.
+
+        Important: Sequence Locking
+            This action can only be performed on **unlocked** sequences. If a sequence
+            is currently locked (e.g., for archival or safety reasons), the deletion
+            request will be rejected by the server.
 
         Args:
-            layer_name (str): The name of the layer to delete.
+            sequence_name (str): The unique name of the sequence to remove.
         """
         try:
             _do_action(
@@ -442,10 +475,10 @@ class MosaicoClient:
 
     def list_sequences(self) -> List[str]:
         """
-        Retrieves the list of all sequences available on the server.
+        Retrieves a list of all sequence names available on the server.
 
         Returns:
-            List[str]: The list of sequence names.
+            List[str]: The list of sequence identifiers.
         """
         out_list = []
         for finfo in self._control_client.list_flights():
@@ -462,14 +495,15 @@ class MosaicoClient:
     ) -> Optional[QueryResponse]:
         """
         Executes one or more queries against the Mosaico database.
-        The provided queries are joined in AND condition.
+
+        Multiple provided queries are joined using a logical **AND** condition.
 
         Args:
-            *queries: Variable arguments of query builder objects.
-            query (Optional[Query]): A pre-constructed Query object (alternative to *queries).
+            *queries: Variable arguments of query builder objects (e.g., `QuerySequence`).
+            query (Optional[Query]): An alternative pre-constructed Query object.
 
         Returns:
-            Optional[QueryResponse]: The query result or None if any error.
+            Optional[QueryResponse]: The query results, or None if an error occurs.
 
         Raises:
             ValueError: If conflicting query types are passed or no queries are provided.
@@ -516,10 +550,10 @@ class MosaicoClient:
 
     def close(self):
         """
-        Gracefully shuts down the client.
+        Gracefully shuts down the client and releases all internal resources.
 
-        Closes all cached handlers, terminates the connection and executor pools,
-        and closes the main control connection.
+        This includes closing all cached handlers, terminating the network
+        connection pool, and stopping the thread executor pool.
         """
         if self._status == _ConnectionStatus.Open:
             # Close cached handlers
