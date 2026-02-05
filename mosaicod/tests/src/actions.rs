@@ -1,5 +1,8 @@
 use super::common::{ActionResponse, Client};
-use arrow_flight::Action;
+use arrow_flight::{
+    Action, FlightDescriptor, encode::FlightDataEncoderBuilder, flight_descriptor::DescriptorType,
+};
+use futures::StreamExt;
 
 /// Create a new sequence.
 /// Returns the `key` of the newly created sequence, this key is required to perform action
@@ -83,4 +86,30 @@ pub async fn topic_create(
     }
 
     key.expect("Unable to return key")
+}
+
+pub async fn upload_data(
+    client: &mut Client,
+    key: &uuid::Uuid,
+    topic_name: &str,
+    batch: arrow::array::RecordBatch,
+) {
+    let cmd = serde_json::json!({
+        "resource_locator": topic_name,
+        "key": key.to_string(),
+    })
+    .to_string();
+
+    let descriptor = FlightDescriptor {
+        r#type: DescriptorType::Cmd.into(),
+        cmd: cmd.into(),
+        path: vec![],
+    };
+
+    let flight_data_stream = FlightDataEncoderBuilder::new()
+        .with_flight_descriptor(Some(descriptor))
+        .build(futures::stream::iter(vec![Ok(batch)]))
+        .map(|res| res.expect("Error encoding flight data"));
+
+    let _ = client.do_put(flight_data_stream).await.unwrap();
 }

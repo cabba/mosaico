@@ -4053,7 +4053,9 @@ dependencies = [
 name = "tests"
 version = "0.1.2"
 dependencies = [
+ "arrow",
  "arrow-flight",
+ "futures",
  "log",
  "mosaicod-core",
  "mosaicod-ext",
