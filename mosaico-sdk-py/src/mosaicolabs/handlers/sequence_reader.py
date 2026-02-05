@@ -261,7 +261,7 @@ class SequenceDataStreamer:
         # Advance the Winner's stream
         self._winning_rdstate.peek_next_row()
 
-        return self._winning_rdstate.topic_name, Message.create(
+        return self._winning_rdstate.topic_name, Message._create(
             self._winning_rdstate.ontology_tag, **row_dict
         )
 

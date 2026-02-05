@@ -256,7 +256,7 @@ class TopicDataStreamer:
         # Advance the buffer immediately *after* extracting the data
         self._rdstate.peek_next_row()
 
-        return Message.create(self._rdstate.ontology_tag, **row_dict)
+        return Message._create(self._rdstate.ontology_tag, **row_dict)
 
     def close(self):
         """

@@ -32,6 +32,31 @@ class HeaderMixin(BaseModel):
     Attributes:
         header: An optional [`Header`][mosaicolabs.models.Header] object containing standard metadata.
 
+    ### Querying with the `.Q` Proxy {: #queryability }
+    When constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog],
+    the `header` component is fully queryable across any model inheriting from this mixin.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.header.seq` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.header.stamp.sec` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.header.stamp.nanosec` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.header.frame_id` | `String` | `.eq()`, `.match()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico ontology class (e.g., `IMU`, `GPS`, `Floating64`)
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Examples:**
+    ```python
+    # Filter IMU data by a specific acquisition second
+    query = QueryOntologyCatalog(IMU.Q.header.stamp.sec.lt(1770282868))
+
+    # Filter primitive Floating64 telemetry by frame identifier
+    query = QueryOntologyCatalog(Floating64.Q.header.frame_id.eq("robot_base"))
+    ```
+
     Important: Collision Safety
         The mixin performs a collision check during class definition. If the child
         class already defines a `header` field in its PyArrow struct, a `ValueError`
@@ -39,7 +64,18 @@ class HeaderMixin(BaseModel):
     """
 
     header: Optional[Header] = None
-    """optional Header object containing standard metadata."""
+    """
+    An optional metadata header providing temporal and spatial context to the ontology model.
+
+    This field is injected into the model via composition, ensuring that sensor data is 
+    paired with standard acquisition attributes like sequence IDs and high-precision 
+    timestamps.
+
+    ### Querying with the `.Q` Proxy
+    Check the documentation of the [`HeaderMixin`][mosaicolabs.models.HeaderMixin--queryability] to construct a
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
+    the `header` component.
+    """
 
     def __init_subclass__(cls, **kwargs):
         """
@@ -98,13 +134,51 @@ class CovarianceMixin(BaseModel):
     Attributes:
         covariance: Optional list of 64-bit floats representing the flattened matrix.
         covariance_type: Optional 16-bit integer representing the covariance enum.
+
+    ### Querying with the `.Q` Proxy {: #queryability }
+    When constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog],
+    the class fields are queryable across any model inheriting from this mixin, according to the following table:
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.covariance_type` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.covariance` | ***Non-Queryable*** | None |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico ontology class (e.g., `IMU`, `GPS`, `Floating64`)
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Examples:**
+    ```python
+    # Filter IMU data by a specific acquisition second
+    # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
+    query = QueryOntologyCatalog(IMU.Q.covariance_type.eq(FROM_CALIBRATED_PROCEDURE))
+    ```
     """
 
     covariance: Optional[List[float]] = None
-    """Optional list of 64-bit floats representing the flattened matrix."""
+    """
+    Optional list of 64-bit floats representing the flattened matrix.
+    
+    ### Querying with the `.Q` Proxy
+
+    Note: Non-Queryable
+        The field is not queryable with the `.Q` Proxy.
+    """
 
     covariance_type: Optional[int] = None
-    """Optional 16-bit integer representing the covariance enum."""
+    """
+    Optional 16-bit integer representing the covariance enum.
+
+    This field is injected into the model via composition, ensuring that sensor data is 
+    paired with the optional covariance type attribute.
+
+    ### Querying with the `.Q` Proxy
+    Check the documentation of the [`CovarianceMixin`][mosaicolabs.models.CovarianceMixin--queryability] to construct a
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
+    the `cobvariance_type` component.
+    """
 
     def __init_subclass__(cls, **kwargs):
         """
@@ -171,13 +245,58 @@ class VarianceMixin(BaseModel):
     Attributes:
         variance: Optional 64-bit float representing the variance of the data.
         variance_type: Optional 16-bit integer representing the variance parameterization.
+
+    ### Querying with the `.Q` Proxy {: #queryability }
+    When constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog],
+    the class fields are queryable across any model inheriting from this mixin, according to the following table:
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.variance` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.variance_type` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico ontology class (e.g., `IMU`, `GPS`, `Floating64`)
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from [`HeaderMixin`][mosaicolabs.models.HeaderMixin].
+
+    **Examples:**
+    ```python
+    # Filter IMU data by a specific acquisition second
+    # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
+    query = QueryOntologyCatalog(IMU.Q.variance.lt(0.76))
+
+    # Filter IMU data by a specific acquisition second
+    # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
+    query = QueryOntologyCatalog(IMU.Q.variance_type.eq(FROM_CALIBRATED_PROCEDURE))
+    ```
     """
 
     variance: Optional[float] = None
-    """Optional 64-bit float representing the variance of the data."""
+    """
+    Optional 64-bit float representing the variance of the data.
+
+    This field is injected into the model via composition, ensuring that sensor data is 
+    paired with the optional variance attribute.
+
+    ### Querying with the `.Q` Proxy
+    Check the documentation of the [`VarianceMixin`][mosaicolabs.models.VarianceMixin--queryability] to construct a
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
+    the `variance` component.
+    """
 
     variance_type: Optional[int] = None
-    """Optional 16-bit integer representing the variance parameterization."""
+    """
+    Optional 16-bit integer representing the variance parameterization.
+
+    This field is injected into the model via composition, ensuring that sensor data is 
+    paired with the optional covariance type attribute.
+
+    ### Querying with the `.Q` Proxy
+    Check the documentation of the [`VarianceMixin`][mosaicolabs.models.VarianceMixin--queryability] to construct a
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
+    the `variance_type` component.
+    """
 
     def __init_subclass__(cls, **kwargs):
         """

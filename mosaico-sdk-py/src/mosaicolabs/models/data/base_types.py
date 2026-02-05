@@ -38,6 +38,23 @@ class Integer8(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Integer8.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Integer8.Q.data.gt(-10))
+    ```
+    """
 
 
 class Integer16(Serializable, HeaderMixin):
@@ -60,6 +77,23 @@ class Integer16(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Integer16.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Integer16.Q.data.gt(-10))
+    ```
+    """
 
 
 class Integer32(Serializable, HeaderMixin):
@@ -82,6 +116,23 @@ class Integer32(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Integer32.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Integer32.Q.data.gt(-10))
+    ```
+    """
 
 
 class Integer64(Serializable, HeaderMixin):
@@ -104,6 +155,23 @@ class Integer64(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Integer64.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Integer64.Q.data.gt(-10))
+    ```
+    """
 
 
 class Unsigned8(Serializable, HeaderMixin):
@@ -112,6 +180,7 @@ class Unsigned8(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying unsigned 8-bit integer value.
+        header: An optional metadata header injected by `HeaderMixin`.
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
@@ -128,6 +197,23 @@ class Unsigned8(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying unsigned integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Unsigned8.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Unsigned8.Q.data.leq(253))
+    ```
+    """
 
     def model_post_init(self, context: Any) -> None:
         """
@@ -147,6 +233,7 @@ class Unsigned16(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying unsigned 16-bit integer value.
+        header: An optional metadata header injected by `HeaderMixin`.
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
@@ -163,6 +250,23 @@ class Unsigned16(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying unsigned integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Unsigned16.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Unsigned16.Q.data.eq(2))
+    ```
+    """
 
     def model_post_init(self, context: Any) -> None:
         """
@@ -182,6 +286,7 @@ class Unsigned32(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying unsigned 32-bit integer value.
+        header: An optional metadata header injected by `HeaderMixin`.
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
@@ -198,6 +303,23 @@ class Unsigned32(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying unsigned integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Unsigned32.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Unsigned32.Q.data.gt(123))
+    ```
+    """
 
     def model_post_init(self, context: Any) -> None:
         """
@@ -217,6 +339,7 @@ class Unsigned64(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying unsigned 64-bit integer value.
+        header: An optional metadata header injected by `HeaderMixin`.
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
@@ -233,6 +356,23 @@ class Unsigned64(Serializable, HeaderMixin):
         ]
     )
     data: int
+    """
+    The underlying unsigned integer value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Unsigned64.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Unsigned64.Q.data.gt(123))
+    ```
+    """
 
     def model_post_init(self, context: Any) -> None:
         """
@@ -252,6 +392,7 @@ class Floating16(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying single-precision float.
+        header: An optional metadata header injected by `HeaderMixin`.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -265,6 +406,23 @@ class Floating16(Serializable, HeaderMixin):
         ]
     )
     data: float
+    """
+    The underlying single-precision float.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Floating16.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Floating16.Q.data.leq(123.4))
+    ```
+    """
 
 
 class Floating32(Serializable, HeaderMixin):
@@ -273,6 +431,7 @@ class Floating32(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying single-precision float.
+        header: An optional metadata header injected by `HeaderMixin`.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -286,6 +445,23 @@ class Floating32(Serializable, HeaderMixin):
         ]
     )
     data: float
+    """
+    The underlying single-precision float.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Floating32.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Floating32.Q.data.leq(123.4))
+    ```
+    """
 
 
 class Floating64(Serializable, HeaderMixin):
@@ -294,6 +470,7 @@ class Floating64(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying single-precision float.
+        header: An optional metadata header injected by `HeaderMixin`.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -307,6 +484,23 @@ class Floating64(Serializable, HeaderMixin):
         ]
     )
     data: float
+    """
+    The underlying single-precision float.
+
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Floating64.Q.data` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Floating64.Q.data.leq(123.4))
+    ```
+    """
 
 
 class Boolean(Serializable, HeaderMixin):
@@ -315,6 +509,7 @@ class Boolean(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying boolean value.
+        header: An optional metadata header injected by `HeaderMixin`.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -328,6 +523,23 @@ class Boolean(Serializable, HeaderMixin):
         ]
     )
     data: bool
+    """
+    The underlying boolean value.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Boolean.Q.data` | `Bool` | `.eq()` |
+
+    **Example:**
+    ```python
+    # Filter for a specific data value
+    query = QueryOntologyCatalog(Boolean.Q.data.eq(True))
+    ```
+    """
 
 
 class String(Serializable, HeaderMixin):
@@ -336,6 +548,7 @@ class String(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying string data.
+        header: An optional metadata header injected by `HeaderMixin`.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -349,6 +562,23 @@ class String(Serializable, HeaderMixin):
         ]
     )
     data: str
+    """
+    The underlying string data.
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `String.Q.data` | `String` | `.eq()`, `.match()` |
+
+    **Example:**
+    ```python
+    # Filter for strings containing a specific log pattern
+    query = QueryOntologyCatalog(String.Q.data.match("[ERR]"))
+    ```
+    """
 
 
 class LargeString(Serializable, HeaderMixin):
@@ -360,6 +590,7 @@ class LargeString(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying large string data.
+        header: An optional metadata header injected by `HeaderMixin`.
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -373,3 +604,20 @@ class LargeString(Serializable, HeaderMixin):
         ]
     )
     data: str
+    """
+    The underlying large string data.
+
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `LargeString.Q.data` | `String` | `.eq()`, `.match()` |
+
+    **Example:**
+    ```python
+    # Filter for large strings containing a specific log pattern
+    query = QueryOntologyCatalog(LargeString.Q.data.match("CRITICAL_ERR_"))
+    ```
+    """

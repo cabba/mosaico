@@ -97,7 +97,9 @@ class QueryOntologyCatalog:
     ### Key Mechanism: The `.Q` Proxy
     This class is designed to work with the **`.Q` query proxy** injected into every
     [`Serializable`][mosaicolabs.models.Serializable] data ontology model.
-    You can use this proxy on any registered sensor class (like `IMU`, `Vector3d`, or `Point3d`)
+    You can use this proxy on any registered sensor class (like [`IMU`][mosaicolabs.models.sensors.IMU],
+    [`Vector3d`][mosaicolabs.models.data.geometry.Vector3d],
+    [`Point3d`][mosaicolabs.models.data.geometry.Point3d]), etc.
     to create type-safe expressions.
 
     Example:
@@ -373,8 +375,24 @@ class QueryTopic:
         """
         Adds an exact match filter for the 'ontology_tag' field.
 
+        This filter restricts the search to topics belonging to a specific data type
+        identifier (e.g., 'imu', 'gnss').
+
+        Hint: **Dynamic Tag Retrieval**
+            To ensure compatibility and avoid hardcoding strings, it is highly recommended to
+            retrieve the tag dynamically using the
+            [`ontology_tag()`][mosaicolabs.models.Serializable.ontology_tag]
+            method of the desired ontology class.
+            ```python
+            # Type-safe filtering using the class-level tag retriever
+            query = QueryTopic().with_ontology_tag(IMU.ontology_tag())
+            ```
+
         Args:
             ontology_tag: The string tag (e.g., 'imu', 'gps') to filter by.
+
+        Returns:
+            The current [`QueryTopic`][mosaicolabs.query.builders.QueryTopic] instance for method chaining.
         """
         return self.with_expression(
             # employs explicit _QueryTopicExpression composition for dealing with

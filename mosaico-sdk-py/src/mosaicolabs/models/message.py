@@ -106,7 +106,7 @@ class Message(BaseModel):
             self.data, "__ontology_tag__"
         )  # avoid the IDE complaining (__ontology_tag__ defined as Optional but surely not None at this point)
 
-    def encode(self) -> Dict[str, Any]:
+    def _encode(self) -> Dict[str, Any]:
         """
         Flattens the message and its payload into a dictionary for serialization.
 
@@ -225,13 +225,13 @@ class Message(BaseModel):
         # Final Message Creation
         try:
             # Reconstructs the strongly-typed Ontology object from flattened rows
-            return Message.create(tag=tag, **nested_data)
+            return Message._create(tag=tag, **nested_data)
         except Exception as e:
             logger.error(f"Failed to reconstruct Message for topic {topic_name}: {e}")
             return None
 
     @classmethod
-    def create(cls, tag: str, **kwargs) -> "Message":
+    def _create(cls, tag: str, **kwargs) -> "Message":
         """
         Factory method to create a Message and its specific ontology payload.
 
@@ -287,7 +287,7 @@ class Message(BaseModel):
         return cls(data=data_obj, **message_kwargs)
 
     @classmethod
-    def get_schema(cls, data_cls: Type["Serializable"]) -> pa.Schema:
+    def _get_schema(cls, data_cls: Type["Serializable"]) -> pa.Schema:
         """
         Generates a combined PyArrow Schema for the message and a specific ontology.
 

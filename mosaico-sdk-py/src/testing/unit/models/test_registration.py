@@ -17,7 +17,7 @@ def test_ontology_type_registered():
     assert issubclass(RegisteredSensor.__class_type__, Serializable)
     assert issubclass(RegisteredSensor, Serializable)
     # Check factory registration
-    assert Serializable.is_registered(RegisteredSensor.__ontology_tag__)
+    assert Serializable._is_registered(RegisteredSensor.__ontology_tag__)
 
 
 def test_ontology_type_unregistered():
@@ -33,7 +33,7 @@ def test_ontology_type_unregistered():
     assert not issubclass(UnregisteredSensor.__class_type__, Serializable)
     assert not issubclass(UnregisteredSensor, Serializable)
     # It is not registered
-    assert not Serializable.is_registered(UnregisteredSensor.__ontology_tag__)
+    assert not Serializable._is_registered(UnregisteredSensor.__ontology_tag__)
 
 
 def test_message_generation():

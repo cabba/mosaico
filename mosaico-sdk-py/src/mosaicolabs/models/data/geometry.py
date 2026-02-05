@@ -54,7 +54,54 @@ class _Vector2dStruct(BaseModel):
     )
 
     x: float
+    """
+    The Vector X component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector2dStruct` (i.e. [`Vector2d`][mosaicolabs.models.data.Vector2d], [`Point2d`][mosaicolabs.models.data.Point2d])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector2d.Q.x.leq(123.4))
+    query = QueryOntologyCatalog(Point2d.Q.x.leq(123.4))
+    ```
+    """
+
     y: float
+    """
+    The Vector Y component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector2dStruct` (i.e. [`Vector2d`][mosaicolabs.models.data.Vector2d], [`Point2d`][mosaicolabs.models.data.Point2d])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector2d.Q.y.leq(123.4))
+    query = QueryOntologyCatalog(Point2d.Q.y.leq(123.4))
+    ```
+    """
 
     @classmethod
     def from_list(cls, data: list[float]):
@@ -114,8 +161,79 @@ class _Vector3dStruct(BaseModel):
     )
 
     x: float
+    """
+    The Vector X component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector3dStruct` (i.e. [`Vector3d`][mosaicolabs.models.data.Vector2d], [`Point3d`][mosaicolabs.models.data.Point2d])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector3d.Q.x.leq(123.4))
+    query = QueryOntologyCatalog(Point3d.Q.x.leq(123.4))
+    ```
+    """
+
     y: float
+    """
+    The Vector Y component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector3dStruct` (i.e. [`Vector3d`][mosaicolabs.models.data.Vector2d], [`Point3d`][mosaicolabs.models.data.Point2d])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector3d.Q.y.leq(123.4))
+    query = QueryOntologyCatalog(Point3d.Q.y.leq(123.4))
+    ```
+    """
+
     z: float
+    """
+    The Vector Z component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector3dStruct` (i.e. [`Vector3d`][mosaicolabs.models.data.Vector2d], [`Point3d`][mosaicolabs.models.data.Point2d])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector3d.Q.z.leq(123.4))
+    query = QueryOntologyCatalog(Point3d.Q.z.leq(123.4))
+    ```
+    """
 
     @classmethod
     def from_list(cls, data: list[float]):
@@ -181,9 +299,105 @@ class _Vector4dStruct(BaseModel):
     )
 
     x: float
+    """
+    The Vector X component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector4dStruct` (i.e. [`Vector4d`][mosaicolabs.models.data.Vector4d], [`Quaternion`][mosaicolabs.models.data.Quaternion])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector4d.Q.x.leq(123.4))
+    query = QueryOntologyCatalog(Quaternion.Q.x.leq(123.4))
+    ```
+    """
+
     y: float
+    """
+    The Vector Y component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector4dStruct` (i.e. [`Vector4d`][mosaicolabs.models.data.Vector4d], [`Quaternion`][mosaicolabs.models.data.Quaternion])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector4d.Q.y.leq(123.4))
+    query = QueryOntologyCatalog(Quaternion.Q.y.leq(123.4))
+    ```
+    """
+
     z: float
+    """
+    The Vector Z component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector4dStruct` (i.e. [`Vector4d`][mosaicolabs.models.data.Vector4d], [`Quaternion`][mosaicolabs.models.data.Quaternion])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector4d.Q.z.leq(123.4))
+    query = QueryOntologyCatalog(Quaternion.Q.z.leq(123.4))
+    ```
+    """
+
     w: float
+    """
+    The Vector W component
+    
+    ### Querying with the `.Q` Proxy
+    This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
+    via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<Model>.Q.w` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+
+    Note: Universal Compatibility
+        The `<Model>` placeholder represents any Mosaico class derived by `_Vector4dStruct` (i.e. [`Vector4d`][mosaicolabs.models.data.Vector4d], [`Quaternion`][mosaicolabs.models.data.Quaternion])
+        or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
+        from `HeaderMixin`.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector4d.Q.w.leq(123.4))
+    query = QueryOntologyCatalog(Quaternion.Q.w.leq(123.4))
+    ```
+    ```
+    """
 
     @classmethod
     def from_list(cls, data: list[float]):
@@ -227,6 +441,16 @@ class Vector2d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector2d.Q.y.leq(123.4))
+            .with_expression(Vector2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+    ```
     """
 
     pass
@@ -254,6 +478,16 @@ class Vector3d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector3d.Q.y.leq(123.4))
+            .with_expression(Vector3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+    ```
     """
 
     pass
@@ -281,6 +515,17 @@ class Vector4d(
             the uncertainty of the vector measurement.
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Vector4d.Q.y.leq(123.4))
+            .with_expression(Vector4d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+    ```
     """
 
     pass
@@ -308,6 +553,16 @@ class Point2d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Point2d.Q.y.leq(123.4))
+            .with_expression(Point2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+    ```
     """
 
     pass
@@ -336,6 +591,16 @@ class Point3d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Point3d.Q.y.leq(123.4))
+            .with_expression(Point3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+    ```
     """
 
     pass
@@ -364,6 +629,17 @@ class Quaternion(
             the uncertainty of the quaternion measurement.
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryOntologyCatalog(Quaternion.Q.w.leq(0.707))
+            .with_expression(Quaternion.Q.header.stamp.sec.between([1770282868, 1770290127]))
+    ```
     """
 
     pass
@@ -395,6 +671,17 @@ class Transform(
             the uncertainty of the Translation+Rotation.
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter Transforms with translation X-component AND rotation W-component
+    query = QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
+            .with_expression(Transform.Q.rotation.w.lt(0.707))
+    ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -421,13 +708,54 @@ class Transform(
     )
 
     translation: Vector3d
-    """3D translation vector."""
+    """
+    The 3D translation vector component.
+
+    ### Querying with the `.Q` Proxy
+    Translation components are queryable through the `translation` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Transform.Q.translation.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.translation.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.translation.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find transforms where the linear X-translation exceeds 5 meters
+    query = QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
+    ```
+    """
 
     rotation: Quaternion
-    """Quaternion representing rotation."""
+    """
+    The rotation quaternion component (x, y, z, w).
+
+    ### Querying with the `.Q` Proxy
+    Rotation components are queryable through the `rotation` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Transform.Q.rotation.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.rotation.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.rotation.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.rotation.w` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Filter for specific orientation states
+    query = QueryOntologyCatalog(Transform.Q.rotation.w.geq(0.707))
+    ```
+    """
 
     target_frame_id: Optional[str] = None
-    """Target frame identifier."""
+    """
+    Target coordinate frame identifier.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Transform.Q.target_frame_id` | `String` | `.eq()`, `.match()` |
+    """
 
 
 class Pose(
@@ -450,6 +778,18 @@ class Pose(
             the uncertainty of the Translation+Rotation.
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter Poses with position X-component AND orientation W-component
+    query = QueryOntologyCatalog(Pose.Q.position.x.gt(5.0))
+            .with_expression(Pose.Q.orientation.w.lt(0.707))
+    ```
+
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -470,7 +810,42 @@ class Pose(
     )
 
     position: Point3d
-    """3D translation vector"""
+    """
+    The 3D position vector component.
 
-    orientation: Quaternion
-    """Quaternion representing rotation."""
+    ### Querying with the `.Q` Proxy
+    Position components are queryable through the `position` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Pose.Q.position.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Pose.Q.position.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Pose.Q.position.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find poses where the linear X-position exceeds 5 meters
+    query = QueryOntologyCatalog(Pose.Q.position.x.gt(123450.0))
+    ```
+    """
+
+    rotation: Quaternion
+    """
+    The rotation quaternion component (x, y, z, w).
+
+    ### Querying with the `.Q` Proxy
+    Rotation components are queryable through the `rotation` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Transform.Q.rotation.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.rotation.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.rotation.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Transform.Q.rotation.w` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Filter for specific orientation states
+    query = QueryOntologyCatalog(Transform.Q.rotation.w.geq(0.707))
+    ```
+    """

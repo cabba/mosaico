@@ -41,6 +41,17 @@ class Velocity(
     Note: Input Validation
         A valid `Velocity` object must contain at least a `linear` or an `angular`
         component; providing neither will raise a `ValueError`.
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter Velocities with linear X-component AND angular Z-component
+    query = QueryOntologyCatalog(Velocity.Q.linear.x.gt(5.0))
+            .with_expression(Velocity.Q.angular.z.lt(10))
+    ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -61,10 +72,44 @@ class Velocity(
     )
 
     linear: Optional[Vector3d] = None
-    """3D linear velocity vector"""
+    """
+    3D linear velocity vector
+
+    ### Querying with the `.Q` Proxy
+    Linear components are queryable through the `linear` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Velocity.Q.linear.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Velocity.Q.linear.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Velocity.Q.linear.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find velocities where the linear X component exceeds 25 m/s
+    query = QueryOntologyCatalog(Velocity.Q.linear.x.gt(25.0))
+    ```
+    """
 
     angular: Optional[Vector3d] = None
-    """3D angular velocity vector"""
+    """
+    3D angular velocity vector
+
+    ### Querying with the `.Q` Proxy
+    Angular components are queryable through the `angular` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Velocity.Q.angular.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Velocity.Q.angular.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Velocity.Q.angular.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find velocities where the angular X component exceeds 2 rad//s
+    query = QueryOntologyCatalog(Velocity.Q.angular.x.gt(2.0))
+    ```
+    """
 
     @model_validator(mode="after")
     def check_at_least_one_exists(self) -> "Velocity":
@@ -102,6 +147,17 @@ class Acceleration(
     Note: Input Validation
         Similar to the [`Velocity`][mosaicolabs.models.data.kinematics.Velocity] class, an `Acceleration` instance requires
         at least one non-null component (`linear` or `angular`).
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter Accelerations with linear X-component AND angular Z-component
+    query = QueryOntologyCatalog(Acceleration.Q.linear.x.gt(5.0))
+            .with_expression(Acceleration.Q.angular.z.lt(10))
+    ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -122,10 +178,44 @@ class Acceleration(
     )
 
     linear: Optional[Vector3d] = None
-    """3D linear acceleration vector"""
+    """
+    3D linear acceleration vector
+
+    ### Querying with the `.Q` Proxy
+    Linear components are queryable through the `linear` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Acceleration.Q.linear.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Acceleration.Q.linear.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Acceleration.Q.linear.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find accelerations where the linear X component exceeds 5 m/s^2
+    query = QueryOntologyCatalog(Acceleration.Q.linear.x.gt(5.0))
+    ```
+    """
 
     angular: Optional[Vector3d] = None
-    """3D angular acceleration vector"""
+    """
+    3D angular acceleration vector
+
+    ### Querying with the `.Q` Proxy
+    Angular components are queryable through the `angular` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Acceleration.Q.angular.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Acceleration.Q.angular.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `Acceleration.Q.angular.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find accelerations where the angular X component exceeds 1 rad/s^2
+    query = QueryOntologyCatalog(Acceleration.Q.angular.x.gt(1.0))
+    ```
+    """
 
     @model_validator(mode="after")
     def check_at_least_one_exists(self) -> "Acceleration":
@@ -170,6 +260,16 @@ class MotionState(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter MotionStates with position X-component AND angular velocity Z-component
+    query = QueryOntologyCatalog(MotionState.Q.pose.position.x.gt(123456.9))
+            .with_expression(MotionState.Q.velocity.angular.z.lt(10))
+    ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -208,13 +308,87 @@ class MotionState(
     )
 
     pose: Pose
-    """6D pose with optional time and covariance info"""
+    """
+    The 6D pose representing current position and orientation.
+
+    ### Querying with the `.Q` Proxy
+    Pose components are queryable through the `pose` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `MotionState.Q.pose.position.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.pose.position.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.pose.position.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.pose.orientation.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.pose.orientation.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.pose.orientation.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.pose.orientation.w` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Filter snapshots where the object is beyond a specific X-coordinate
+    query = QueryOntologyCatalog(MotionState.Q.pose.position.x.gt(500.0))
+    ```
+    """
 
     velocity: Velocity
-    """6D velocity with optional time and covariance info"""
+    """
+    The 6D velocity (Twist) describing instantaneous motion.
+
+    ### Querying with the `.Q` Proxy
+    Velocity components are queryable through the `velocity` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `MotionState.Q.velocity.linear.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.velocity.linear.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.velocity.linear.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.velocity.angular.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.velocity.angular.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.velocity.angular.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find states where linear velocity in X exceeds 2.5 m/s
+    query = QueryOntologyCatalog(MotionState.Q.velocity.linear.x.gt(2.5))
+    ```
+    """
 
     target_frame_id: str
-    """Target frame identifier"""
+    """
+    Identifier for the destination coordinate frame.
+
+    ### Querying with the `.Q` Proxy
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `MotionState.Q.target_frame_id` | `String` | `.eq()`, `.match()` |
+
+    **Example:**
+    ```python
+    # Find states where target_frame_id is some link
+    query = QueryOntologyCatalog(MotionState.Q.target_frame_id.eq("moving_base"))
+    ```
+    """
 
     acceleration: Optional[Acceleration] = None
-    """6D acceleration with optional time and covariance info"""
+    """
+    Optional 6D acceleration components.
+
+    ### Querying with the `.Q` Proxy
+    Acceleration components are queryable through the `acceleration` field prefix if present.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `MotionState.Q.acceleration.linear.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.acceleration.linear.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.acceleration.linear.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.acceleration.angular.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.acceleration.angular.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `MotionState.Q.acceleration.angular.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    
+    **Example:**
+    ```python
+    # Find states where centripetal acceleration exceeds 5 m/s^2
+    query = QueryOntologyCatalog(MotionState.Q.acceleration.linear.y.gt(5.0))
+    ```
+    """

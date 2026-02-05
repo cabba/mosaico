@@ -67,7 +67,7 @@ class Serializable(BaseModel, _QueryableModel):
     3.  Define the class fields (using Pydantic syntax) matching the Arrow structure.
 
     Tip: Automatic Registration
-        Any subclass of `Serializable` is automatically registered in the global Mosaico registry upon definition. This enables the use of the [`create()`][mosaicolabs.models.Serializable.create] factory and the `.Q` query proxy immediately.
+        Any subclass of `Serializable` is automatically registered in the global Mosaico registry upon definition. This enables the use of the factory methods and the `.Q` query proxy immediately.
     """
 
     # --- Factory/Metadata Attributes ---
@@ -130,7 +130,7 @@ class Serializable(BaseModel, _QueryableModel):
     # --- Factory Methods ---
 
     @classmethod
-    def create(cls, tag: str, *args, **kwargs) -> "Serializable":
+    def _create(cls, tag: str, *args, **kwargs) -> "Serializable":
         """
         Factory method to instantiate a specific ontology object by its tag.
 
@@ -160,12 +160,12 @@ class Serializable(BaseModel, _QueryableModel):
     # --- Registry Helper Methods ---
 
     @classmethod
-    def list_registered(cls) -> List[str]:
+    def _list_registered(cls) -> List[str]:
         """Returns a list of all currently registered ontology tags."""
         return list(_SENSOR_REGISTRY.keys())
 
     @classmethod
-    def is_registered(cls, tag: str) -> bool:
+    def _is_registered(cls, tag: str) -> bool:
         """
         Checks if a tag is registered.
 
@@ -178,7 +178,7 @@ class Serializable(BaseModel, _QueryableModel):
         return tag in _SENSOR_REGISTRY.keys()
 
     @classmethod
-    def get_class_type(cls, tag: str) -> Optional[Type["Serializable"]]:
+    def _get_class_type(cls, tag: str) -> Optional[Type["Serializable"]]:
         """
         Retrieves the concrete Python class type associated with a specific tag.
 
@@ -188,12 +188,12 @@ class Serializable(BaseModel, _QueryableModel):
         Returns:
             The Python class type if found, otherwise `None`.
         """
-        if not cls.is_registered(tag):
+        if not cls._is_registered(tag):
             return None
         return _SENSOR_REGISTRY[tag].__class_type__
 
     @classmethod
-    def get_ontology_tag(
+    def _get_ontology_tag(
         cls, class_type_name: str, case_sensitive: bool = True
     ) -> Optional[str]:
         """
@@ -227,10 +227,29 @@ class Serializable(BaseModel, _QueryableModel):
     @classmethod
     def ontology_tag(cls) -> str:
         """
-        Class method to get the tag of the current class.
+        Retrieves the unique identifier (tag) for the current ontology class, automatically generated during class definition.
+
+        This method provides the string key used by the Mosaico platform to identify and route
+        specific data types within the ontology registry. It abstracts
+        away the internal naming conventions, ensuring that you always use the correct
+        identifier for queries and serialization.
+
+        Returns:
+            The registered string tag for this class (e.g., `"imu"`, `"gps"`).
 
         Raises:
-            Exception: If the class was not properly initialized via __init_subclass__.
+            Exception: If the class was not properly initialized via `__init_subclass__` or is missing the `__ontology_tag__` attribute.
+
+        Hint: **Practical Application: Topic Filtering**
+            This method is particularly useful when constructing [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]
+            requests. By using `ontology_tag()`, you can filter topics by data type
+            without hardcoding strings that might change.
+
+        **Example:**
+        ```python
+        # Retrieve the tag dynamically for a type-safe query
+        query = QueryTopic().with_ontology_tag(IMU.ontology_tag())
+        ```
         """
         if not hasattr(cls, "__ontology_tag__") or cls.__ontology_tag__ is None:
             raise Exception(

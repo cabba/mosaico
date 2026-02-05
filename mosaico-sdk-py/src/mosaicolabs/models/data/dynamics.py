@@ -41,6 +41,17 @@ class ForceTorque(
     Note: Unit Standards
         To ensure platform-wide consistency, all force components should be
         specified in **Newtons** and torque in **Newton-meters**.
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    **Example:**
+    ```python
+    # Filter ForceTorques with force X-component AND torque Z-component
+    query = QueryOntologyCatalog(ForceTorque.Q.force.x.gt(5.0))
+            .with_expression(ForceTorque.Q.torque.z.lt(10))
+    ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -61,7 +72,41 @@ class ForceTorque(
     )
 
     force: Vector3d
-    """3D linear force vector"""
+    """
+    3D linear force vector
+
+    ### Querying with the `.Q` Proxy
+    Force components are queryable through the `force` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `ForceTorque.Q.force.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ForceTorque.Q.force.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ForceTorque.Q.force.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find where the linear X-force exceeds 50N 
+    query = QueryOntologyCatalog(ForceTorque.Q.force.x.gt(50.0))
+    ```
+    """
 
     torque: Vector3d
-    """3D torque vector"""
+    """
+    3D torque vector
+
+    ### Querying with the `.Q` Proxy
+    Torque components are queryable through the `torque` field prefix.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `ForceTorque.Q.torque.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ForceTorque.Q.torque.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ForceTorque.Q.torque.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+
+    **Example:**
+    ```python
+    # Find where the linear Y-torque is small
+    query = QueryOntologyCatalog(ForceTorque.Q.torque.y.lt(0.02))
+    ```
+    """

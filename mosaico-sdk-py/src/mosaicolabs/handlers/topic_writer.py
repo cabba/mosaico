@@ -138,7 +138,7 @@ class TopicWriter:
 
         # Open Flight Stream (DoPut)
         try:
-            writer, _ = client.do_put(descriptor, Message.get_schema(ontology_type))
+            writer, _ = client.do_put(descriptor, Message._get_schema(ontology_type))
         except Exception as e:
             raise _make_exception(
                 f"Failed to open Flight stream for topic '{topic_name}'", e
