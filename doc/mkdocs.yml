@@ -56,7 +56,9 @@ nav:
       - SDK/API_reference/comm.md
       - SDK/API_reference/enum.md
       - SDK/API_reference/handlers.md
-      - SDK/API_reference/query.md
+      - Query Module:
+        - SDK/API_reference/query/builders.md
+        - SDK/API_reference/query/internal.md
       - Models:
         - SDK/API_reference/models/base.md
         - SDK/API_reference/models/data_types.md

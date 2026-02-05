@@ -1,4 +1,4 @@
-# Handlers module
+# Handlers Module
 
 ::: mosaicolabs.handlers.SystemInfo
 ::: mosaicolabs.handlers.SequenceHandler
