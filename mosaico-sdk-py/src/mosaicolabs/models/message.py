@@ -30,7 +30,7 @@ def _make_schema(*args: pa.StructType) -> pa.Schema:
     return pa.schema([field for struct in args for field in struct])
 
 
-TSensor = TypeVar("TSensor", bound="Serializable")
+TSerializable = TypeVar("TSerializable", bound="Serializable")
 
 
 class Message(BaseModel):
@@ -132,104 +132,6 @@ class Message(BaseModel):
 
         return columns_dict
 
-    @staticmethod
-    def from_dataframe_row(row: pd.Series, topic_name: str) -> Optional["Message"]:
-        """
-        Reconstructs a `Message` object from a flattened DataFrame row.
-
-        In the Mosaico Data Platform, DataFrames represent topics using a nested naming
-        convention: `{topic}.{tag}.{field}`. This method performs
-        **Smart Reconstruction** by:
-
-        1. **Topic Validation**: Verifying if any columns associated with the `topic_name`
-           exist in the row.
-        2. **Tag Inference**: Inspecting the column headers to automatically determine
-           the original ontology tag (e.g., `"imu"`).
-        3. **Data Extraction**: Stripping prefixes and re-nesting the flat columns
-           into their original dictionary structures.
-        4. **Type Casting**: Re-instantiating the specific [`Serializable`][mosaicolabs.models.Serializable]
-           subclass and wrapping it in a `Message` envelope.
-
-        Args:
-            row: A single row from a Pandas DataFrame, representing a point in time
-                across one or more topics.
-            topic_name: The name of the specific topic to extract from the row.
-
-        Returns:
-            A reconstructed `Message` instance containing the typed ontology data,
-                or `None` if the topic is not present or the data is incomplete.
-
-        Note: Timestamp Handling
-            This method expects a global `timestamp_ns` column in the row to populate
-            the message envelope. If this column is missing or contains `NaN`, the
-            reconstruction will return `None`.
-        """
-        # Topic Presence Check
-        # Check if any columns belonging to this topic exist in the row
-        topic_prefix = f"{topic_name}."
-        if not any(str(col).startswith(topic_prefix) for col in row.index):
-            return None  # Topic not present in this DataFrame
-
-        # Tag Inference Logic
-        tag = None
-        for col in row.index:
-            col_str = str(col)
-            if col_str.startswith(topic_prefix) and col_str != "timestamp_ns":
-                parts = col_str.split(".")
-                # Semantic Naming check: {topic}.{tag}.{field}
-                if len(parts) >= 3:
-                    tag = parts[1]
-                    break
-
-        # Tag Check
-        # If tag remains None after inference attempt there was something wrong when creating the dataframe
-        if tag is None:
-            # This should never happen
-            raise ValueError(
-                f"Ontology tag for topic '{topic_name}' could not be inferred."
-            )
-
-        # Define extraction prefix based on Tag presence
-        # Fallback to Clean Mode if inference failed but topic columns exist
-        prefix = f"{topic_name}.{tag}."
-
-        # Extract relevant data with Pylance fix
-        relevant_data = {
-            str(col)[len(prefix) :]: val
-            for col, val in row.items()
-            if str(col).startswith(prefix)
-        }
-
-        # If the prefix matched nothing (e.g., mismatch between inferred tag and actual data)
-        if not relevant_data:
-            return None
-
-        # Reconstruct the Nested Dictionary
-        # Ensure timestamp_ns is present; usually a global column in Mosaico DFs
-        timestamp = row.get("timestamp_ns")
-        if pd.isna(timestamp):
-            return None
-
-        nested_data: Dict[str, Any] = {"timestamp_ns": int(timestamp)}
-
-        for key, value in relevant_data.items():
-            # Convert Pandas/NumPy NaNs to Python None for model compatibility
-            processed_value = None if pd.isna(value) else value
-
-            parts = key.split(".")
-            d = nested_data
-            for part in parts[:-1]:
-                d = d.setdefault(part, {})
-            d[parts[-1]] = processed_value
-
-        # Final Message Creation
-        try:
-            # Reconstructs the strongly-typed Ontology object from flattened rows
-            return Message._create(tag=tag, **nested_data)
-        except Exception as e:
-            logger.error(f"Failed to reconstruct Message for topic {topic_name}: {e}")
-            return None
-
     @classmethod
     def _create(cls, tag: str, **kwargs) -> "Message":
         """
@@ -314,7 +216,9 @@ class Message(BaseModel):
             data_cls.__msco_pyarrow_struct__,
         )
 
-    def get_data(self, target_type: Type[TSensor]) -> TSensor:
+    # --- Public API ---
+
+    def get_data(self, target_type: Type[TSerializable]) -> TSerializable:
         """
         Safe, type-hinted accessor for the data payload.
 
@@ -326,6 +230,21 @@ class Message(BaseModel):
 
         Raises:
             TypeError: If the actual data type does not match the requested `target_type`.
+
+        Example:
+            ```python
+            # Get the IMU data from the message
+            image_data = message.get_data(Image)
+            print(f"Message time: {message.timestamp_ns}: Sensor time: {image_data.header.stamp.to_nanoseconds()}")
+            print(f"Message time: {message.timestamp_ns}: Image size: {image_data.height}x{image_data.width}")
+            # Show the image
+            image_data.to_pillow().show()
+
+            # Get the Floating64 data from the message
+            floating64_data = message.get_data(Floating64)
+            print(f"Message time: {message.timestamp_ns}: Data time: {floating64_data.header.stamp.to_nanoseconds()}")
+            print(f"Message time: {message.timestamp_ns}: Data value: {floating64_data.data}")
+            ```
         """
         if not isinstance(self.data, target_type):
             raise TypeError(
@@ -333,3 +252,126 @@ class Message(BaseModel):
                 f"but '{target_type.__name__}' was requested."
             )
         return self.data
+
+    @staticmethod
+    def from_dataframe_row(
+        row: pd.Series, topic_name: str, timestamp_column_name: str = "timestamp_ns"
+    ) -> Optional["Message"]:
+        """
+        Reconstructs a `Message` object from a flattened DataFrame row.
+
+        In the Mosaico Data Platform, DataFrames represent topics using a nested naming
+        convention: `{topic}.{tag}.{field}`. This method performs
+        **Smart Reconstruction** by:
+
+        1. **Topic Validation**: Verifying if any columns associated with the `topic_name`
+           exist in the row.
+        2. **Tag Inference**: Inspecting the column headers to automatically determine
+           the original ontology tag (e.g., `"imu"`).
+        3. **Data Extraction**: Stripping prefixes and re-nesting the flat columns
+           into their original dictionary structures.
+        4. **Type Casting**: Re-instantiating the specific [`Serializable`][mosaicolabs.models.Serializable]
+           subclass and wrapping it in a `Message` envelope.
+
+        Args:
+            row: A single row from a Pandas DataFrame, representing a point in time
+                across one or more topics.
+            topic_name: The name of the specific topic to extract from the row.
+            timestamp_column_name: The name of the column containing the timestamp.
+
+        Returns:
+            A reconstructed `Message` instance containing the typed ontology data,
+                or `None` if the topic is not present or the data is incomplete.
+
+        Example:
+            ```python
+            # Obtain a dataframe with DataFrameExtractor
+            from mosaicolabs import MosaicoClient, IMU, Image
+            from mosaicolabs.ml import DataFrameExtractor, SyncTransformer
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                sequence_handler = client.get_sequence_handler("example_sequence")
+                for df in DataFrameExtractor(sequence_handler).to_pandas_chunks(
+                    topics = ["/front/imu", "/front/camera/image_raw"]
+                ):
+                    # Do something with the dataframe.
+                    # For example, you can sync the data using the `SyncTransformer`:
+                    sync_transformer = SyncTransformer(
+                        target_fps = 30, # resample at 30 Hz and fill the Nans with a Hold policy
+                    )
+                    synced_df = sync_transformer.transform(df)
+
+                    # Reconstruct the image message from a dataframe row
+                    image_msg = Message.from_dataframe_row(synced_df, "/front/camera/image_raw")
+                    image_data = image_msg.get_data(Image)
+                    # Show the image
+                    image_data.to_pillow().show()
+                    # ...
+            ```
+        """
+
+        # Topic Presence Check
+        # Check if any columns belonging to this topic exist in the row
+        topic_prefix = f"{topic_name}."
+        if not any(str(col).startswith(topic_prefix) for col in row.index):
+            return None  # Topic not present in this DataFrame
+
+        # Tag Inference Logic
+        tag = None
+        for col in row.index:
+            col_str = str(col)
+            if col_str.startswith(topic_prefix) and col_str != timestamp_column_name:
+                parts = col_str.split(".")
+                # Semantic Naming check: {topic}.{tag}.{field}
+                if len(parts) >= 3:
+                    tag = parts[1]
+                    break
+
+        # Tag Check
+        # If tag remains None after inference attempt there was something wrong when creating the dataframe
+        if tag is None:
+            # This should never happen
+            raise ValueError(
+                f"Ontology tag for topic '{topic_name}' could not be inferred."
+            )
+
+        # Define extraction prefix based on Tag presence
+        # Fallback to Clean Mode if inference failed but topic columns exist
+        prefix = f"{topic_name}.{tag}."
+
+        # Extract relevant data with Pylance fix
+        relevant_data = {
+            str(col)[len(prefix) :]: val
+            for col, val in row.items()
+            if str(col).startswith(prefix)
+        }
+
+        # If the prefix matched nothing (e.g., mismatch between inferred tag and actual data)
+        if not relevant_data:
+            return None
+
+        # Reconstruct the Nested Dictionary
+        # Ensure timestamp_ns is present; usually a global column in Mosaico DFs
+        timestamp = row.get(timestamp_column_name)
+        if pd.isna(timestamp):
+            return None
+
+        nested_data: Dict[str, Any] = {timestamp_column_name: int(timestamp)}
+
+        for key, value in relevant_data.items():
+            # Convert Pandas/NumPy NaNs to Python None for model compatibility
+            processed_value = None if pd.isna(value) else value
+
+            parts = key.split(".")
+            d = nested_data
+            for part in parts[:-1]:
+                d = d.setdefault(part, {})
+            d[parts[-1]] = processed_value
+
+        # Final Message Creation
+        try:
+            # Reconstructs the strongly-typed Ontology object from flattened rows
+            return Message._create(tag=tag, **nested_data)
+        except Exception as e:
+            logger.error(f"Failed to reconstruct Message for topic {topic_name}: {e}")
+            return None

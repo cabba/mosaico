@@ -36,10 +36,27 @@ class Sequence(PlatformBase):
         method from a [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler]
         instance.
 
-    Tip: Querying Sequences
-        Use the `Q` proxy to construct filters based on `user_metadata`.
-        Other system-controlled fields are queried through dedicated specialized query
-        methods of the [`QuerySequence`][mosaicolabs.models.query.QuerySequence] class
+    ### Querying with the `.Q` Proxy
+    The `user_metadata` field of this class is queryable when constructing a [`QuerySequence`][mosaicolabs.models.query.QuerySequence]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value (using constructor)
+        qbuilder = QuerySequence(
+            Sequence.Q.user_metadata["project"].eq("Apollo"), # Access the keys using the [] operator
+            Sequence.Q.user_metadata["vehicle.software_stack.planning"].match("plan-4."), # Navigate the nested dicts using the dot notation
+        )
+
+        # The same builder using `with_expression`
+        qbuilder = (
+            QuerySequence()
+            .with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
+            .with_expression(
+                Sequence.Q.user_metadata["vehicle.software_stack.planning"].match("plan-4.")
+            )
+        )
+        ```
     """
 
     # --- Private Fields ---

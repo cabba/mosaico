@@ -35,11 +35,27 @@ class Topic(PlatformBase):
         method from a [`TopicHandler`][mosaicolabs.handlers.TopicHandler]
         instance.
 
-    Tip: Querying Topics
-        Use the `Q` proxy to construct filters based on `user_metadata`.
-        Other system-controlled fields, such as ontology tags or storage statistics,
-        are queried through specialized query methods of the
-        [`QueryTopic`][mosaicolabs.models.query.QueryTopic] class
+    ### Querying with the `.Q` Proxy
+    The `user_metadata` field of this class is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.QueryTopic]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value (using constructor)
+        qbuilder = QueryTopic(
+            Topic.Q.user_metadata["update_rate_hz"].eq(100), # Access the keys using the [] operator
+            Topic.Q.user_metadata["interface.type"].eq("canbus"), # Navigate the nested dicts using the dot notation
+        )
+
+        # The same builder using `with_expression`
+        qbuilder = (
+            QueryTopic()
+            .with_expression(Topic.Q.user_metadata["update_rate_hz"].eq(100))
+            .with_expression(
+                Topic.Q.user_metadata["interface.type"].match("canbus")
+            )
+        )
+        ```
     """
 
     # --- Private Fields (Internal State) ---

@@ -46,12 +46,12 @@ class ForceTorque(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter ForceTorques with force X-component AND torque Z-component
-    query = QueryOntologyCatalog(ForceTorque.Q.force.x.gt(5.0))
-            .with_expression(ForceTorque.Q.torque.z.lt(10))
-    ```
+    Example:
+        ```python
+        # Filter ForceTorques with force X-component AND torque Z-component
+        query = QueryOntologyCatalog(ForceTorque.Q.force.x.gt(5.0))
+                .with_expression(ForceTorque.Q.torque.z.lt(10))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(

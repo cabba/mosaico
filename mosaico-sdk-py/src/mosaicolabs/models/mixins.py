@@ -29,6 +29,11 @@ class HeaderMixin(BaseModel):
     2. It appends a `header` field of type [`Header`][mosaicolabs.models.Header].
     3. It reconstructs the final `pa.struct` for the class.
 
+    Important: Collision Safety
+        The mixin performs a collision check during class definition. If the child
+        class already defines a `header` field in its PyArrow struct, a `ValueError`
+        will be raised to prevent schema corruption.
+
     Attributes:
         header: An optional [`Header`][mosaicolabs.models.Header] object containing standard metadata.
 
@@ -48,19 +53,14 @@ class HeaderMixin(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Examples:**
-    ```python
-    # Filter IMU data by a specific acquisition second
-    query = QueryOntologyCatalog(IMU.Q.header.stamp.sec.lt(1770282868))
+    Example:
+        ```python
+        # Filter IMU data by a specific acquisition second
+        qbuilder = QueryOntologyCatalog(IMU.Q.header.stamp.sec.lt(1770282868))
 
-    # Filter primitive Floating64 telemetry by frame identifier
-    query = QueryOntologyCatalog(Floating64.Q.header.frame_id.eq("robot_base"))
-    ```
-
-    Important: Collision Safety
-        The mixin performs a collision check during class definition. If the child
-        class already defines a `header` field in its PyArrow struct, a `ValueError`
-        will be raised to prevent schema corruption.
+        # Filter primitive Floating64 telemetry by frame identifier
+        qbuilder = QueryOntologyCatalog(Floating64.Q.header.frame_id.eq("robot_base"))
+        ```
     """
 
     header: Optional[Header] = None
@@ -72,9 +72,8 @@ class HeaderMixin(BaseModel):
     timestamps.
 
     ### Querying with the `.Q` Proxy
-    Check the documentation of the [`HeaderMixin`][mosaicolabs.models.HeaderMixin--queryability] to construct a
-    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
-    the `header` component.
+    Check the documentation of the [`HeaderMixin`][mosaicolabs.models.HeaderMixin--queryability] to construct a valid expression for the 
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] builder involving the `header` component.
     """
 
     def __init_subclass__(cls, **kwargs):
@@ -126,10 +125,17 @@ class CovarianceMixin(BaseModel):
     receivers that provide multidimensional uncertainty matrices along with
     their primary measurements.
 
-    ### Injected Fields
-    * **`covariance`**: A flattened list of floats representing the covariance matrix.
-    * **`covariance_type`**: An integer enum representing the specific parameterization
-        used (e.g., fixed, diagonal, full).
+    ### Dynamic Schema Injection
+    This mixin uses the `__init_subclass__` hook to perform a **Schema Append** operation:
+
+    1. It inspects the child class's existing `__msco_pyarrow_struct__`.
+    2. It appends a `covariance` and `covariance_type` fields.
+    3. It reconstructs the final `pa.struct` for the class.
+
+    Important: Collision Safety
+        The mixin performs a collision check during class definition. If the child
+        class already defines a `covariance` or `covariance_type` field in its PyArrow struct, a `ValueError`
+        will be raised to prevent schema corruption.
 
     Attributes:
         covariance: Optional list of 64-bit floats representing the flattened matrix.
@@ -149,12 +155,12 @@ class CovarianceMixin(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Examples:**
-    ```python
-    # Filter IMU data by a specific acquisition second
-    # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
-    query = QueryOntologyCatalog(IMU.Q.covariance_type.eq(FROM_CALIBRATED_PROCEDURE))
-    ```
+    Example:
+        ```python
+        # Filter IMU data by a specific acquisition second
+        # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
+        qbuilder = QueryOntologyCatalog(IMU.Q.covariance_type.eq(FROM_CALIBRATED_PROCEDURE))
+        ```
     """
 
     covariance: Optional[List[float]] = None
@@ -175,9 +181,8 @@ class CovarianceMixin(BaseModel):
     paired with the optional covariance type attribute.
 
     ### Querying with the `.Q` Proxy
-    Check the documentation of the [`CovarianceMixin`][mosaicolabs.models.CovarianceMixin--queryability] to construct a
-    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
-    the `cobvariance_type` component.
+    Check the documentation of the [`CovarianceMixin`][mosaicolabs.models.CovarianceMixin--queryability] to construct a valid expression for the 
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] builder involving the `covariance_type` component.
     """
 
     def __init_subclass__(cls, **kwargs):
@@ -238,13 +243,17 @@ class VarianceMixin(BaseModel):
     Recommended for sensors with scalar uncertain outputs, such as ultrasonic
     rangefinders, temperature sensors, or individual encoders.
 
-    ### Injected Fields
-    * **`variance`**: Optional 64-bit float representing the variance of the data.
-    * **`variance_type`**: Optional 16-bit integer representing the variance parameterization.
+    ### Dynamic Schema Injection
+    This mixin uses the `__init_subclass__` hook to perform a **Schema Append** operation:
 
-    Attributes:
-        variance: Optional 64-bit float representing the variance of the data.
-        variance_type: Optional 16-bit integer representing the variance parameterization.
+    1. It inspects the child class's existing `__msco_pyarrow_struct__`.
+    2. It appends a `variance` and `variance_type` field.
+    3. It reconstructs the final `pa.struct` for the class.
+
+    Important: Collision Safety
+        The mixin performs a collision check during class definition. If the child
+        class already defines a `variance` or `variance_type` field in its PyArrow struct, a `ValueError`
+        will be raised to prevent schema corruption.
 
     ### Querying with the `.Q` Proxy {: #queryability }
     When constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog],
@@ -260,16 +269,15 @@ class VarianceMixin(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from [`HeaderMixin`][mosaicolabs.models.HeaderMixin].
 
-    **Examples:**
-    ```python
-    # Filter IMU data by a specific acquisition second
-    # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
-    query = QueryOntologyCatalog(IMU.Q.variance.lt(0.76))
+    Example:
+        ```python
+        # Filter IMU data by a specific acquisition second
+        qbuilder = QueryOntologyCatalog(IMU.Q.variance.lt(0.76))
 
-    # Filter IMU data by a specific acquisition second
-    # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
-    query = QueryOntologyCatalog(IMU.Q.variance_type.eq(FROM_CALIBRATED_PROCEDURE))
-    ```
+        # Filter IMU data by a specific acquisition second
+        # `FROM_CALIBRATED_PROCEDURE` is some enum value defined by the user
+        qbuilder = QueryOntologyCatalog(IMU.Q.variance_type.eq(FROM_CALIBRATED_PROCEDURE))
+        ```
     """
 
     variance: Optional[float] = None
@@ -280,9 +288,8 @@ class VarianceMixin(BaseModel):
     paired with the optional variance attribute.
 
     ### Querying with the `.Q` Proxy
-    Check the documentation of the [`VarianceMixin`][mosaicolabs.models.VarianceMixin--queryability] to construct a
-    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
-    the `variance` component.
+    Check the documentation of the [`VarianceMixin`][mosaicolabs.models.VarianceMixin--queryability] to construct a valid expression for the 
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] builder involving the `variance` component.
     """
 
     variance_type: Optional[int] = None
@@ -293,9 +300,8 @@ class VarianceMixin(BaseModel):
     paired with the optional covariance type attribute.
 
     ### Querying with the `.Q` Proxy
-    Check the documentation of the [`VarianceMixin`][mosaicolabs.models.VarianceMixin--queryability] to construct a
-    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] for the 
-    the `variance_type` component.
+    Check the documentation of the [`VarianceMixin`][mosaicolabs.models.VarianceMixin--queryability] to construct a valid expression for the 
+    [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] builder involving the `variance_type` component.
     """
 
     def __init_subclass__(cls, **kwargs):

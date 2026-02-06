@@ -22,7 +22,7 @@ The transition from classical robotics to Physical AI represents a fundamental s
 
 **Physical AI** requires synchronous, dense, and tabular data. Models expect fixed-size tensors arriving at a constant frequency (e.g., a batch of state vectors at exactly 50Hz).
 
-Mosaico’s [ML module](/SDK/bridges/ml) automates this tedious "data plumbing." It ingests raw, unsynchronized data and transforms it on the fly into the aligned, flattened formats ready for model training, eliminating the need for massive intermediate CSV files.
+Mosaico’s [ML module](SDK/bridges/ml.md) automates this tedious "data plumbing." It ingests raw, unsynchronized data and transforms it on the fly into the aligned, flattened formats ready for model training, eliminating the need for massive intermediate CSV files.
 
 ## Core Concepts
 
@@ -40,7 +40,7 @@ The ontology defines the "shape" of this data. It can represent base types (such
 This abstraction allows Mosaico to understand what your data *is*, rather than just storing it as raw bytes. 
 By using an ontology to inject and index data, you enable the platform to perform ad-hoc processing, such as custom compression or semantic indexing, tailored specifically to the type of data you have ingested.
 
-Users can easily extend the platform by defining their own [Ontology Models](/SDK/ontology). These are specific data structures representing a single data type. For example, a GPS sensor might be modeled as follows:
+Users can easily extend the platform by defining their own [Ontology Models](SDK/ontology.md). These are specific data structures representing a single data type. For example, a GPS sensor might be modeled as follows:
 
 ``` python
 class GPS:

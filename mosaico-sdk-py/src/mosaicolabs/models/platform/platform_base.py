@@ -36,10 +36,40 @@ class PlatformBase(pydantic.BaseModel, _QueryableModel):
 
     Attributes:
         user_metadata: A dictionary of custom key-value pairs assigned by the user.
+
+    ### Querying with the `.Q` Proxy
+    The `user_metadata` field is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]
+    or [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] via the **`.Q` proxy**.
+
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `<PlatformModel>.Q.user_metadata["key"]` | `String`, `Numeric`, `Boolean` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()`, `.match()` |
+
+    Note: Universal Compatibility
+        The `<PlatformModel>` placeholder represents any Mosaico class derived by
+        [`PlatformBase`][mosaicolabs.models.platform.platform_base.PlatformBase]
+        (i.e. [`Topic`][mosaicolabs.models.platform.Topic], [`Sequence`][mosaicolabs.models.platform.Sequence])
+
+    **Example:**
+    ```python
+    # Filter for a specific component value.
+    query = QueryTopic(Topic.Q.user_metadata["update_rate_hz"].geq(100))
+    query = QuerySequence(Sequence.Q.user_metadata["project.version"].match("v1.0")) # Any "v1.0.*" will match
+    ```
+
     """
 
     user_metadata: Dict[str, Any]
-    """Custom user-defined key-value pairs associated with the entity."""
+    """
+    Custom user-defined key-value pairs associated with the entity.
+
+    ### Querying with the `.Q` Proxy
+    Check the documentation of the [`PlatformBase`][mosaicolabs.models.platform.platform_base.PlatformBase] to construct a
+    a valid expression for the [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]
+    or [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] builder involving
+    the `user_metadata` component.
+
+    """
 
     # --- Private Attributes ---
     # These fields are managed internally and populated via _init_base_private.

@@ -39,7 +39,7 @@ class Serializable(BaseModel, _QueryableModel):
     By inheriting from `Serializable`, data models are automatically compatible with the platform's storage,
     querying, and serialization engines.
 
-    ### Core Injected Attributes
+    ### Dynamic Attributes Injection
     When you define a subclass, several key attributes are automatically managed or required.
     Understanding these is essential for customizing how your data is treated by the platform:
 
@@ -56,8 +56,6 @@ class Serializable(BaseModel, _QueryableModel):
     * **`__class_type__`**:
         A reference to the concrete class itself.
         * **Role**: Injected during initialization to facilitate polymorphic instantiation and safe type-checking when extracting data from a [`Message`][mosaicolabs.models.Message].
-
-
 
     ### Requirements for Custom Ontologies
     To create a valid custom ontology, your subclass must:
@@ -238,7 +236,7 @@ class Serializable(BaseModel, _QueryableModel):
             The registered string tag for this class (e.g., `"imu"`, `"gps"`).
 
         Raises:
-            Exception: If the class was not properly initialized via `__init_subclass__` or is missing the `__ontology_tag__` attribute.
+            Exception: If the class was not properly initialized via `__init_subclass__`.
 
         Hint: **Practical Application: Topic Filtering**
             This method is particularly useful when constructing [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]

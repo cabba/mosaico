@@ -13,7 +13,6 @@ class ROI(Serializable, HeaderMixin):
     This class is primarily used in imaging and computer vision pipelines to define
     sub-windows for processing or rectification.
 
-
     Attributes:
         offset: A [`Vector2d`][mosaicolabs.models.data.geometry.Vector2d] representing
             the top-left (leftmost, topmost) pixel coordinates of the ROI.
@@ -22,6 +21,17 @@ class ROI(Serializable, HeaderMixin):
         do_rectify: Optional flag; `True` if a sub-window is captured and requires
             rectification.
         header: Standard metadata header providing temporal and spatial context.
+
+    ### Querying with the `.Q` Proxy
+    This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter ROIs with offset X-component AND offset Y-component
+        query = QueryOntologyCatalog(ROI.Q.offset.x.gt(5.0))
+                .with_expression(ROI.Q.offset.y.lt(10))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(

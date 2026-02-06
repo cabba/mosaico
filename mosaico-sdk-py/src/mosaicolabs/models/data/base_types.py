@@ -25,6 +25,16 @@ class Integer8(Serializable, HeaderMixin):
     Attributes:
         data: The underlying 8-bit integer value.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Integer8.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -64,6 +74,16 @@ class Integer16(Serializable, HeaderMixin):
     Attributes:
         data: The underlying 16-bit integer value.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Integer16.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -103,6 +123,16 @@ class Integer32(Serializable, HeaderMixin):
     Attributes:
         data: The underlying 32-bit integer value.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Integer32.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -141,7 +171,17 @@ class Integer64(Serializable, HeaderMixin):
 
     Attributes:
         data: The underlying 64-bit integer value.
-        header: An optional metadata header injected by `HeaderMixin`.
+        header: An optional metadata header injected by `HeaderMixin`.ù
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Integer64.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -184,6 +224,16 @@ class Unsigned8(Serializable, HeaderMixin):
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Unsigned8.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -237,6 +287,16 @@ class Unsigned16(Serializable, HeaderMixin):
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Unsigned16.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -290,6 +350,16 @@ class Unsigned32(Serializable, HeaderMixin):
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Unsigned32.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -343,6 +413,16 @@ class Unsigned64(Serializable, HeaderMixin):
 
     Raises:
         ValueError: If `data` is initialized with a negative value.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Unsigned64.Q.data.gt(123))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -393,6 +473,16 @@ class Floating16(Serializable, HeaderMixin):
     Attributes:
         data: The underlying single-precision float.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Floating16.Q.data.gt(123.45))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -432,6 +522,16 @@ class Floating32(Serializable, HeaderMixin):
     Attributes:
         data: The underlying single-precision float.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Floating32.Q.data.gt(123.45))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -471,6 +571,16 @@ class Floating64(Serializable, HeaderMixin):
     Attributes:
         data: The underlying single-precision float.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Floating64.Q.data.gt(123.45))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -510,6 +620,16 @@ class Boolean(Serializable, HeaderMixin):
     Attributes:
         data: The underlying boolean value.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(Boolean.Q.data.eq(True))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -549,6 +669,16 @@ class String(Serializable, HeaderMixin):
     Attributes:
         data: The underlying string data.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(String.Q.data.eq("hello"))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -591,6 +721,16 @@ class LargeString(Serializable, HeaderMixin):
     Attributes:
         data: The underlying large string data.
         header: An optional metadata header injected by `HeaderMixin`.
+
+    ### Querying with the `.Q` Proxy
+    The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
+    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+
+    Example:
+        ```python
+        # Filter for a specific data value
+        query = QueryOntologyCatalog(LargeString.Q.data.eq("hello"))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(

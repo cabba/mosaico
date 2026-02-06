@@ -46,12 +46,12 @@ class Velocity(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter Velocities with linear X-component AND angular Z-component
-    query = QueryOntologyCatalog(Velocity.Q.linear.x.gt(5.0))
-            .with_expression(Velocity.Q.angular.z.lt(10))
-    ```
+    Example:
+        ```python
+        # Filter Velocities with linear X-component AND angular Z-component
+        query = QueryOntologyCatalog(Velocity.Q.linear.x.gt(5.0))
+                .with_expression(Velocity.Q.angular.z.lt(10))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -152,12 +152,12 @@ class Acceleration(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter Accelerations with linear X-component AND angular Z-component
-    query = QueryOntologyCatalog(Acceleration.Q.linear.x.gt(5.0))
-            .with_expression(Acceleration.Q.angular.z.lt(10))
-    ```
+    Example:
+        ```python
+        # Filter Accelerations with linear X-component AND angular Z-component
+        query = QueryOntologyCatalog(Acceleration.Q.linear.x.gt(5.0))
+                .with_expression(Acceleration.Q.angular.z.lt(10))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -264,12 +264,12 @@ class MotionState(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter MotionStates with position X-component AND angular velocity Z-component
-    query = QueryOntologyCatalog(MotionState.Q.pose.position.x.gt(123456.9))
-            .with_expression(MotionState.Q.velocity.angular.z.lt(10))
-    ```
+    Example:
+        ```python
+        # Filter MotionStates with position X-component AND angular velocity Z-component
+        query = QueryOntologyCatalog(MotionState.Q.pose.position.x.gt(123456.9))
+                .with_expression(MotionState.Q.velocity.angular.z.lt(10))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(

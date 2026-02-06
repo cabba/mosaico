@@ -445,12 +445,12 @@ class Vector2d(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector2d.Q.y.leq(123.4))
-            .with_expression(Vector2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
-    ```
+    Example:
+        ```python
+        # Filter for a specific component value.
+        query = QueryOntologyCatalog(Vector2d.Q.y.leq(123.4))
+                .with_expression(Vector2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+        ```
     """
 
     pass
@@ -482,12 +482,12 @@ class Vector3d(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector3d.Q.y.leq(123.4))
-            .with_expression(Vector3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
-    ```
+    Example:
+        ```python
+        # Filter for a specific component value.
+        query = QueryOntologyCatalog(Vector3d.Q.y.leq(123.4))
+                .with_expression(Vector3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+        ```
     """
 
     pass
@@ -520,12 +520,12 @@ class Vector4d(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector4d.Q.y.leq(123.4))
-            .with_expression(Vector4d.Q.header.stamp.sec.between([1770282868, 1770290127]))
-    ```
+    Example:
+        ```python
+        # Filter for a specific component value.
+        query = QueryOntologyCatalog(Vector4d.Q.y.leq(123.4))
+                .with_expression(Vector4d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+        ```
     """
 
     pass
@@ -557,12 +557,12 @@ class Point2d(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Point2d.Q.y.leq(123.4))
-            .with_expression(Point2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
-    ```
+    Example:
+        ```python
+        # Filter for a specific component value.
+        query = QueryOntologyCatalog(Point2d.Q.y.leq(123.4))
+                .with_expression(Point2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+        ```
     """
 
     pass
@@ -595,12 +595,12 @@ class Point3d(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Point3d.Q.y.leq(123.4))
-            .with_expression(Point3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
-    ```
+    Example:
+        ```python
+        # Filter for a specific component value.
+        query = QueryOntologyCatalog(Point3d.Q.y.leq(123.4))
+                .with_expression(Point3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+        ```
     """
 
     pass
@@ -634,12 +634,12 @@ class Quaternion(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Quaternion.Q.w.leq(0.707))
-            .with_expression(Quaternion.Q.header.stamp.sec.between([1770282868, 1770290127]))
-    ```
+    Example:
+        ```python
+        # Filter for a specific component value.
+        query = QueryOntologyCatalog(Quaternion.Q.w.leq(0.707))
+                .with_expression(Quaternion.Q.header.stamp.sec.between([1770282868, 1770290127]))
+        ```
     """
 
     pass
@@ -676,12 +676,12 @@ class Transform(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter Transforms with translation X-component AND rotation W-component
-    query = QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
-            .with_expression(Transform.Q.rotation.w.lt(0.707))
-    ```
+    Example:
+        ```python
+        # Filter Transforms with translation X-component AND rotation W-component
+        query = QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
+                .with_expression(Transform.Q.rotation.w.lt(0.707))
+        ```
     """
 
     __msco_pyarrow_struct__ = pa.struct(
@@ -783,12 +783,12 @@ class Pose(
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
-    **Example:**
-    ```python
-    # Filter Poses with position X-component AND orientation W-component
-    query = QueryOntologyCatalog(Pose.Q.position.x.gt(5.0))
-            .with_expression(Pose.Q.orientation.w.lt(0.707))
-    ```
+    Example:
+        ```python
+        # Filter Poses with position X-component AND orientation W-component
+        query = QueryOntologyCatalog(Pose.Q.position.x.gt(5.0))
+                .with_expression(Pose.Q.orientation.w.lt(0.707))
+        ```
 
     """
 

@@ -18,19 +18,21 @@ class SyncTransformer:
     sequentially, maintaining internal state to ensure signal continuity across
     batch boundaries.
 
-    ### Scikit-Learn Compatibility:
+    ### Scikit-Learn Compatibility
     The class implements the standard `fit`/`transform` interface, making it
     fully compliant with Scikit-learn `Pipeline` and `FeatureUnion` objects.
 
-    - **fit(X)**: Captures the initial timestamp from the first chunk to align
+    * **fit(X)**: Captures the initial timestamp from the first chunk to align
       the grid.
-    - **transform(X)**: Executes the temporal resampling logic for a single
+    * **transform(X)**: Executes the temporal resampling logic for a single
       DataFrame chunk and returns a dense DataFrame.
+    * **fit_transform(X)**: Fits the transformer to the data and then transforms it.
 
     Key Features:
-    - Fixed Frequency: Normalizes multi-rate sensors to a target FPS.
-    - Stateful Persistence: Carries the last known sensor state into the next chunk.
-    - Semantic Integrity: Correctly handles 'Late Arrivals' by yielding None for
+
+    * Fixed Frequency: Normalizes multi-rate sensors to a target FPS.
+    * Stateful Persistence: Carries the last known sensor state into the next chunk.
+    * Semantic Integrity: Correctly handles 'Late Arrivals' by yielding None for
       ticks preceding the first physical measurement.
     """
 
@@ -102,6 +104,9 @@ class SyncTransformer:
         return dense_df
 
     def fit_transform(self, X: pd.DataFrame, y=None) -> pd.DataFrame:
+        """
+        Fits the transformer to the data and then transforms it.
+        """
         return self.fit(X, y).transform(X)
 
     def reset(self):
