@@ -1,15 +1,15 @@
 """
 This module provides the high-level "Fluent" API for constructing complex searches across the Mosaico Data Platform.
 
-It implements a domain-specific language (DSL) that allows users to filter **Sequences**, **Topics**, and **Ontology** data using a type-safe, method-chaining interface.
+It implements a Domain-Specific Language that allows users to filter **Sequences**, **Topics**, and **Ontology** data using a type-safe, method-chaining interface.
 
 
 **Key Components:**
 
-* **`Query`**: The root container that aggregates multiple specialized sub-queries.
-* **`QuerySequence`**: Specifically for filtering sequence-level metadata.
-* **`QueryTopic`**: For filtering topics by name, ontology, or custom user metadata.
-* **`QueryOntologyCatalog`**: For fine-grained filtering based on sensor-specific field values (e.g., `IMU.Q.acceleration.x > 9.8`).
+* [**`Query`**][mosaicolabs.models.query.builders.Query]: The root container that aggregates multiple specialized sub-queries.
+* [**`QueryOntologyCatalog`**][mosaicolabs.models.query.builders.QueryOntologyCatalog]: For fine-grained filtering based on sensor-specific field values (e.g., `IMU.Q.acceleration.x > 9.8`).
+* [**`QueryTopic`**][mosaicolabs.models.query.builders.QueryTopic]: Specifically for filtering topic-level metadata.
+* [**`QuerySequence`**][mosaicolabs.models.query.builders.QuerySequence]: Specifically for filtering sequence-level metadata.
 """
 
 from typing import Any, Dict, List, Optional, Tuple, Type, get_origin
@@ -23,7 +23,6 @@ from .expressions import (
     _QueryCatalogExpression,
     _QueryTopicExpression,
     _QuerySequenceExpression,
-    _QueryCombinator,
     _QueryExpression,
 )
 
@@ -86,6 +85,50 @@ def _validate_expression_operator_format(expr: "_QueryExpression"):
         )
 
 
+# --- Logical Combinators --
+
+
+class _QueryCombinator:
+    """
+    Merges multiple `_QueryExpression` instances into a single cohesive query block.
+
+    The combinator is responsible for flattening individual expressions into a
+    single dictionary suitable for the Mosaico API. Currently,
+    all expressions combined in a single builder are treated with an implicit **AND** logic.
+    """
+
+    def __init__(
+        self,
+        expressions: List[_QueryExpression],
+        # op: str = "$and",
+    ):
+        """
+        Initializes the logical combinator.
+
+        Args:
+            expressions: A list of atomic expressions to merge.
+        """
+        # self.op = op
+        self.expressions = expressions
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Converts the logical group into a merged dictionary format.
+
+        Example:
+            `{"imu.acceleration.x": {"$gt": 5}, "imu.acceleration.y": {"$lt": 10}}`
+        """
+        if not self.expressions:
+            return {}
+        # return {self.op: [expr.to_dict() for expr in self.expressions]}
+        return {
+            key: val for expr in self.expressions for key, val in expr.to_dict().items()
+        }
+
+
+# --- Query Builders --
+
+
 class QueryOntologyCatalog:
     """
     A top-level query object for the Data Catalog that combines multiple sensor-field expressions.
@@ -94,7 +137,6 @@ class QueryOntologyCatalog:
     (e.g., IMU acceleration, GPS coordinates, or custom telemetry).
     It produces a "flat" dictionary output where field paths utilize dot-notation (e.g., `"imu.acceleration.x"`).
 
-    ### Key Mechanism: The `.Q` Proxy
     This class is designed to work with the **`.Q` query proxy** injected into every
     [`Serializable`][mosaicolabs.models.Serializable] data ontology model.
     You can use this proxy on any registered sensor class (like [`IMU`][mosaicolabs.models.sensors.IMU],
@@ -119,7 +161,9 @@ class QueryOntologyCatalog:
         include_timestamp_range: Optional[bool] = None,
     ):
         """
-        Initializes the ontology query with an optional set of sensor expressions.
+        The constructor initializes the query with an optional list of
+        [`_QueryCatalogExpression`][mosaicolabs.models.query.expressions._QueryCatalogExpression] objects, generated
+        via `<Model>.Q.` proxy, where model is any of the available data ontology (e.g. IMU.Q, GPS.Q, String.Q, etc.)
 
         Args:
             *expressions: A variable number of expressions, generated via the `.Q` proxy on an ontology model.
@@ -145,7 +189,8 @@ class QueryOntologyCatalog:
 
     def with_expression(self, expr: _QueryExpression) -> "QueryOntologyCatalog":
         """
-        Adds a new sensor-field expression to the query using a fluent interface.
+        Adds a new [`_QueryCatalogExpression`][mosaicolabs.models.query.expressions._QueryCatalogExpression]
+        expression to the query using a fluent interface.
 
         Args:
             expr: A valid expression generated via the `.Q` proxy on an ontology model,
@@ -153,6 +198,16 @@ class QueryOntologyCatalog:
 
         Returns:
             The `QueryOntologyCatalog` instance for method chaining.
+
+        Example:
+            ```python
+            # Chain multiple sensor filters together
+            query = (
+                QueryOntologyCatalog()
+                .with_expression(GPS.Q.status.satellites.geq(8))
+                .with_expression(GPS.Q.position.x.between([44.0, 45.0]))
+            )
+            ```
         """
         _validate_expression_type(
             expr,
@@ -282,6 +337,17 @@ class QueryTopic:
     This builder handles the complex partitioning required to query both flat system fields
     (like `name` or `ontology_tag`) and nested dictionary fields (like `user_metadata`).
     The resulting dictionary output preserves this hierarchical structure for server-side processing.
+
+    Example:
+        ```python
+        # Query for all 'camera' topics created in a specific timeframe, matching some metadata (key, value) pair
+        query = (
+            QueryTopic()
+            .with_ontology_tag(Camera.ontology_tag())
+            .with_created_timestamp(time_start=Time.from_float(1700000000))
+            .with_expression(Topic.Q.user_metadata["calibrated"].eq(True))
+        )
+        ```
     """
 
     __supported_query_expressions__: Tuple[Type[_QueryExpression], ...] = (
@@ -290,7 +356,9 @@ class QueryTopic:
 
     def __init__(self, *expressions: "_QueryExpression"):
         """
-        The constructor initializes the query with an optional set of `Topic.Q.` initial expressions.
+        The constructor initializes the query with an optional list of
+        [`_QueryTopicExpression`][mosaicolabs.models.query.expressions._QueryTopicExpression] objects, generated
+        via `Topic.Q.` proxy.
 
         This builder leverages the **`.Q` query proxy** on the `user_metadata`
         field of the [`Topic`][mosaicolabs.models.platform.Topic] model to provide
@@ -326,13 +394,18 @@ class QueryTopic:
         Adds a new expression to the query using a fluent interface.
 
         This is the way to add filters for nested metadata.
-        Example: `.with_expression(Topic.Q.user_metadata["version"].eq("1.0"))`.
 
         Args:
             expr: A `_QueryTopicExpression` constructed via a `Topic.Q` proxy.
 
         Returns:
             The `QueryTopic` instance for method chaining.
+
+        Example:
+            ```python
+            # Target a specific known topic path
+            query = QueryTopic().with_expression(Topic.Q.user_metadata["version"].eq("1.0"))
+            ```
         """
 
         _validate_expression_type(
@@ -352,6 +425,12 @@ class QueryTopic:
 
         Args:
             name: The exact name of the topic to match.
+
+        Example:
+            ```python
+            # Target a specific known topic path
+            query = QueryTopic().with_name("vehicle/front_lidar")
+            ```
         """
         return self.with_expression(_QueryTopicExpression("name", "$eq", f"{name}"))
 
@@ -364,6 +443,12 @@ class QueryTopic:
 
         Args:
             name: The string pattern to search for within the topic name.
+
+        Example:
+            ```python
+            # Search for all topics containing the word 'camera'
+            query = QueryTopic().with_name_match("camera")
+            ```
         """
         return self.with_expression(
             # employs explicit _QueryTopicExpression composition for dealing with
@@ -378,21 +463,21 @@ class QueryTopic:
         This filter restricts the search to topics belonging to a specific data type
         identifier (e.g., 'imu', 'gnss').
 
-        Hint: **Dynamic Tag Retrieval**
-            To ensure compatibility and avoid hardcoding strings, it is highly recommended to
-            retrieve the tag dynamically using the
-            [`ontology_tag()`][mosaicolabs.models.Serializable.ontology_tag]
-            method of the desired ontology class.
-            ```python
-            # Type-safe filtering using the class-level tag retriever
-            query = QueryTopic().with_ontology_tag(IMU.ontology_tag())
-            ```
-
         Args:
             ontology_tag: The string tag (e.g., 'imu', 'gps') to filter by.
 
         Returns:
-            The current [`QueryTopic`][mosaicolabs.query.builders.QueryTopic] instance for method chaining.
+            The current [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] instance for method chaining.
+
+        Example:
+            ```python
+            # Filter for IMU-only data streams
+            query = QueryTopic().with_ontology_tag(IMU.ontology_tag())
+            ```
+            **Note**: To ensure compatibility and avoid hardcoding strings, it is highly recommended to
+            retrieve the tag dynamically using the
+            [`ontology_tag()`][mosaicolabs.models.Serializable.ontology_tag]
+            method of the desired ontology class.
         """
         return self.with_expression(
             # employs explicit _QueryTopicExpression composition for dealing with
@@ -412,6 +497,15 @@ class QueryTopic:
 
         Raises:
             ValueError: If both bounds are None or if `time_start > time_end`.
+
+        Example:
+            ```python
+            # Find sequences created during a specific day
+            query = QueryTopic().with_created_timestamp(
+                time_start=Time.from_float(1704067200.0), # 2024-01-01
+                time_end=Time.from_float(1704153600.0)    # 2024-01-02
+            )
+            ```
         """
         # .between() expects a list [start, end]
         if time_start is None and time_end is None:
@@ -526,6 +620,16 @@ class QuerySequence:
     This builder handles the complex partitioning required to query both flat system fields
     (like `name`) and nested dictionary fields (like `user_metadata`).
     The resulting dictionary output preserves this hierarchical structure for server-side processing.
+
+    Example:
+        ```python
+        # Search for sequences by project name and creation date
+        query = (
+            QuerySequence()
+            .with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
+            .with_created_timestamp(time_start=Time.from_float(1690000000.0))
+        )
+        ```
     """
 
     __supported_query_expressions__: Tuple[Type[_QueryExpression], ...] = (
@@ -534,17 +638,13 @@ class QuerySequence:
 
     def __init__(self, *expressions: "_QueryExpression"):
         """
-        Initializes the query with an optional set of `Sequence.Q.` initial expressions.
+        The constructor initializes the query with an optional list of
+        [`_QuerySequenceExpression`][mosaicolabs.models.query.expressions._QuerySequenceExpression] objects, generated
+        via `Sequence.Q.` proxy.
 
         This builder leverages the **`.Q` query proxy** specifically on the `user_metadata`
         field of the [`Sequence`][mosaicolabs.models.platform.Sequence] model to provide
         a type-safe, fluent interface for filtering.
-
-        Example:
-            ```python
-            # Querying for a specific project within user_metadata
-            query = QuerySequence(Sequence.Q.user_metadata["project"].eq("Apollo"))
-            ```
 
         Args:
             *expressions: A variable number of `Sequence.Q` (`_QuerySequenceExpression`) objects.
@@ -570,13 +670,18 @@ class QuerySequence:
         Adds a new expression to the query using a fluent interface.
 
         This is the way to add filters for nested metadata.
-        Example: `.with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))`.
 
         Args:
             expr: A `_QuerySequenceExpression` constructed via a `Sequence.Q` proxy.
 
         Returns:
             The `QuerySequence` instance for method chaining.
+
+        Example:
+            ```python
+            # Target a specific known topic path
+            query = QueryTopic().with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
+            ```
         """
         _validate_expression_type(
             expr,
@@ -595,6 +700,12 @@ class QuerySequence:
 
         Args:
             name: The exact name of the sequence to match.
+
+        Example:
+            ```python
+            # Find all sequences related to 'calibration'
+            query = QuerySequence().with_name("test_winter_01")
+            ```
         """
         return self.with_expression(
             # employs explicit _QuerySequenceExpression composition for dealing with
@@ -610,6 +721,12 @@ class QuerySequence:
 
         Args:
             name: The string pattern to search for within the sequence name.
+
+        Example:
+            ```python
+            # Find all sequences related to 'calibration'
+            query = QuerySequence().with_name_match("calibration_run_")
+            ```
         """
         return self.with_expression(
             # employs explicit _QuerySequenceExpression composition for dealing with
@@ -629,6 +746,15 @@ class QuerySequence:
 
         Raises:
             ValueError: If both bounds are `None` or if `time_start > time_end`.
+
+        Example:
+            ```python
+            # Find sequences created during a specific day
+            query = QuerySequence().with_created_timestamp(
+                time_start=Time.from_float(1704067200.0), # 2024-01-01
+                time_end=Time.from_float(1704153600.0)    # 2024-01-02
+            )
+            ```
         """
         # .between() expects a list [start, end]
         if time_start is None and time_end is None:
@@ -742,6 +868,36 @@ class Query:
 
     This class serves as the final envelope for multi-domain queries, ensuring that
     different query types (Topic, Sequence, Ontology) do not overwrite each other.
+
+    Example:
+        ```python
+        from mosaicolabs import QueryOntologyCatalog, QuerySequence, Query, IMU, MosaicoClient
+
+        # Establish a connection to the Mosaico Data Platform
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Build a filter with name pattern and metadata-related expression
+            query = Query(
+                # Append a filter for sequence metadata
+                QuerySequence()
+                .with_expression(
+                    # Use query proxy for generating a _QuerySequenceExpression
+                    Sequence.Q.user_metadata["environment.visibility"].lt(50)
+                )
+                .with_name_match("test_drive"),
+                # Append a filter with deep time-series data discovery and measurement time windowing
+                QueryOntologyCatalog()
+                .with_expression(IMU.Q.acceleration.x.gt(5.0))
+                .with_expression(IMU.Q.header.stamp.sec.gt(1700134567))
+                .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
+            )
+            # Perform the server side query
+            client.query(query)
+            # Inspect the results
+            if results is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in results:
+                    print(f"Sequence: {item.sequence.name}")
+        ```
     """
 
     def __init__(self, *queries: QueryableProtocol):
@@ -779,6 +935,30 @@ class Query:
 
         Raises:
             ValueError: If an appended query type is already present in the request.
+
+        Example:
+            ```python
+            from mosaicolabs import QueryOntologyCatalog, QuerySequence, Query, IMU, MosaicoClient
+
+            # Build a filter with name pattern and metadata-related expression
+            query = Query(
+                # Append a filter for sequence metadata
+                QuerySequence()
+                .with_expression(
+                    # Use query proxy for generating a _QuerySequenceExpression
+                    Sequence.Q.user_metadata["environment.visibility"].lt(50)
+                )
+                .with_name_match("test_drive")
+            )
+
+            # Append a filter with deep time-series data discovery and measurement time windowing
+            query.append(
+                QueryOntologyCatalog()
+                .with_expression(IMU.Q.acceleration.x.gt(5.0))
+                .with_expression(IMU.Q.header.stamp.sec.gt(1700134567))
+                .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
+            )
+            ```
         """
         for q in queries:
             t = type(q)

@@ -1,3 +1,3 @@
-# Communication module
+# Communication Module
 
 ::: mosaicolabs.comm.MosaicoClient

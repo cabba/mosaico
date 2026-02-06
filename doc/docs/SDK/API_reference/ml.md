@@ -1,10 +1,4 @@
-# Machine Learning module
-
-!!! note "Some note"
-    Some note
-
-!!! warning "Warning"
-    Suka
+# Machine Learning Module
 
 ::: mosaicolabs.ml.DataFrameExtractor
 
