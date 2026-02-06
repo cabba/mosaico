@@ -32,14 +32,13 @@ def test_sync_transformer_hold_policy():
     sparse_data = {
         "timestamp_ns": [
             0,
-            300_000_000,
             600_000_000,
             900_000_000,
             1_200_000_000,
             1_500_000_000,
         ],
-        "val1": [10.0, None, 11.0, None, 12.0, 13.0],
-        "val2": [None, None, 1.0, 2.0, None, 3.0],
+        "val1": [10.0, 11.0, None, 12.0, 13.0],
+        "val2": [None, 1.0, 2.0, None, 3.0],
     }
     df = pd.DataFrame(sparse_data)
     dense_df = transformer.fit(df).transform(df)

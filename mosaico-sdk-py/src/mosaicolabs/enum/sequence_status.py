@@ -35,7 +35,7 @@ class SequenceStatus(Enum):
     """
     The sequence has been successfully closed and its data is now immutable.
     
-    This terminal state indicates that the [`close()`][mosaicolabs.handlers.SequenceWriter.close] 
+    This terminal state indicates that the [`finalize()`][mosaicolabs.handlers.SequenceWriter.finalize] 
     action was acknowledged by the server. Once finalized, 
     the sequence is typically **locked** and cannot be deleted unless explicitly 
     unlocked by an administrator.

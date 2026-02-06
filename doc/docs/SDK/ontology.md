@@ -46,10 +46,6 @@ If missing, it raises an error at definition time (import time), preventing runt
 #### Quick Reference
 | Method | Return | Description |
 | :--- | :--- | :--- |
-| **`create(tag,*args,**kwargs)`** | `Serializable`| The universal factory method to instantiate a model from raw data. |
-| **`list_registered()`** | `List[str]`| Returns all available ontology tags currently loaded in the system. |
-| **`is_registered(tag)`** | `bool` | Checks if a specific tag exists in the ontology registry. |
-| **`get_class_type(tag)`** | `Optional[Type["Serializable"]]` | Resolves a string identifier to the actual Python class object. |
 | **`ontology_tag()`** | `str` | Returns the unique string identifier for a class or instance. |
 
 

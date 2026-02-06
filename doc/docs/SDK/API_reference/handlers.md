@@ -4,7 +4,11 @@
 ::: mosaicolabs.handlers.SequenceHandler
 ::: mosaicolabs.handlers.TopicHandler
 ::: mosaicolabs.handlers.config.WriterConfig
+
 ::: mosaicolabs.handlers.SequenceWriter
+    options:
+      inherited_members: true
+
 ::: mosaicolabs.handlers.TopicWriter
 ::: mosaicolabs.handlers.SequenceDataStreamer
 ::: mosaicolabs.handlers.TopicDataStreamer

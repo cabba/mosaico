@@ -127,7 +127,7 @@ class MosaicoClient:
                     timeout=self._timeout,
                 )
         except Exception as e:
-            raise Exception(
+            raise ConnectionError(
                 f"Exception while initializing Connection pool.\nInner err. '{e}'"
             )
 
@@ -302,6 +302,10 @@ class MosaicoClient:
         """
         Creates a new sequence on the platform and returns a [`SequenceWriter`][mosaicolabs.handlers.SequenceWriter] for ingestion.
 
+        Important:
+            The function **must** be called inside a with context, otherwise a
+            RuntimeError is raised.
+
         Args:
             sequence_name (str): Unique name for the sequence.
             metadata (dict[str, Any]): User-defined metadata to attach.
@@ -311,6 +315,10 @@ class MosaicoClient:
 
         Returns:
             SequenceWriter: An initialized writer instance.
+
+        Raises:
+            RuntimeError: If the method is called outside a `with` context.
+            Exception: If any error occurs during sequence injection.
         """
         # Use defaults if specific batch sizes aren't provided
         max_batch_size_bytes = (

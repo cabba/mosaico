@@ -72,6 +72,61 @@ class SyncTransformer:
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
         Syncronizes a sparse DataFrame chunk into a dense, uniform DataFrame.
+
+        Example: **Example with generic dataframe**
+            ```python
+            from mosaicolabs.ml import SyncTransformer, SyncHold
+
+            # 5 Hz Target (200ms steps)
+            transformer = SyncTransformer(target_fps=5, policy=SyncHold())
+
+            # Define a sparse dataframe with two sensors:
+            # `sensor_a` starts at 0, `sensor_b` arrives at 600ms
+            sparse_data = {
+                "timestamp_ns": [
+                    0,
+                    600_000_000,
+                    900_000_000,
+                    1_200_000_000,
+                    1_500_000_000,
+                ],
+                "val1": [10.0, 11.0, None, 12.0, 13.0],
+                "val2": [None, 1.0, 2.0, None, 3.0],
+            }
+            df = pd.DataFrame(sparse_data)
+            dense_df = transformer.fit(df).transform(df)
+
+            # Expected output
+            # "timestamp_ns",   "sensor_a", "sensor_b"
+            # 0,                10.0,       None        # <- avoid hallucination on `sensor_b`
+            # 200_000_000,      10.0,       None        # <- avoid hallucination on `sensor_b`
+            # 400_000_000,      10.0,       None        # <- avoid hallucination on `sensor_b`
+            # 600_000_000,      11.0,       1.0
+            # 800_000_000,      11.0,       2.0
+            # 1_000_000_000,    11.0,       2.0
+            # 1_200_000_000,    12.0,       2.0
+            # 1_400_000_000,    12.0,       2.0
+            ```
+
+        Example: **Example with Mosaico dataframe**
+            ```python
+            # Obtain a dataframe with DataFrameExtractor
+            from mosaicolabs import MosaicoClient, IMU, Image
+            from mosaicolabs.ml import DataFrameExtractor, SyncTransformer
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                sequence_handler = client.get_sequence_handler("example_sequence")
+                for df in DataFrameExtractor(sequence_handler).to_pandas_chunks(
+                    topics = ["/front/imu", "/front/camera/image_raw"]
+                ):
+                    # Synch the data at 30 Hz:
+                    sync_transformer = SyncTransformer(
+                        target_fps = 30, # resample at 30 Hz and fill the Nans with a `Hold` policy
+                    )
+                    synced_df = sync_transformer.transform(df)
+                    # Do something with the synced dataframe
+                    # ...
+            ```
         """
         if self._timestamp_column not in X.columns:
             raise ValueError(

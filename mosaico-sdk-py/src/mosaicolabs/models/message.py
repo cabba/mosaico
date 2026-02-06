@@ -17,7 +17,7 @@ import pandas as pd
 from ..logging_config import get_logger
 from ..helpers.helpers import encode_to_dict
 from .header import Header
-from .serializable import Serializable, _SENSOR_REGISTRY
+from .serializable import Serializable
 from .internal.helpers import _fix_empty_dicts
 from .base_model import BaseModel
 
@@ -153,13 +153,12 @@ class Message(BaseModel):
             Exception: If required message fields are missing from `kwargs`.
         """
         # Validate Tag
-        if tag not in _SENSOR_REGISTRY:
+        DataClass = Serializable._get_class_type(tag)
+        if DataClass is None:
             raise ValueError(
                 f"No ontology registered with tag '{tag}'. "
-                f"Available tags: {list(_SENSOR_REGISTRY.keys())}"
+                f"Available tags: {Serializable._list_registered()}"
             )
-
-        DataClass = _SENSOR_REGISTRY[tag]
 
         # Cleanup Input (Fix Parquet artifacts)
         fixed_kwargs = _fix_empty_dicts(kwargs) if kwargs else dict({})
