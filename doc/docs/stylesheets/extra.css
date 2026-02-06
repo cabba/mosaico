@@ -84,3 +84,7 @@
 .md-footer-meta {
     background-color: var(--mosaico-bg);
 }
+
+code.nowrap {
+  white-space: nowrap;
+}

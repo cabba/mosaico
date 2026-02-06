@@ -11,42 +11,50 @@ It functions on a standard client-server model, mediating between your high-leve
 
 ## Architectural Design
 
-`mosaicod` is architected atop the **Apache Arrow Flight** protocol. Unlike traditional REST APIs which serialize data into text-based JSON, Flight is designed specifically for the transport of massive datasets over gRPC. This architectural choice provides Mosaico with three critical advantages:
+`mosaicod` is architected atop the **Apache Arrow Flight** protocol. Apache Arrow Flight is a general-purpose, high-performance client-server framework developed for the exchange of massive datasets. It operates directly on Apache Arrow columnar data, enabling efficient transport over gRPC without the overhead of serialization.
+
+Unlike traditional REST APIs which serialize data into text-based JSON, Flight is designed specifically for high-throughput data systems. This architectural choice provides Mosaico with three critical advantages:
 
 **Zero-Copy Serialization.** Data is transmitted in the Apache Arrow columnar format, the exact same format used in-memory by modern analytics tools like pandas and Polars. This eliminates the CPU-heavy cost of serializing and deserializing data at every hop.
 
-**Parallelized Transpor.** Operations are not bound to a single pipe; data transfer can be striped across multiple TCP connections to saturate available bandwidth.
+**Parallelized Transport.** Operations are not bound to a single pipe; data transfer can be striped across multiple TCP connections to saturate available bandwidth.
 
 **Snapshot-Based Schema Enforcement.** Data types are not guessed, nor are they forced into a rigid global model. Instead, the protocol enforces a rigorous schema handshake that validates data against a specific schema snapshot stored with the sequence.
 
-### The Three Layers
+### Resource Addressing
 
-To manage complexity and performance, the server segregates its operations into three distinct logical layers:
+Mosaico treats every entity in the system, whether it's a Sequence or a Topic, as a uniquely addressable resource. These resources are identified by a **Resource Locator**, a uniform logical path that remains consistent across all channels. 
 
-**Control Layer.** The administrative brain of the system. It handles metadata management, resource orchestration, and configuration via synchronous commands.
+Mosaico uses two types of resource locators:
 
-**Ingestion Layer.** A dedicated high-speed lane for writing data. It utilizes streaming endpoints to accept raw sensor data at wire speed.
+- A **Sequence Locator** identifies a recording session by its sequence name (e.g., `run_2023_01`).
+- A **Topic Locator** identifies a specific data stream using a hierarchical path that includes the sequence name and topic path (e.g., `run_2023_01/sensors/lidar_front`).
 
-**Retrieval Layer.** A dedicated high-speed lane for reading data. It streams requested data slices back to clients with minimal latency.
+### The Three Channels
+
+The server partitions its operations into three specialized channels to ensure that administrative overhead never bottlenecks data throughput. The **Control Channel** acts as the system's administrative control path, handling metadata management and resource orchestration. 
+
+Data flows into the system via the **Ingestion Channel**, a dedicated high-speed lane optimized for writing raw sensor data at wire speed. Conversely, the **Retrieval Channel** is engineered to read and stream requested data slices back to clients. This separation ensures that columnar data retrieval remains efficient and low-latency, even while the system is under heavy write load.
 
 ### Snapshot Schema
 
-Robotics data is inherently dynamic; sensor configurations change, message definitions evolve rapidly, and experimental setups vary from run to run. Mosaico is designed to let teams focus on development rather than managing complex schema migrations or worrying about backward compatibility breaking old datasets.
+Robotics data is inherently dynamic, with sensor configurations and message definitions that evolve rapidly across different experimental runs. 
 
-To achieve this, Mosaico moves away from the concept of a rigid, global schema. Instead, it associates a specific **Schema Snapshot** with **each individual sequence**.
+To avoid the overhead of complex schema migrations or the risk of breaking legacy datasets, Mosaico moves away from a rigid global schema in favor of a *schema snapshot* approach. 
+By associating a specific snapshot with each individual sequence, `mosaicod` captures the exact blueprint of every topic and sensor message at the moment of creation. 
+This ensures that the data remains immutable and self-describing. 
+The SDK can reconstruct objects exactly as they were originally defined, guaranteeing that a recording remains perfectly readable even if the project's ontology undergoes significant changes over time.
 
-**Sequence-Scoped Definitions:** When a sequence is created, `mosaicod` captures and stores the exact schema blueprint used at that moment. This includes the precise structure of every topic and sensor message.
+### Two-Tier Storage Topology
 
-**Perfect Reconstruction:** Because the schema is immutable and attached directly to the data, the SDK can reconstruct the objects exactly as they were defined when the data was uploaded. This ensures that a recording from six months ago remains perfectly readable today, even if your current project's ontology has completely changed.
+`mosaicod` implements a hierarchical storage architecture, consisting of two distinct layers:
 
-### Storage
+**L1 Hot State (Metadata Cache).** A high-performance **PostgreSQL** database acts as the system's L1 layer. It indexes all structural information—the catalog of sequences, topics, channel definitions, and validation schemas. This layer provides the transactional consistency and query speed required for the Control Channel's interactive operations.
 
-`mosaicod` employs a hybrid storage strategy to balance speed and scalability:
+**L2 Cold State (Long Term Storage).** The **Object Store** (e.g., S3, Google Cloud Storage, or MinIO) serves as the persistent L2 layer. This is the system's ground truth, where the bulk sensor data (images, Lidar point clouds) and immutable schema snapshots reside.
 
-**Hot State (Metadata).** Structural information—the catalog of sequences, topics, layer definitions, and validation schemas—is stored in a **PostgreSQL** database. This allows for complex, relational queries and transactional integrity for administrative actions.
+This topology decouples compute from retention storage, but more importantly, it enforces a critical resiliency invariant involved with the reconstructability principle:
 
-**Cold State (Bulk Data).** The actual heavy sensor data (images, Lidar point clouds) is stored in an **Object Store**. By default, Mosaico uses the local filesystem for simplicity, but for production environments, it natively supports S3-compatible storage (AWS S3, MinIO, Google Cloud Storage).
+*The L1 state is entirely transient and can be completely reconstructed effectively caching the L2 state.*
 
-This separation decouples compute from storage, allowing the platform to scale its data retention infinitely without degrading the performance of metadata operations.
-
-Since we care about data,, the system is architected such that the *Hot State is completely reconstructible from the Cold State*. This means that if the database goes down or becomes corrupted, it is always possible to rebuild the entire metadata catalog by scanning the Cold State. Since the Cold State typically resides on an Object Store with extremely high durability and redundancy (like S3), this design ensures your data remains resilient and recoverable even in the face of catastrophic infrastructure failures.
+If the metadata database is corrupted or destroyed, `mosaicod` can rebuild the entire catalog by rescanning the durable L2 storage. This design ensures that while the L1 provides performance, the L2 guarantees long-term durability and recovery, protecting your data against catastrophic infrastructure failure.

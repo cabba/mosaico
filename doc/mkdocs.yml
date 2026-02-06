@@ -1,5 +1,5 @@
 site_name: Mosaico Documentation
-site_url: https://mosaico.dev/doc
+site_url: https://doc.mosaico.dev
 repo_url: https://github.com/mosaico-labs/mosaico
 
 markdown_extensions:

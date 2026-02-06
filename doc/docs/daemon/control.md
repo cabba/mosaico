@@ -1,19 +1,20 @@
 ---
-title: Control Layer
+title: Control Channel
 description: Managing resources via synchronous actions.
 sidebar:
     order: 2
 ---
 
-The **Control Layer** serves as the administrative interface for Mosaico. It is accessed via the Arrow Flight `DoAction` RPC mechanism. Unlike the streaming layers which handle continuous flows of data, operations in the Control Layer are **synchronous** and **transactional**. This means every request is atomic: it either completes successfully, ensuring the system state is updated, or it fails entirely without side effects.
+The **Control Channel** serves as the administrative interface for Mosaico, accessed via the Arrow Flight `DoAction` RPC mechanism. 
+Unlike the streaming channels designed for continuous data throughput, the Control Channel handles discrete lifecycle events and resource management. 
+While individual calls are synchronous, they often initiate or conclude multi-step processes, such as sequence orchestration, that govern the long-term state and integrity of data within the platform.
 
-All actions in this layer follow a standardized pattern: they expect a JSON-serialized payload defining the request parameters and return a JSON-serialized response containing the result.
+All actions in this channel follow a standardized pattern: they expect a JSON-serialized payload defining the request parameters and return a JSON-serialized response containing the result.
 
-Here is the rewritten section using tables for better readability.
 
 ## Sequence Management
 
-Sequences are the fundamental containers for data recordings in Mosaico. The Control Layer enforces a strict lifecycle state machine to guarantee data integrity.
+Sequences are the fundamental containers for data recordings in Mosaico. The Control Channel enforces a strict lifecycle state machine to guarantee data integrity.
 
 | Action | Description |
 | --- | --- |

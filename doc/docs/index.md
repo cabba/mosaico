@@ -15,14 +15,14 @@ The platform adopts a strictly **code-first approach**. We believe engineers sho
 ## Streamlining Data for Physical AI
 The transition from classical robotics to Physical AI represents a fundamental shift in data requirements.
 
-![Some image](assets/ros_physical_ai.png)
+![Mosaico Bridge to Physical AI](assets/ros_physical_ai.png)
 
 **Classical Robotics** operates in an event-driven world. Data is asynchronous, sparse, and stored in monolithic sequential files (like ROS bags). A Lidar might fire at 10Hz, an IMU at 100Hz, and a camera at 30Hz, all drifting relative to one another.
 
 
 **Physical AI** requires synchronous, dense, and tabular data. Models expect fixed-size tensors arriving at a constant frequency (e.g., a batch of state vectors at exactly 50Hz).
 
-Mosaico is built to automate this _Data Plumbing_. It ingests raw data and dynamically transforms it into the synchronized, aligned, and flattened formats required for model training, without forcing you to generate massive intermediate CSV files.
+Mosaico’s [ML module](/SDK/bridges/ml) automates this tedious "data plumbing." It ingests raw, unsynchronized data and transforms it on the fly into the aligned, flattened formats ready for model training, eliminating the need for massive intermediate CSV files.
 
 ## Core Concepts
 
@@ -40,16 +40,14 @@ The ontology defines the "shape" of this data. It can represent base types (such
 This abstraction allows Mosaico to understand what your data *is*, rather than just storing it as raw bytes. 
 By using an ontology to inject and index data, you enable the platform to perform ad-hoc processing, such as custom compression or semantic indexing, tailored specifically to the type of data you have ingested.
 
-Users can easily extend the platform by defining their own **Ontology Models**.(TODO: add link) These are specific data structures representing a single data type. For example, a GPS sensor might be modeled as follows:
+Users can easily extend the platform by defining their own [Ontology Models](/SDK/ontology). These are specific data structures representing a single data type. For example, a GPS sensor might be modeled as follows:
 
 ``` python
 class GPS:
-    latitude: Float
+    latitude:  Float
     longitude: Float
-    altitude: Float # (1)!
+    altitude:  Float
 ```
-
-1. And some additional fields also can be extended the text to match some of the code
 
 ### Topics and Sequences
 

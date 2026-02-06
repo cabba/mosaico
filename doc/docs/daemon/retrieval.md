@@ -1,32 +1,34 @@
 ---
-title: Retrieval Layer
+title: Retrieval Channel
 description: Streaming data via the Ticket mechanism.
 sidebar:
     order: 4
 ---
 
-Reading data is the responsibility of the **Retrieval Layer**, handled via the Flight `DoGet` endpoint. This layer allows clients to request specific slices of data, which are then streamed back as a sequence of Arrow batches.
+Measurement data is accessed through the **Retrieval Channel**, which leverages the Flight `DoGet` endpoint to serve high-performance read operations. 
+Unlike a simple file download, this channel provides a sophisticated interface that allows clients to request precise slices of data, which are then dynamically assembled and streamed back as a sequence of optimized Arrow batches.
 
-## The Ticket Mechanism
+## The Retrieval Protocol
 
-Unlike standard REST APIs where parameters are embedded in the URL, Flight uses a binary token known as a **Ticket**. In Mosaico, this Ticket is a serialized request object containing:
-* **Locator:** The precise path of the topic to read.
-* **Time Range (Optional):** A specific start and end timestamp (in nanoseconds).
+Accessing data requires specifying the **Locator**, which defines the topic path, and an optional time range in nanoseconds.
 
-When the server receives a Ticket, it executes a three-step resolution process:
-1.  **Index Lookup:** It consults the PostgreSQL metadata to identify which physical Chunks contain data overlapping the requested time range.
-2.  **Pruning:** It filters out any chunks that fall strictly outside the requested window, avoiding unnecessary I/O.
-3.  **Streaming:** It opens only the relevant chunk files and streams their content back to the client.
+The resolution process follows a coordinated sequence of operations designed to minimize latency. Upon receiving a request, the server performs an index lookup within the metadata cache to identify the physical data chunks that intersect with the requested time window. This is followed by a pruning stage, where the system discards any chunks that fall entirely outside the query bounds to avoid redundant I/O. Once the relevant segments are identified, the server initiates streaming, opening the underlying files and delivering the data back to the client in a high-throughput pipeline.
 
 ## Smart Batching
 
-The server performs more than just a file dump; it implements **Smart Batching** to optimize network performance:
-* It analyzes the schema structure and the compression ratio of the stored data.
-* It dynamically computes an optimal `RecordBatch` size. This ensures that network packets are fully utilized while preventing Out-Of-Memory (OOM) errors on the client side, which can occur when deserializing massive, monolithic batches.
+The server performs more than just a file dump; it implements smart batching to optimize network performance. This is particularly useful when streaming heterogeneous data, where payloads can range from simple, lightweight time-series to high-resolution 4K images.
+
+Through adaptive sizing, the system analyzes the schema structure and the compression ratio of the stored data to dynamically compute an optimal `RecordBatch` size. This approach maximizes memory and network efficiency, ensuring that network packets are fully utilized while preventing Out-Of-Memory (OOM) errors on the client side that can occur when deserializing massive, monolithic batches.
+
 
 ## Metadata Context Headers
 
-To ensure the client has full context, the data stream is prefixed with a Schema message containing embedded custom metadata. Mosaico injects rich context into this header, allowing the client to reconstruct the full environment:
-* **User Metadata:** The original JSON tags and configuration provided during creation.
-* **Ontology Tag:** The specific data type version.
-* **Serialization Format:** Details on how the binary data is structured.
+To ensure the client has full context, the data stream is prefixed with a Schema message containing embedded custom metadata. Mosaico injects rich context into this header, allowing the client to reconstruct the full environment.
+
+This includes *user metadata*, preserving original project context like experimental tags or vehicle IDs, and the *ontology tag*, which informs the client exactly what type of sensor data (e.g., `Lidar`, `Camera`) is being received to enable type-safe deserialization.
+
+The *serialization format* instructs the client on how to interpret the Arrow buffers on the wire. The supported formats include:
+
+- `Default`: The standard Arrow columnar layout.
+- `Ragged`: Optimized representation for variable-length lists.
+- `Image`: An optimized array format specifically for high-resolution visual data.
