@@ -1,5 +1,5 @@
 import pandas as pd
-from mosaicolabs.ml import SyncTransformer, SynchHold, SynchAsOf, SynchDrop
+from mosaicolabs.ml import SyncTransformer, SyncHold, SyncAsOf, SyncDrop
 
 
 def test_sync_transformer_fps_to_ns_alignment():
@@ -8,7 +8,7 @@ def test_sync_transformer_fps_to_ns_alignment():
     Example: 10 Hz should result in ticks every 100,000,000 ns.
     """
     # 10 Hz Target
-    transformer = SyncTransformer(target_fps=10, policy=SynchHold())
+    transformer = SyncTransformer(target_fps=10, policy=SyncHold())
 
     # Sparse data spanning 300ms
     df = pd.DataFrame({"timestamp_ns": [0, 300_000_000], "data": [1, 2]})
@@ -26,7 +26,7 @@ def test_sync_transformer_hold_policy():
     Tests that a sensor arriving late results in 'None' for early ticks.
     """
     # 5 Hz Target (200ms steps)
-    transformer = SyncTransformer(target_fps=5, policy=SynchHold())
+    transformer = SyncTransformer(target_fps=5, policy=SyncHold())
 
     # IMU starts at 0, val2 arrives at 600ms
     sparse_data = {
@@ -63,12 +63,12 @@ def test_sync_transformer_hold_policy():
 
 def test_sync_transformer_as_of_policy():
     """
-    Tests that SynchAsOf correctly returns None when data becomes stale.
+    Tests that SyncAsOf correctly returns None when data becomes stale.
     Verifies that values are held only within the specified tolerance_ns.
     """
     # 5 Hz Target (200ms steps), Tolerance of 100ms
     # Any sample older than 100ms relative to the tick should be None
-    policy = SynchAsOf(tolerance_ns=150_000_000)
+    policy = SyncAsOf(tolerance_ns=150_000_000)
     transformer = SyncTransformer(target_fps=5, policy=policy)
 
     sparse_data = {
@@ -94,12 +94,12 @@ def test_sync_transformer_as_of_policy():
 
 def test_sync_transformer_drop_policy():
     """
-    Tests that SynchDrop restricts values to the grid interval (t - step_ns, t].
+    Tests that SyncDrop restricts values to the grid interval (t - step_ns, t].
     Ensures that if no new sample arrives within a step, the output is None.
     """
     # 5 Hz Target (200ms steps)
     # Policy uses step_ns (200ms) as the implicit window
-    policy = SynchDrop(step_ns=200_000_000)
+    policy = SyncDrop(step_ns=200_000_000)
     transformer = SyncTransformer(target_fps=5, policy=policy)
 
     sparse_data = {
@@ -127,7 +127,7 @@ def test_sync_transformer_state_carry_over():
     Verifies state persistence across two 5-second chunks (at 1 Hz).
     """
     # 1 Hz Target (1s steps)
-    transformer = SyncTransformer(target_fps=1, policy=SynchHold())
+    transformer = SyncTransformer(target_fps=1, policy=SyncHold())
 
     # Chunk 1: 0s to 2s
     df1 = pd.DataFrame(
@@ -150,7 +150,7 @@ def test_sync_transformer_state_carry_over():
 
 def test_sync_transformer_reset():
     """Verifies that reset() clears temporal alignment and sensor memory."""
-    transformer = SyncTransformer(target_fps=10, policy=SynchHold())
+    transformer = SyncTransformer(target_fps=10, policy=SyncHold())
     df = pd.DataFrame({"timestamp_ns": [0, 100_000_000], "val": [1, 2]})
 
     transformer.fit(df).transform(df)

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class SynchHold:
+class SyncHold:
     """
     Classic Last-Value-Hold (Zero-Order Hold) synchronization.
 
@@ -23,11 +23,11 @@ class SynchHold:
         return results
 
 
-class SynchAsOf:
+class SyncAsOf:
     """
     Tolerance-based 'As-Of' synchronization.
 
-    Similar to SynchHold, but invalidates the 'held' value if the time gap
+    Similar to SyncHold, but invalidates the 'held' value if the time gap
     between the sample and the grid tick exceeds a specific threshold.
     """
 
@@ -59,7 +59,7 @@ class SynchAsOf:
         return results
 
 
-class SynchDrop:
+class SyncDrop:
     """
     Strict Interval-based 'Drop' synchronization.
 

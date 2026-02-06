@@ -80,9 +80,9 @@ class ForceTorque(
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `ForceTorque.Q.force.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
-    | `ForceTorque.Q.force.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
-    | `ForceTorque.Q.force.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ForceTorque.Q.force.x` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `ForceTorque.Q.force.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `ForceTorque.Q.force.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
     **Example:**
     ```python
@@ -100,9 +100,9 @@ class ForceTorque(
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `ForceTorque.Q.torque.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
-    | `ForceTorque.Q.torque.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
-    | `ForceTorque.Q.torque.z` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ForceTorque.Q.torque.x` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `ForceTorque.Q.torque.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `ForceTorque.Q.torque.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
     **Example:**
     ```python

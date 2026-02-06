@@ -3,8 +3,8 @@ import numpy as np
 from typing import Any, Dict, Optional, Tuple
 from mosaicolabs.logging_config import get_logger
 
-from .synch_policy import SynchPolicy
-from .synch_policies.hold import SynchHold
+from .sync_policy import SyncPolicy
+from .sync_policies.hold import SyncHold
 
 logger = get_logger(__name__)
 
@@ -37,17 +37,17 @@ class SyncTransformer:
     def __init__(
         self,
         target_fps: float,
-        policy: SynchPolicy = SynchHold(),
+        policy: SyncPolicy = SyncHold(),
         timestamp_column="timestamp_ns",
     ):
         """
         Args:
             target_fps (float): The desired output frequency in Hz.
-            policy (SynchPolicy): A strategy implementing the `SynchPolicy` protocol.
+            policy (SyncPolicy): A strategy implementing the `SyncPolicy` protocol.
             timestamp_column (str): The column name containing the timestamp data.
         """
         self._step_ns: int = int(1e9 / target_fps)
-        self._policy: SynchPolicy = policy
+        self._policy: SyncPolicy = policy
         self._timestamp_column: str = timestamp_column
 
         # Internal state to bridge gaps between chunks
@@ -69,7 +69,7 @@ class SyncTransformer:
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """
-        Synchronizes a sparse DataFrame chunk into a dense, uniform DataFrame.
+        Syncronizes a sparse DataFrame chunk into a dense, uniform DataFrame.
         """
         if self._timestamp_column not in X.columns:
             raise ValueError(

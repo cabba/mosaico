@@ -3,7 +3,7 @@ import numpy as np
 
 
 @typing.runtime_checkable
-class SynchPolicy(typing.Protocol):
+class SyncPolicy(typing.Protocol):
     """
     Structural protocol defining the interface for synchronization kernels.
 

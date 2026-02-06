@@ -65,8 +65,8 @@ class ROI(Serializable, HeaderMixin):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `ROI.Q.offset.x` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
-    | `ROI.Q.offset.y` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ROI.Q.offset.x` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `ROI.Q.offset.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
     **Example:**
     ```python
@@ -83,7 +83,7 @@ class ROI(Serializable, HeaderMixin):
     ### Querying with the `.Q` Proxy
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `ROI.Q.height` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ROI.Q.height` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
     **Example:**
     ```python
@@ -99,7 +99,7 @@ class ROI(Serializable, HeaderMixin):
     ### Querying with the `.Q` Proxy
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `ROI.Q.width` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()` |
+    | `ROI.Q.width` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
     **Example:**
     ```python

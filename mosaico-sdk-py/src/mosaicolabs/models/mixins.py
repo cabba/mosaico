@@ -38,9 +38,9 @@ class HeaderMixin(BaseModel):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `<Model>.Q.header.seq` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
-    | `<Model>.Q.header.stamp.sec` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
-    | `<Model>.Q.header.stamp.nanosec` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.header.seq` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `<Model>.Q.header.stamp.sec` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `<Model>.Q.header.stamp.nanosec` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `<Model>.Q.header.frame_id` | `String` | `.eq()`, `.match()` |
 
     Note: Universal Compatibility
@@ -141,7 +141,7 @@ class CovarianceMixin(BaseModel):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `<Model>.Q.covariance_type` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.covariance_type` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `<Model>.Q.covariance` | ***Non-Queryable*** | None |
 
     Note: Universal Compatibility
@@ -252,8 +252,8 @@ class VarianceMixin(BaseModel):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `<Model>.Q.variance` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
-    | `<Model>.Q.variance_type` | `Numeric` | `.gt()`, `.lt()`, `.geq()`, `.leq()`, `.eq()`, `.between()`, `.in_()` |
+    | `<Model>.Q.variance` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `<Model>.Q.variance_type` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
     Note: Universal Compatibility
         The `<Model>` placeholder represents any Mosaico ontology class (e.g., `IMU`, `GPS`, `Floating64`)
