@@ -6,6 +6,7 @@ for an *existing* topic on the server. It allows users to inspect metadata
 and create readers (`TopicDataStreamer`).
 """
 
+import datetime
 import json
 import pyarrow.flight as fl
 from typing import Any, Dict, Optional, Tuple, Type
@@ -47,7 +48,7 @@ class TopicHandler:
 
         ```python
         with client.topic_handler("sequence_01", "/sensor/lidar") as handler:
-            print(f"Topic storage size: {handler.topic_info.sys_info.total_size_bytes} bytes")
+            print(f"Topic storage size: {handler.total_size_bytes} bytes")
         ```
     """
 
@@ -67,7 +68,7 @@ class TopicHandler:
         [`MosaicoClient.topic_handler()`][mosaicolabs.comm.MosaicoClient.topic_handler],
         or by using the [`get_topic_handler()`][mosaicolabs.handlers.SequenceHandler.get_topic_handler] method from the
         [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler] instance of the parent senquence.
-        Internal modules should use the [`connect()`][mosaicolabs.handlers.TopicHandler.connect] factory.
+        Internal modules should use the `TopicHandler._connect()` factory.
 
         Args:
             client: The active FlightClient for remote operations.
@@ -90,7 +91,7 @@ class TopicHandler:
         """Highest timestamp [ns] in the sequence (among all the topics)"""
 
     @classmethod
-    def connect(
+    def _connect(
         cls,
         sequence_name: str,
         topic_name: str,
@@ -207,20 +208,7 @@ class TopicHandler:
                 f"Error releasing resources allocated from TopicHandler '{self._topic.name}'.\nInner err: '{e}'"
             )
 
-    @property
-    def user_metadata(self) -> Dict[str, Any]:
-        """
-        Returns the user-defined metadata dictionary associated with this topic.
-        """
-        return self._topic.user_metadata
-
-    @property
-    def topic_info(self) -> Topic:
-        """
-        Returns the comprehensive [`Topic`][mosaicolabs.models.platform.Topic] data model, including schema and storage info.
-        """
-        return self._topic
-
+    # -------------------- Public methods --------------------
     @property
     def name(self) -> str:
         """
@@ -234,6 +222,61 @@ class TopicHandler:
         Returns the name of the parent sequence containing this topic.
         """
         return self._topic.sequence_name
+
+    @property
+    def user_metadata(self) -> Dict[str, Any]:
+        """
+        Returns the user-defined metadata dictionary associated with this topic.
+        """
+        return self._topic.user_metadata
+
+    @property
+    def created_datetime(self) -> datetime.datetime:
+        """The UTC timestamp indicating when the entity was created on the server."""
+        return self._topic._created_datetime
+
+    @property
+    def is_locked(self) -> bool:
+        """
+        Indicates if the resource is currently locked.
+
+        A locked state typically occurs during active writing or maintenance operations,
+        preventing deletion or structural modifications.
+        """
+        return self._topic._is_locked
+
+    @property
+    def chunks_number(self) -> Optional[int]:
+        """
+        The number of physical data chunks stored for this topic.
+
+        May be `None` if the server did not provide detailed storage statistics.
+        """
+        return self._topic._chunks_number
+
+    @property
+    def ontology_tag(self) -> str:
+        """
+        The ontology type identifier (e.g., 'imu', 'gnss').
+
+        This corresponds to the `__ontology_tag__` defined in the
+        [`Serializable`][mosaicolabs.models.Serializable] class registry.
+        """
+        return self._topic._ontology_tag
+
+    @property
+    def serialization_format(self) -> str:
+        """
+        The format used to serialize the topic data (e.g., 'arrow', 'image').
+
+        This corresponds to the [`SerializationFormat`][mosaicolabs.enum.SerializationFormat] enum.
+        """
+        return self._topic._serialization_format
+
+    @property
+    def total_size_bytes(self) -> int:
+        """The total physical storage footprint of the entity on the server in bytes."""
+        return self._topic._total_size_bytes
 
     @property
     def timestamp_ns_min(self) -> Optional[int]:
@@ -259,24 +302,70 @@ class TopicHandler:
         end_timestamp_ns: Optional[int] = None,
     ) -> TopicDataStreamer:
         """
-        Opens a reading channel for iterating over this topic's data.
+        Opens a high-performance reading channel for iterating over this topic's data.
 
-        The returned [`TopicDataStreamer`][mosaicolabs.handlers.TopicDataStreamer] provides a chronological iterator of
-        messages. If a time window is specified, the server performs server-side temporal slicing.
+        ### Stream Lifecycle Policy: Single-Active-Streamer
+        To optimize resource utilization and prevent backend socket exhaustion, this handler
+        maintains at most **one active stream** at a time.
 
         Args:
-            start_timestamp_ns: The **inclusive** lower bound (t >= start) for the time window in nanoseconds.
-                The stream starts at the first message with a timestamp greater than or equal to this value.
-            end_timestamp_ns: The **exclusive** upper bound (t < end) for the time window in nanoseconds.
-                The stream stops at the first message with a timestamp strictly less than this value.
+            start_timestamp_ns: The **inclusive** lower bound (t >= start) in nanoseconds.
+                The stream begins at the first message with a timestamp >= this value.
+            end_timestamp_ns: The **exclusive** upper bound (t < end) in nanoseconds.
+                The stream terminates before reaching any message with a timestamp >= this value.
 
         Returns:
-            TopicDataStreamer: An iterator yielding chronological messages from
-                this topic.
+            TopicDataStreamer: A chronological iterator for the requested data window.
 
         Raises:
-            ValueError: If the topic contains no data or the handler is in an
-                invalid state.
+            ValueError: If the topic contains no data or the handler is in an invalid state.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, IMU
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Retrieve the topic handler using (e.g.) MosaicoClient
+                top_handler = client.topic_handler("mission_alpha", "/front/imu")
+                if top_handler:
+                    imu_stream = top_handler.get_data_streamer(
+                        # Optionally set the time window to extract
+                        start_timestamp_ns=1738508778000000000,
+                        end_timestamp_ns=1738509618000000000
+                    )
+
+                    # Peek at the start time (without consuming data)
+                    print(f"Recording starts at: {streamer.next_timestamp()}")
+
+                    # Direct, low-overhead loop
+                    for imu_msg in imu_stream:
+                        process_sample(imu_msg.get_data(IMU)) # Some custom process function
+
+                    # Once done, close the reading channel (recommended)
+                    top_handler.close()
+
+            ```
+
+        Important:
+            Every call to `get_data_streamer()` will automatically invoke
+            `close()` on any previously spawned `TopicDataStreamer` instance and its associated
+            Apache Arrow Flight channel before initializing the new stream.
+
+            Example:
+                ```python
+                top_handler = client.topic_handler("mission_alpha", "/front/imu")
+
+                # Opens first stream
+                streamer_v1 = top_handler.get_data_streamer(start_timestamp_ns=T1)
+
+                # Calling this again automatically CLOSES streamer_v1 and opens a new channel
+                streamer_v2 = top_handler.get_data_streamer(start_timestamp_ns=T2)
+
+                # Using `streamer_v1` will raise a ValueError
+                for msg in streamer_v1 # raises here!
+                    pass
+                ```
+
         """
         if self._fl_ticket is None:
             raise ValueError(
@@ -291,7 +380,7 @@ class TopicHandler:
 
         if start_timestamp_ns is not None or end_timestamp_ns is not None:
             # Spawn via connection (calls get_flight_info)
-            self._data_streamer_instance = TopicDataStreamer.connect(
+            self._data_streamer_instance = TopicDataStreamer._connect(
                 client=self._fl_client,
                 topic_name=self.name,
                 sequence_name=self._topic.sequence_name,
@@ -300,7 +389,7 @@ class TopicHandler:
             )
         else:
             # Spawn via ticket (calls do_get straight)
-            self._data_streamer_instance = TopicDataStreamer.connect_from_ticket(
+            self._data_streamer_instance = TopicDataStreamer._connect_from_ticket(
                 client=self._fl_client,
                 topic_name=self.name,
                 ticket=self._fl_ticket,
@@ -310,7 +399,41 @@ class TopicHandler:
 
     def close(self):
         """
-        Gracefully closes the active data streamer and releases allocated resources.
+        Terminates the active data streamer associated with this topic and releases
+        allocated system resources.
+
+        In the Mosaico architecture, a `TopicHandler` acts as a factory for
+        `TopicDataStreamers`. Calling `close()` ensures that any background data
+        fetching, buffering, or network sockets held by an active streamer are
+        immediately shut down.
+
+        Note:
+            - If no streamer has been spawned (via `get_data_streamer`), this
+              method performs no operation and returns safely.
+            - Explicitly closing handlers is a best practice when iterating through
+              large datasets to prevent resource accumulation.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Access a specific sensor topic (e.g., IMU)
+                top_handler = client.topic_handler("mission_alpha", "/front/imu")
+
+                if top_handler:
+                    # Initialize a high-performance data stream
+                    imu_stream = top_handler.get_data_streamer(
+                        start_timestamp_ns=1738508778000000000,
+                        end_timestamp_ns=1738509618000000000
+                    )
+
+                    # Consume data for ML training or analysis
+                    # for msg in imu_stream: ...
+
+                    # Release the streaming channel and backend resources
+                    top_handler.close()
+            ```
         """
         if self._data_streamer_instance is not None:
             self._data_streamer_instance.close()

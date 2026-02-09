@@ -150,7 +150,10 @@ Once a topic is created, a `TopicWriter` is spawned to handle the actual transmi
 
 ```
 
-1. The metadata fields will be queryable via the [`Query` mechanism](./query.md). The mechanism allows creating queries like: `Topic.Q.user_metadata["interface.type"].eq("UART")`
+1. The metadata fields will be queryable via the [`Query` mechanism](./query.md). The mechanism allows creating query expressions like: `Topic.Q.user_metadata["interface.type"].eq("UART")`.
+    See also:
+    * [`mosaicolabs.models.platform.Topic`][mosaicolabs.models.platform.Topic]
+    * [`mosaicolabs.models.query.builders.QueryTopic`][mosaicolabs.models.query.builders.QueryTopic].
 
 #### Quick Reference
 | Method | Description |
@@ -407,14 +410,13 @@ import sys
 from mosaicolabs import MosaicoClient, IMU
 
 with MosaicoClient.connect("localhost", 6726) as client:
-    # Use a Handler to inspect the catalog
+    # Retrieve the topic handler using (e.g.) MosaicoClient
     top_handler = client.topic_handler("mission_alpha", "/front/imu")
     if not top_handler:
         print("Sequence or Topic not found.")
         sys.exit(1)  # early exit 
 
-    # Start a Unified Stream (K-Way Merge) for multi-sensor replay
-    # We only want GPS and IMU data for this synchronized analysis
+    # Start a Targeted Stream for single-sensor replay
     imu_stream = top_handler.get_data_streamer(
         # Optionally set the time window to extract
         start_timestamp_ns=1738508778000000000,
@@ -423,9 +425,13 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
     # Peek at the start time
     print(f"Recording starts at: {streamer.next_timestamp()}")
+
     # Direct, low-overhead loop
     for imu_msg in imu_stream:
         process_sample(imu_msg.get_data(IMU)) # Some custom process function
+
+    # Once done, close the reading channel (recommended)
+    top_handler.close()
 ```
 
 #### Quick Reference

@@ -43,7 +43,6 @@ class SequenceDataStreamer:
     2. **Selects** the topic currently holding the lowest absolute timestamp.
     3. **Yields** that specific record and advances only the "winning" topic stream.
 
-
     Tip: Obtaining a Streamer
         Do not instantiate this class directly. Use the
         [`SequenceHandler.get_data_streamer()`][mosaicolabs.handlers.SequenceHandler.get_data_streamer]
@@ -61,7 +60,31 @@ class SequenceDataStreamer:
         Internal constructor for SequenceDataStreamer.
 
         **Do not call this directly.** Internal library modules should use the
-        [`connect()`][mosaicolabs.handlers.SequenceDataStreamer.connect] factory.
+        `SequenceDataStreamer._connect()` factory.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Use a Handler to inspect the catalog
+                seq_handler = client.sequence_handler("mission_alpha")
+                if seq_handler:
+                    # Start a Unified Stream (K-Way Merge) for multi-sensor replay
+                    streamer = seq_handler.get_data_streamer(
+                        topics=["/gps", "/imu"], # Optionally filter topics
+                        # Optionally set the time window to extract
+                        start_timestamp_ns=1738508778000000000,
+                        end_timestamp_ns=1738509618000000000
+                    )
+
+                    # Start timed data-stream
+                    for topic, msg in streamer:
+                        # Do some processing...
+
+                    # Once done, close the resources, topic handler and related reading channels (recommended).
+                    seq_handler.close()
+            ```
 
         Args:
             sequence_name: The name of the sequence being streamed.
@@ -79,9 +102,11 @@ class SequenceDataStreamer:
         """The current topic datastream state corresponding to the last extracted measurement"""
         self._in_iter: bool = False
         """Tag for assessing if the data streamer is used in a loop"""
+        self._is_open: bool = True
+        """Tag for assessing the internal streamer status"""
 
     @classmethod
-    def connect(
+    def _connect(
         cls,
         sequence_name: str,
         topics: List[str],
@@ -145,7 +170,7 @@ class SequenceDataStreamer:
             # If not in the selected topics
             if topics and topic_resrc_mdata.topic_name not in topics:
                 continue
-            treader = TopicDataStreamer.connect_from_ticket(
+            treader = TopicDataStreamer._connect_from_ticket(
                 client=client,
                 topic_name=topic_resrc_mdata.topic_name,
                 ticket=ep.ticket,
@@ -164,6 +189,18 @@ class SequenceDataStreamer:
             topic_readers=topic_readers,
         )
 
+    def _validate_status_open(self):
+        if not self._is_open:
+            raise ValueError(f"Reader closed for sequence {self._name}")
+
+    def _validate_status_not_in_iter(self):
+        if self._in_iter:
+            raise RuntimeError(
+                "Cannot switch to batch provider mode: row-by-row iteration has already started. "
+                "You must decide between streaming (loops) or batch processing (analytics) "
+                "at the beginning of the session."
+            )
+
     # --- Iterator Protocol Implementation ---
 
     def __iter__(self) -> "SequenceDataStreamer":
@@ -173,25 +210,12 @@ class SequenceDataStreamer:
         This pre-loads the first row of every topic stream to prepare the initial
         comparison step.
         """
+        self._validate_status_open()
         for treader in self._topic_readers.values():
             if treader._rdstate.peeked_row is None:
                 treader._rdstate.peek_next_row()
         self._in_iter = True
         return self
-
-    def next(self) -> Optional[tuple[str, Message]]:
-        """
-        Returns the next chronological record from the merged stream.
-
-        Returns:
-            Optional[tuple[str, Message]]: A tuple of `(topic_name, message_object)`,
-                or `None` if all topics are exhausted.
-        """
-        self._in_iter = True  # Safety: ensures direct next() calls also lock the state
-        try:
-            return self.__next__()
-        except StopIteration:
-            return None
 
     def next_timestamp(self) -> Optional[float]:
         """
@@ -201,7 +225,34 @@ class SequenceDataStreamer:
         Returns:
             The minimum timestamp (nanoseconds) found across all active topics,
                 or `None` if all streams are exhausted.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Use a Handler to inspect the catalog
+                seq_handler = client.sequence_handler("mission_alpha")
+                if seq_handler:
+                    # Start a Unified Stream (K-Way Merge) for multi-sensor replay
+                    streamer = seq_handler.get_data_streamer(
+                        topics=["/gps", "/imu"], # Optionally filter topics
+                        # Optionally set the time window to extract
+                        start_timestamp_ns=1738508778000000000,
+                        end_timestamp_ns=1738509618000000000
+                    )
+
+                    # Peek at the start time (without consuming data)
+                    print(f"Recording starts at: {streamer.next_timestamp()}")
+
+                    # Do some processing...
+
+                    # Once done, close the resources, topic handler and related reading channels (recommended).
+                    seq_handler.close()
+            ```
+
         """
+        self._validate_status_open()
         self._in_iter = (
             True  # Safety: ensures direct next_timestamp() calls also lock the state
         )
@@ -231,6 +282,7 @@ class SequenceDataStreamer:
         Raises:
             StopIteration: If all underlying topic streams are exhausted.
         """
+        self._validate_status_open()
         min_tstamp: float = float("inf")
         topic_min_tstamp: Optional[str] = None
         self._winning_rdstate = None
@@ -297,13 +349,8 @@ class SequenceDataStreamer:
         Raises:
             RuntimeError: If row-by-row iteration has already commenced.
         """
-        # Safety check: if _winning_rdstate is set, it means next() has been called at least once.
-        if self._in_iter:
-            raise RuntimeError(
-                "Cannot switch to batch provider mode: row-by-row iteration has already started. "
-                "You must decide between streaming (loops) or batch processing (analytics) "
-                "at the beginning of the session."
-            )
+        self._validate_status_open()
+        self._validate_status_not_in_iter()
 
         return self._topic_readers
 
@@ -324,9 +371,11 @@ class SequenceDataStreamer:
 
 
         """
+        self._is_open = False
         for treader in self._topic_readers.values():
             try:
                 treader.close()
             except Exception as e:
                 logger.warning(f"Error closing state '{treader.name()}': '{e}'")
+
         logger.info(f"SequenceReader for '{self._name}' closed.")

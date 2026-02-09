@@ -173,6 +173,16 @@ class MosaicoClient:
         Raises:
             ConnectionError: If the server is unreachable or the handshake fails.
             RuntimeError: If the class is instantiated directly instead of using this method.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            # Establish a connection to the Mosaico Data Platform
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Perform operations using the client
+                pass
+            ```
         """
 
         # Establish the Control Connection
@@ -229,6 +239,14 @@ class MosaicoClient:
                 "Resources may not have been released properly."
             )
 
+    def _remove_from_sequence_handlers_cache(self, sequence_name: str):
+        # remove from cache
+        del self._sequence_handlers_cache[sequence_name]
+
+    def _remove_from_topic_handlers_cache(self, topic_resource_name: str):
+        # remove from cache
+        del self._topic_handlers_cache[topic_resource_name]
+
     # --- Handler Factory Methods ---
 
     def sequence_handler(self, sequence_name: str) -> Optional[SequenceHandler]:
@@ -244,10 +262,27 @@ class MosaicoClient:
         Returns:
             Optional[SequenceHandler]: A handler for managing sequence operations,
                 or None if not found.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            # Establish a connection to the Mosaico Data Platform
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Retrieve a sequence handler
+                sequence_handler = client.sequence_handler("my_sequence")
+                if sequence_handler:
+                    # Print sequence details
+                    print(f"Sequence: {sequence_handler.name}")
+                    print(f"Created: {sequence_handler.created_datetime}")
+                    print(f"Topic list: {sequence_handler.topics}")
+                    print(f"User Metadata: {sequence_handler.user_metadata}")
+                    print(f"Size (MB): {sequence_handler.total_size_bytes / 1024 / 1024}")
+            ```
         """
         sh = self._sequence_handlers_cache.get(sequence_name)
         if sh is None:
-            sh = SequenceHandler.connect(
+            sh = SequenceHandler._connect(
                 sequence_name=sequence_name,
                 client=self._control_client,
             )
@@ -272,13 +307,31 @@ class MosaicoClient:
         Returns:
             Optional[TopicHandler]: A handler for managing topic operations,
                 or None if not found.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            # Establish a connection to the Mosaico Data Platform
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Retrieve a topic handler
+                topic_handler = client.topic_handler("my_sequence", "/front/camera/image_raw)
+                if topic_handler:
+                    # Print topic details
+                    print(f"Topic: {topic_handler.sequence_name}:{topic_handler.name}")
+                    print(f"Ontology Tag: {topic_handler.ontology_tag}")
+                    print(f"Created: {topic_handler.created_datetime}")
+                    print(f"User Metadata: {topic_handler.user_metadata}")
+                    print(f"Size (MB): {topic_handler.total_size_bytes / 1024 / 1024}")
+
+            ```
         """
         # normalize inputs to a unique resource string
         topic_resource_name = pack_topic_resource_name(sequence_name, topic_name)
 
         th = self._topic_handlers_cache.get(topic_resource_name)
         if th is None:
-            th = TopicHandler.connect(
+            th = TopicHandler._connect(
                 sequence_name=sequence_name,
                 topic_name=topic_name,
                 client=self._control_client,
@@ -319,6 +372,42 @@ class MosaicoClient:
         Raises:
             RuntimeError: If the method is called outside a `with` context.
             Exception: If any error occurs during sequence injection.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, OnErrorPolicy
+
+            # Open the connection with the Mosaico Client
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Start the Sequence Orchestrator
+                with client.sequence_create(
+                    sequence_name="mission_log_042",
+                    # Custom metadata for this data sequence.
+                    metadata={
+                        "driver": {
+                            "driver_id": "drv_sim_017",
+                            "role": "validation",
+                            "experience_level": "senior",
+                        },
+                        "location": {
+                            "city": "Milan",
+                            "country": "IT",
+                            "facility": "Downtown",
+                            "gps": {
+                                "lat": 45.46481,
+                                "lon": 9.19201,
+                            },
+                        },
+                    }
+                    on_error = OnErrorPolicy.Delete # Default
+                    ) as seq_writer:
+                        # Start creating topics and pushing data...
+                        # (1)!
+            ```
+
+            1. See also:
+                * [`SequenceWriter.topic_create()`][mosaicolabs.handlers.SequenceWriter.topic_create]
+                * [`TopicWriter.push()`][mosaicolabs.handlers.TopicWriter.push]
         """
         # Use defaults if specific batch sizes aren't provided
         max_batch_size_bytes = (
@@ -348,26 +437,6 @@ class MosaicoClient:
             ),
         )
 
-    def _remove_from_sequence_handlers_cache(self, sequence_name: str):
-        # remove from cache
-        del self._sequence_handlers_cache[sequence_name]
-
-    def _remove_from_topic_handlers_cache(self, topic_resource_name: str):
-        # remove from cache
-        del self._topic_handlers_cache[topic_resource_name]
-
-    def clear_sequence_handlers_cache(self):
-        """
-        Clears the internal cache of [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler] objects.
-        """
-        self._sequence_handlers_cache = {}
-
-    def clear_topic_handlers_cache(self):
-        """
-        Clears the internal cache of [`TopicHandler`][mosaicolabs.handlers.TopicHandler] objects.
-        """
-        self._topic_handlers_cache = {}
-
     def sequence_system_info(self, sequence_name: str) -> Optional[SystemInfo]:
         """
         Retrieves system-level metadata and physical diagnostics for a specific sequence.
@@ -378,6 +447,19 @@ class MosaicoClient:
         Returns:
             Optional[SystemInfo]: Object containing storage size, creation time,
                 and lock status, or None if missing.
+
+        Exmaple:
+            ```python
+            from mosaicolabs import MosaicoClient, OnErrorPolicy
+
+            # Open the connection with the Mosaico Client
+            with MosaicoClient.connect("localhost", 6726) as client:
+                seq_info = client.sequence_system_info("test_sequence")
+                if seq_info:
+                    # Print sequence system-info
+                    print(f"Created: {seq_info.created_datetime}")
+                    print(f"Size (MB): {seq_info.total_size_bytes / 1024 / 1024}")
+            ```
         """
         # Get System Info
         ACTION = FlightAction.SEQUENCE_SYSTEM_INFO
@@ -419,6 +501,20 @@ class MosaicoClient:
         Returns:
             Optional[SystemInfo]: Object containing storage diagnostics and
                 chunk counts, or None if missing.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, OnErrorPolicy
+
+            # Open the connection with the Mosaico Client
+            with MosaicoClient.connect("localhost", 6726) as client:
+                top_info = client.topic_system_info("test_sequence", "/sensors/imu")
+                if top_info:
+                    # Print sequence system-info
+                    print(f"Created: {top_info.created_datetime}")
+                    print(f"Size (MB): {top_info.total_size_bytes / 1024 / 1024}")
+                    print(f"Size (MB): {top_info.chunks_number}")
+            ```
         """
         # Get System Info
         ACTION = FlightAction.TOPIC_SYSTEM_INFO
@@ -487,6 +583,15 @@ class MosaicoClient:
 
         Returns:
             List[str]: The list of sequence identifiers.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                sequences = client.list_sequences()
+                print(f"Available sequences: {sequences}")
+            ```
         """
         out_list = []
         for finfo in self._control_client.list_flights():
@@ -515,6 +620,64 @@ class MosaicoClient:
 
         Raises:
             ValueError: If conflicting query types are passed or no queries are provided.
+
+        Example: Query with variadic arguments
+            ```python
+            from mosaicolabs import QueryOntologyCatalog, QuerySequence, Query, IMU, MosaicoClient
+
+            # Establish a connection to the Mosaico Data Platform
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Perform the server side query
+                results = client.query(
+                    # Append a filter for sequence metadata
+                    QuerySequence()
+                    .with_expression(
+                        # Use query proxy for generating a _QuerySequenceExpression
+                        Sequence.Q.user_metadata["environment.visibility"].lt(50)
+                    )
+                    .with_name_match("test_drive"),
+                    # Append a filter with deep time-series data discovery and measurement time windowing
+                    QueryOntologyCatalog()
+                    .with_expression(IMU.Q.acceleration.x.gt(5.0))
+                    .with_expression(IMU.Q.header.stamp.sec.gt(1700134567))
+                    .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
+                )
+                # Inspect the results
+                if results is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in results:
+                        print(f"Sequence: {item.sequence.name}")
+            ```
+
+        Example: Query with `Query` object
+            ```python
+            from mosaicolabs import QueryOntologyCatalog, QuerySequence, Query, IMU, MosaicoClient
+
+            # Establish a connection to the Mosaico Data Platform
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Build a filter with name pattern and metadata-related expression
+                query = Query(
+                    # Append a filter for sequence metadata
+                    QuerySequence()
+                    .with_expression(
+                        # Use query proxy for generating a _QuerySequenceExpression
+                        Sequence.Q.user_metadata["environment.visibility"].lt(50)
+                    )
+                    .with_name_match("test_drive"),
+                    # Append a filter with deep time-series data discovery and measurement time windowing
+                    QueryOntologyCatalog()
+                    .with_expression(IMU.Q.acceleration.x.gt(5.0))
+                    .with_expression(IMU.Q.header.stamp.sec.gt(1700134567))
+                    .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
+                )
+                # Perform the server side query
+                results = client.query(query=query)
+                # Inspect the results
+                if results is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in results:
+                        print(f"Sequence: {item.sequence.name}")
+            ```
         """
         if queries:
             self._queries = list(queries)
@@ -556,12 +719,45 @@ class MosaicoClient:
 
         return act_resp.query_response
 
+    def clear_sequence_handlers_cache(self):
+        """
+        Clears the internal cache of [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler] objects.
+        """
+        self._sequence_handlers_cache = {}
+
+    def clear_topic_handlers_cache(self):
+        """
+        Clears the internal cache of [`TopicHandler`][mosaicolabs.handlers.TopicHandler] objects.
+        """
+        self._topic_handlers_cache = {}
+
     def close(self):
         """
-        Gracefully shuts down the client and releases all internal resources.
+        Gracefully shuts down the Mosaico client and releases all underlying resources.
 
-        This includes closing all cached handlers, terminating the network
-        connection pool, and stopping the thread executor pool.
+        This method ensures a clean termination of the client's lifecycle by:
+        * **Closing Handlers:** Invalidates and closes all cached `SequenceHandlers` and `TopicHandlers` to prevent stale data access.
+        * **Network Cleanup:** Terminated the connection pool to the `mosaicod` backend.
+        * **Thread Termination:** Shuts down the internal thread executor pool responsible for asynchronous data fetching and background streaming.
+
+        Note:
+            If using the client as a context manager (via `with MosaicoClient.connect(...)`),
+            this method is invoked automatically on exit. Explicit calls are required
+            only for manual lifecycle management.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            # Manual connection management
+            client = MosaicoClient.connect("localhost", 6726)
+            # High-performance streaming or ML extraction
+            qresp = client.query(...)
+            # Do something else...
+
+            # Ensure resources are consistently freed.
+            client.close()
+            ```
         """
         if self._status == _ConnectionStatus.Open:
             # Close cached handlers

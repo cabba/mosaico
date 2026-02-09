@@ -891,7 +891,7 @@ class Query:
                 .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
             )
             # Perform the server side query
-            client.query(query)
+            results = client.query(query=query)
             # Inspect the results
             if results is not None:
                 # Results are automatically grouped by Sequence for easier data management

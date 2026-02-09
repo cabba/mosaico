@@ -7,7 +7,7 @@ specific ontology data types (e.g., IMU, Image, Odometry).
 It implements a **Registry/Factory Pattern**:
 1.  **Auto-Registration**: Any subclass defined in the code is automatically registered
     via `__init_subclass__`.
-2.  **Factory Creation**: The `.create()` method instantiates specific subclasses based
+2.  **Factory Creation**: The `._create()` method instantiates specific subclasses based
     on a string tag.
 3.  **Query Capability**: It injects query proxies allowing users to write `IMU.Q.acc_x > 0`.
 """

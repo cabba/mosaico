@@ -55,9 +55,33 @@ class TopicDataStreamer:
         Internal constructor for TopicDataStreamer.
 
         **Do not call this directly.** Internal library modules should use the
-        [`connect()`][mosaicolabs.handlers.TopicDataStreamer.connect] or
-        [`connect_from_ticket()`][mosaicolabs.handlers.TopicDataStreamer.connect_from_ticket]
-        factory methods instead.
+        `TopicDataStreamer._connect()` or `TopicDataStreamer._connect_from_ticket()` factory methods instead.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, IMU
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Retrieve the topic handler using (e.g.) MosaicoClient
+                top_handler = client.topic_handler("mission_alpha", "/front/imu")
+                if top_handler:
+                    imu_stream = top_handler.get_data_streamer(
+                        # Optionally set the time window to extract
+                        start_timestamp_ns=1738508778000000000,
+                        end_timestamp_ns=1738509618000000000
+                    )
+
+                    # Peek at the start time (without consuming data)
+                    print(f"Recording starts at: {streamer.next_timestamp()}")
+
+                    # Direct, low-overhead loop
+                    for imu_msg in imu_stream:
+                        # Do some processing...
+
+                    # Once done, close the reading channel (recommended)
+                    top_handler.close()
+
+            ```
 
         Args:
             client: The active FlightClient used for remote operations.
@@ -67,9 +91,11 @@ class TopicDataStreamer:
         """The FlightClient used for remote operations."""
         self._rdstate: _TopicReadState = state
         """The actual reader object"""
+        self._is_open: bool = True
+        """Tag for assessing the internal streamer status"""
 
     @classmethod
-    def connect_from_ticket(
+    def _connect_from_ticket(
         cls,
         client: fl.FlightClient,
         topic_name: str,
@@ -120,7 +146,7 @@ class TopicDataStreamer:
         )
 
     @classmethod
-    def connect(
+    def _connect(
         cls,
         topic_name: str,
         sequence_name: str,
@@ -173,7 +199,7 @@ class TopicDataStreamer:
                 logger.error(f"Skipping invalid topic endpoint, err: '{e}'")
                 continue
             if topic_resrc_mdata.topic_name == topic_name:
-                return cls.connect_from_ticket(
+                return cls._connect_from_ticket(
                     client=client,
                     topic_name=topic_name,
                     ticket=ep.ticket,
@@ -181,35 +207,51 @@ class TopicDataStreamer:
 
         raise ValueError("Unable to init TopicDataStreamer")
 
+    def _validate_status_open(self):
+        if not self._is_open:
+            raise ValueError(f"Reader closed for topic {self.name()}")
+
     def name(self) -> str:
         """
         Returns the name of the topic associated with this streamer.
         """
         return self._rdstate.topic_name
 
-    def next(self) -> Optional[Message]:
-        """
-        Returns the next message from the stream.
-
-        Returns:
-            Optional[Message]: The next message object, or `None` if the
-                stream is exhausted.
-        """
-        try:
-            return self.__next__()
-        except StopIteration:
-            return None
-
     def next_timestamp(self) -> Optional[float]:
         """
         Peeks at the timestamp of the next record without consuming it.
 
-        This method is critical for the [`SequenceDataStreamer`][mosaicolabs.handlers.SequenceDataStreamer]
-        to perform K-way merge sorting across multiple asynchronous topics.
-
         Returns:
             The next timestamp in nanoseconds, or `None` if the stream is empty.
+
+        Raises:
+            ValueError: if the data streamer instance has been closed.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, IMU
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Retrieve the topic handler using (e.g.) MosaicoClient
+                top_handler = client.topic_handler("mission_alpha", "/front/imu")
+                if top_handler:
+                    imu_stream = top_handler.get_data_streamer(
+                        # Optionally set the time window to extract
+                        start_timestamp_ns=1738508778000000000,
+                        end_timestamp_ns=1738509618000000000
+                    )
+
+                    # Peek at the start time (without consuming data)
+                    print(f"Recording starts at: {streamer.next_timestamp()}")
+
+                    # Do some processing...
+
+                    # Once done, close the reading channel (recommended)
+                    top_handler.close()
+            ```
         """
+        self._validate_status_open()
+
         if self._rdstate.peeked_row is None:
             # Load the next row into the buffer
             if not self._rdstate.peek_next_row():
@@ -227,6 +269,7 @@ class TopicDataStreamer:
 
     def __iter__(self) -> "TopicDataStreamer":
         """Returns self as iterator."""
+        self._validate_status_open()
         return self
 
     def __next__(self) -> Message:
@@ -239,6 +282,7 @@ class TopicDataStreamer:
         Raises:
             StopIteration: When the data stream is exhausted.
         """
+        self._validate_status_open()
         # Ensure a row is available in the peek buffer
         if self._rdstate.peeked_row is None:
             if not self._rdstate.peek_next_row():
@@ -260,13 +304,26 @@ class TopicDataStreamer:
 
     def close(self):
         """
-        Gracefully terminates the underlying Flight stream and releases resources.
+        Gracefully terminates the underlying Apache Arrow Flight stream and releases buffers.
 
-        Note: Automatic Cleanup
-            This method is **automatically invoked** by the
-            [`TopicHandler.close()`][mosaicolabs.handlers.TopicHandler.close] method,
-            which is typically triggered by a context manager exit.
+        Note: Automatic Lifecycle Management
+            In most production workflows, manual invocation is not required. This method is
+            **automatically called** by the parent [`TopicHandler.close()`][mosaicolabs.handlers.TopicHandler.close].
+            If the handler is managed within a `with` context, the SDK ensures a top-down cleanup
+            of the handler and its associated streamers upon exit.
+
+        Example:
+            ```python
+            # Manual resource management (if not using 'with' block)
+            streamer = topic_handler.get_data_streamer()
+            try:
+                for meas in streamer:
+                    process_robot_data(meas)
+            finally:
+                streamer.close()
+            ```
         """
+        self._is_open = False
         try:
             self._rdstate.close()
         except Exception as e:
@@ -290,6 +347,7 @@ class TopicDataStreamer:
             will interfere with the standard iteration (`next()`) if
             used concurrently.
         """
+        self._validate_status_open()
         return self._rdstate.fetch_next_batch()
 
     @staticmethod

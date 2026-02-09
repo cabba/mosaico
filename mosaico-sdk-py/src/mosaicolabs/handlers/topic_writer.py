@@ -59,10 +59,40 @@ class TopicWriter:
         Internal constructor for TopicWriter.
 
         **Do not call this directly.** Internal library modules should use the
-        [`create()`][mosaicolabs.handlers.TopicWriter.create] factory.
-        Users must call
+        `_create()` factory. Users must call
         [`SequenceWriter.topic_create()`][mosaicolabs.handlers.SequenceWriter.topic_create]
         to obtain an initialized writer.
+
+        Example:
+            ```python
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Start the Sequence Orchestrator
+                with client.sequence_create(...) as seq_writer: # (1)!
+                    # Create individual Topic Writers
+                    # Each writer gets its own assigned resources from the pools
+                    imu_writer = seq_writer.topic_create( # (2)!
+                        topic_name="sensors/imu", # The univocal topic name
+                        metadata={ # The topic/sensor custom metadata
+                            "vendor": "inertix-dynamics",
+                            "model": "ixd-f100",
+                            "firmware_version": "1.2.0",
+                            "serial_number": "IMUF-9A31D72X",
+                            "calibrated":"false",
+                        },
+                        ontology_type=IMU, # The ontology type stored in this topic
+                    )
+
+                    # Push data...
+                    imu_writer.push( # (3)!
+                        ontology_obj=IMU(acceleration=Vector3d(x=0, y=0, z=9.81), ...),
+                        message_timestamp_ns=1700000000000
+                    )
+                # Exiting the seq_writer `with` block, the `finalize()` method of all topic writers is called.
+            ```
+
+            1. See also: [`MosaicoClient.sequence_create()`][mosaicolabs.comm.MosaicoClient.sequence_create]
+            2. See also: [`SequenceWriter.topic_create()`][mosaicolabs.handlers.SequenceWriter.topic_create]
+            3. See also: [`TopicWriter.push()`][mosaicolabs.handlers.TopicWriter.push]
 
         Args:
             topic_name: The name of the specific topic.
@@ -83,7 +113,7 @@ class TopicWriter:
         """The actual writer object"""
 
     @classmethod
-    def create(
+    def _create(
         cls,
         sequence_name: str,
         topic_name: str,
@@ -282,6 +312,59 @@ class TopicWriter:
         Raises:
             ValueError: If neither a Message nor the required discrete components are provided.
             Exception: If a buffer flush fails during the operation.
+
+        Example:
+            ```python
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Start the Sequence Orchestrator
+                with client.sequence_create(...) as seq_writer: # (1)!
+                    # Create individual Topic Writers
+                    # Each writer gets its own assigned resources from the pools
+                    imu_writer = seq_writer.topic_create( # (2)!
+                        topic_name="sensors/imu", # The univocal topic name
+                        metadata={ # The topic/sensor custom metadata
+                            "vendor": "inertix-dynamics",
+                            "model": "ixd-f100",
+                            "firmware_version": "1.2.0",
+                            "serial_number": "IMUF-9A31D72X",
+                            "calibrated":"false",
+                        },
+                        ontology_type=IMU, # The ontology type stored in this topic
+                    )
+
+                    # Another individual topic writer for the GPS device
+                    gps_writer = seq_writer.topic_create(
+                        topic_name="sensors/gps", # The univocal topic name
+                        metadata={ # The topic/sensor custom metadata
+                            "role": "primary_gps",
+                            "vendor": "satnavics",
+                            "model": "snx-g500",
+                            "firmware_version": "3.2.0",
+                            "serial_number": "GPS-7C1F4A9B",
+                            "interface": {
+                                "type": "UART",
+                                "baudrate": 115200,
+                                "protocol": "NMEA",
+                            },
+                        }, # The topic/sensor custom metadata
+                        ontology_type=GPS, # The ontology type stored in this topic
+                    )
+
+                    # Push data - The SDK handles batching and background I/O
+                    # Usage Mode A: Component-based
+                    imu_writer.push(
+                        ontology_obj=IMU(acceleration=Vector3d(x=0, y=0, z=9.81), ...),
+                        message_timestamp_ns=1700000000000
+                    )
+
+                    # Usage Mode B: Full Message-based
+                    gps_msg = Message(timestamp_ns=1700000000100, data=GPS(...))
+                    gps_writer.push(message=gps_msg)
+                # Exiting the seq_writer `with` block, the `finalize()` method of all topic writers is called.
+            ```
+
+            1. See also: [`MosaicoClient.sequence_create()`][mosaicolabs.comm.MosaicoClient.sequence_create]
+            2. See also: [`SequenceWriter.topic_create()`][mosaicolabs.handlers.SequenceWriter.topic_create]
         """
         msg = message
         if not msg:

@@ -140,7 +140,7 @@ class BaseSequenceWriter(ABC):
             try:
                 # Normal Exit: Finalize everything
                 self._close_topics(with_error=False)
-                self.finalize()
+                self._finalize()
 
             except Exception as e:
                 # An exception occurred during cleanup or finalization
@@ -306,7 +306,7 @@ class BaseSequenceWriter(ABC):
         executor = self._executor_pool.get_next() if self._executor_pool else None
 
         try:
-            writer = TopicWriter.create(
+            writer = TopicWriter._create(
                 sequence_name=self._name,
                 topic_name=topic_name,
                 topic_key=act_resp.key,
@@ -355,9 +355,9 @@ class BaseSequenceWriter(ABC):
         """
         return self._sequence_status
 
-    def finalize(self):
+    def _finalize(self):
         """
-        Explicitly finalizes the sequence on the server.
+        Finalizes the sequence on the server.
 
         Sends the `SEQUENCE_FINALIZE` signal, which instructs the server to mark all
         ingested data as immutable.
@@ -413,13 +413,71 @@ class BaseSequenceWriter(ABC):
 
     def get_topic_writer(self, topic_name: str) -> Optional[TopicWriter]:
         """
-        Retrieves an existing [`TopicWriter`][mosaicolabs.handlers.TopicWriter] instance by name.
+        Retrieves an existing [`TopicWriter`][mosaicolabs.handlers.TopicWriter] instance from the internal cache.
+
+        This method is particularly useful when ingesting data from unified recording formats where
+        different sensor types (e.g., Vision, IMU, Odometry) are stored chronologically
+        in a single stream or file.
+
+        In these scenarios, messages for various topics appear in an interleaved fashion.
+        Using `get_topic_writer` allows the developer to:
+
+        * **Reuse Buffers:** Efficiently switch between writers for different sensor streams.
+        * **Ensure Data Ordering:** Maintain a consistent batching logic for each topic as
+          you iterate through a mixed-content log.
+        * **Optimize Throughput:** Leverage Mosaico's background I/O by routing all data
+          for a specific identifier through a single, persistent writer instance.
 
         Args:
-            topic_name: The name of the topic writer to retrieve.
+            topic_name: The unique name or identifier of the topic writer to retrieve.
 
         Returns:
-            The `TopicWriter` if it exists, otherwise `None`.
+            The `TopicWriter` instance if it has been previously initialized within this `SequenceWriter` context, otherwise `None`.
+
+        Example:
+            Processing a generic interleaved sensor log (like a ROS bag or a custom JSON log):
+
+            ```python
+            from mosaicolabs import SequenceWriter, IMU, Image
+
+            # Topic to Ontology Mapping: Defines the schema for each sensor stream
+            # Example: {"/camera": Image, "/imu": IMU}
+            topic_to_ontology = { ... }
+
+            # Adapter Factory: Maps raw sensor payloads to Mosaico Ontology instances
+            # Example: {"/imu": lambda p: IMU(acceleration=Vector3d.from_list(p['acc']), ...)}
+            adapter = { ... }
+
+            with client.sequence_create("physical_ai_trial_01") as seq_writer:
+                # log_iterator represents an interleaved stream (e.g., ROSbags, MCAP, or custom logs).
+                for ts, topic, payload in log_iterator:
+
+                    # Access the topic-specific buffer.
+                    # get_topic_writer retrieves a persistent writer from the internal cache
+                    twriter = seq_writer.get_topic_writer(topic)
+
+                    if twriter is None:
+                        # Dynamic Topic Registration.
+                        # If the topic is encountered for the first time, register it using the
+                        # pre-defined Ontology type to ensure data integrity.
+                        twriter = seq_writer.topic_create(
+                            topic_name=topic,
+                            ontology_type=topic_to_ontology[topic]
+                        )
+
+                    # Data Transformation & Ingestion.
+                    # The adapter converts the raw payload into a validated Mosaico object.
+                    # push() handles high-performance batching and asynchronous I/O to the rust backend.
+                    twriter.push( # (1)!
+                        ontology_obj=adapter[topic](payload),
+                        message_timestamp_ns=ts
+                    )
+
+            # SequenceWriter automatically calls finalize() on all internal TopicWriters,
+            # guaranteeing that every sensor measurement is safely committed to the platform.
+            ```
+
+            1. See also: [`TopicWriter.push()`][mosaicolabs.handlers.TopicWriter.push]
         """
         return self._topic_writers.get(topic_name)
 

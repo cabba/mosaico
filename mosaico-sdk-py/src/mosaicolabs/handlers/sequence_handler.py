@@ -6,6 +6,7 @@ for an *existing* sequence. It allows users to inspect metadata, list topics,
 and access reading interfaces (`SequenceDataStreamer`).
 """
 
+import datetime
 import json
 import pyarrow.flight as fl
 from typing import Dict, Any, List, Optional, Tuple, Type
@@ -61,8 +62,7 @@ class SequenceHandler:
 
         **Do not call this directly.** Users should retrieve instances via
         [`MosaicoClient.sequence_handler()`][mosaicolabs.comm.MosaicoClient.sequence_handler],
-        while internal modules should use the [`connect()`][mosaicolabs.handlers.SequenceHandler.connect]
-        factory.
+        while internal modules should use the `SequenceHandler._connect()` factory.
 
         Args:
             sequence_model: The underlying metadata and system info model for the sequence.
@@ -84,7 +84,7 @@ class SequenceHandler:
         """Highest timestamp [ns] in the sequence (among all the topics)"""
 
     @classmethod
-    def connect(
+    def _connect(
         cls, sequence_name: str, client: fl.FlightClient
     ) -> Optional["SequenceHandler"]:
         """
@@ -100,7 +100,7 @@ class SequenceHandler:
             client (fl.FlightClient): Connected client.
 
         Returns:
-            SequenceHandler: Initialized handler.
+            SequenceHandler: Initialized handler or None if error occurs
         """
 
         # Get FlightInfo
@@ -185,11 +185,18 @@ class SequenceHandler:
 
     # -------------------- Public methods --------------------
     @property
+    def name(self) -> str:
+        """
+        Returns the unique name of the sequence.
+        """
+        return self._sequence._name
+
+    @property
     def topics(self) -> List[str]:
         """
         Returns the list of topic names (data channels) available within this sequence.
         """
-        return self._sequence.topics
+        return self._sequence._topics
 
     @property
     def user_metadata(self) -> Dict[str, Any]:
@@ -199,18 +206,24 @@ class SequenceHandler:
         return self._sequence.user_metadata
 
     @property
-    def name(self) -> str:
-        """
-        Returns the unique name of the sequence.
-        """
-        return self._sequence.name
+    def created_datetime(self) -> datetime.datetime:
+        """The UTC timestamp indicating when the entity was created on the server."""
+        return self._sequence._created_datetime
 
     @property
-    def sequence_info(self) -> Sequence:
+    def is_locked(self) -> bool:
         """
-        Returns the comprehensive [`Sequence`][mosaicolabs.models.platform.Sequence] model, including metadata and system diagnostics.
+        Indicates if the resource is currently locked.
+
+        A locked state typically occurs during active writing or maintenance operations,
+        preventing deletion or structural modifications.
         """
-        return self._sequence
+        return self._sequence._is_locked
+
+    @property
+    def total_size_bytes(self) -> int:
+        """The total physical storage footprint of the entity on the server in bytes."""
+        return self._sequence._total_size_bytes
 
     @property
     def timestamp_ns_min(self) -> Optional[int]:
@@ -260,6 +273,53 @@ class SequenceHandler:
         Raises:
             ValueError: If the provided topic names do not exist or if the
                 sequence contains no data.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Use a Handler to inspect the catalog
+                seq_handler = client.sequence_handler("mission_alpha")
+                if seq_handler:
+                    # Start a Unified Stream (K-Way Merge) for multi-sensor replay
+                    streamer = seq_handler.get_data_streamer(
+                        topics=["/gps", "/imu"], # Optionally filter topics
+                        # Optionally set the time window to extract
+                        start_timestamp_ns=1738508778000000000,
+                        end_timestamp_ns=1738509618000000000
+                    )
+
+                    # Peek at the start time (without consuming data)
+                    print(f"Recording starts at: {streamer.next_timestamp()}")
+
+                    # Start timed data-stream
+                    for topic, msg in streamer:
+                        print(f"[{topic}] at {msg.timestamp_ns}: {type(msg.data).__name__}")
+
+                    # Once done, close the resources, topic handler and related reading channels (recommended).
+                    seq_handler.close()
+            ```
+
+        Important:
+            Every call to `get_data_streamer()` will automatically invoke
+            `close()` on any previously spawned `SequenceDataStreamer` instance and its associated
+            Apache Arrow Flight channels before initializing the new stream.
+
+            Example:
+                ```python
+                seq_handler = client.sequence_handler("mission_alpha")
+
+                # Opens first stream
+                streamer_v1 = seq_handler.get_data_streamer(start_timestamp_ns=T1)
+
+                # Calling this again automatically CLOSES streamer_v1 and opens a new channel
+                streamer_v2 = seq_handler.get_data_streamer(start_timestamp_ns=T2)
+
+                # Using `streamer_v1` will raise a ValueError
+                for topic, msg in streamer_v1 # raises here!
+                    pass
+                ```
         """
         if topics and any([t not in self.topics for t in topics]):
             raise ValueError(
@@ -272,7 +332,7 @@ class SequenceHandler:
             self._data_streamer_instance.close()
             self._data_streamer_instance = None
 
-        self._data_streamer_instance = SequenceDataStreamer.connect(
+        self._data_streamer_instance = SequenceDataStreamer._connect(
             self._sequence.name,
             topics,
             start_timestamp_ns,
@@ -298,6 +358,31 @@ class SequenceHandler:
         Raises:
             ValueError: If the topic is not available in this sequence or
                 an internal connection error occurs.
+
+        Example:
+            ```python
+            import sys
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                seq_handler = client.sequence_handler("mission_alpha")
+                if seq_handler:
+                    # Use a Handler to inspect the catalog
+                    top_handler = seq_handler.get_topic_handler("/front/imu")
+                    if top_handler:
+                        print(f"Sequence: {top_handler.sequence_name}")
+                        print(f"\t|Topic: {top_handler.sequence_name}:{top_handler.name}")
+                        # Inspect the stored user metadata
+                        print(f"\t|Metadata: {top_handler.user_metadata}")
+                        # Inspect the timestamps spanned by the topic data-stream (without downloading data)
+                        print(f"\t|Timestamp span: {top_handler.timestamp_ns_min} - {top_handler.timestamp_ns_max}")
+                        # Inspect the system level info
+                        print(f"\t|Created {top_handler.created_datetime}")
+                        print(f"\t|Size (MB) {top_handler.total_size_bytes/(1024*1024)}")
+
+                    # Once done, close the resources, topic handler and related reading channels (recommended).
+                    seq_handler.close()
+            ```
         """
         if topic_name not in self._sequence.topics:
             raise ValueError(
@@ -311,7 +396,7 @@ class SequenceHandler:
             th = None
 
         if th is None:
-            th = TopicHandler.connect(
+            th = TopicHandler._connect(
                 sequence_name=self._sequence.name,
                 topic_name=topic_name,
                 client=self._fl_client,
@@ -330,6 +415,21 @@ class SequenceHandler:
 
         This method should be called to release network and memory resources
         when the handler is no longer needed.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Use a Handler to inspect the catalog
+                seq_handler = client.sequence_handler("mission_alpha")
+                if seq_handler:
+                    # Perform operations
+                    # ...
+
+                    # Once done, close the resources, topic handler and related reading channels (recommended).
+                    seq_handler.close()
+            ```
         """
         for _, th in self._topic_handler_instances.items():
             th.close()

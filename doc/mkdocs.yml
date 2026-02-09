@@ -37,6 +37,7 @@ plugins:
             show_source: false
             relative_crossrefs: true
             signature_crossrefs: true
+            members_order: source
 
 nav:
   - Mosaico: index.md
@@ -59,6 +60,7 @@ nav:
       - Query Module:
         - SDK/API_reference/query/builders.md
         - SDK/API_reference/query/internal.md
+        - SDK/API_reference/query/response.md
       - Models:
         - SDK/API_reference/models/base.md
         - SDK/API_reference/models/data_types.md
