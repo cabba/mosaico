@@ -9,7 +9,7 @@ and access reading interfaces (`SequenceDataStreamer`).
 import datetime
 import json
 import pyarrow.flight as fl
-from typing import Dict, Any, List, Optional, Tuple, Type
+from typing import Dict, Any, List, Optional, Tuple
 
 from .endpoints import TopicParsingError, TopicResourceManifest
 from .sequence_reader import SequenceDataStreamer
@@ -37,15 +37,6 @@ class SequenceHandler:
         Users should not instantiate this class directly. The recommended way to
         obtain a handler is via the [`MosaicoClient.sequence_handler()`][mosaicolabs.comm.MosaicoClient.sequence_handler]
         factory method.
-
-    Tip: Context Manager Usage
-        This class supports the context manager protocol to ensure that all
-        internal topic handlers and data streamers are gracefully closed.
-
-        ```python
-        with client.sequence_handler("my_drive_session") as handler:
-            print(f"Sequence '{handler.name}' contains topics: {handler.topics}")
-        ```
     """
 
     # -------------------- Constructor --------------------
@@ -164,50 +155,45 @@ class SequenceHandler:
             timestamp_ns_max=max(tstamps_ns_max) if tstamps_ns_max else None,
         )
 
-    # --- Context Manager ---
-    def __enter__(self) -> "SequenceHandler":
-        """Returns the SequenceHandler instance for use in a 'with' statement."""
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[Any],
-    ) -> None:
-        """Context manager exit for SequenceHandler."""
-        try:
-            self.close()
-        except Exception as e:
-            logger.error(
-                f"Error releasing resources allocated from SequenceHandler '{self._sequence.name}'.\nInner err: '{e}'"
-            )
-
     # -------------------- Public methods --------------------
     @property
     def name(self) -> str:
         """
-        Returns the unique name of the sequence.
+        The unique name of the sequence.
+
+        Returns:
+            The unique name of the sequence.
         """
         return self._sequence._name
 
     @property
     def topics(self) -> List[str]:
         """
-        Returns the list of topic names (data channels) available within this sequence.
+        The list of topic names (data channels) available within this sequence.
+
+        Returns:
+            The list of topic names (data channels) available within this sequence.
         """
         return self._sequence._topics
 
     @property
     def user_metadata(self) -> Dict[str, Any]:
         """
-        Returns the user-defined metadata dictionary associated with this sequence.
+        The user-defined metadata dictionary associated with this sequence.
+
+        Returns:
+            The user-defined metadata dictionary associated with this sequence.
         """
         return self._sequence.user_metadata
 
     @property
     def created_datetime(self) -> datetime.datetime:
-        """The UTC timestamp indicating when the entity was created on the server."""
+        """
+        The UTC timestamp indicating when the entity was created on the server.
+
+        Returns:
+            The UTC timestamp indicating when the entity was created on the server.
+        """
         return self._sequence._created_datetime
 
     @property
@@ -217,12 +203,20 @@ class SequenceHandler:
 
         A locked state typically occurs during active writing or maintenance operations,
         preventing deletion or structural modifications.
+
+        Returns:
+            The lock status of the sequence.
         """
         return self._sequence._is_locked
 
     @property
     def total_size_bytes(self) -> int:
-        """The total physical storage footprint of the entity on the server in bytes."""
+        """
+        The total physical storage footprint of the entity on the server in bytes.
+
+        Returns:
+            The total physical storage footprint of the entity on the server in bytes.
+        """
         return self._sequence._total_size_bytes
 
     @property
@@ -230,8 +224,8 @@ class SequenceHandler:
         """
         The lowest timestamp (nanoseconds) recorded in the sequence across all topics.
 
-        Returns `None` if the sequence contains no data or the timestamps
-        could not be derived.
+        Returns:
+            The lowest timestamp (nanoseconds) recorded in the sequence across all topics, or `None` if the sequence contains no data or the timestamps could not be derived.
         """
         return self._timestamp_ns_min
 
@@ -240,8 +234,8 @@ class SequenceHandler:
         """
         The highest timestamp (nanoseconds) recorded in the sequence across all topics.
 
-        Returns `None` if the sequence contains no data or the timestamps
-        could not be derived.
+        Returns:
+            The highest timestamp (nanoseconds) recorded in the sequence across all topics, or `None` if the sequence contains no data or the timestamps could not be derived.
         """
         return self._timestamp_ns_max
 

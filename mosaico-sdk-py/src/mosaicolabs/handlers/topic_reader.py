@@ -213,11 +213,14 @@ class TopicDataStreamer:
 
     def name(self) -> str:
         """
-        Returns the name of the topic associated with this streamer.
+        The name of the topic associated with this streamer.
+
+        Returns:
+            The name of the topic.
         """
         return self._rdstate.topic_name
 
-    def next_timestamp(self) -> Optional[float]:
+    def next_timestamp(self) -> Optional[int]:
         """
         Peeks at the timestamp of the next record without consuming it.
 
@@ -261,10 +264,16 @@ class TopicDataStreamer:
         if self._rdstate.peeked_timestamp == float("inf"):
             return None
 
-        return self._rdstate.peeked_timestamp
+        return int(self._rdstate.peeked_timestamp)
 
     @property
     def ontology_tag(self) -> str:
+        """
+        The ontology tag associated with this streamer.
+
+        Returns:
+            The ontology tag.
+        """
         return self._rdstate.ontology_tag
 
     def __iter__(self) -> "TopicDataStreamer":

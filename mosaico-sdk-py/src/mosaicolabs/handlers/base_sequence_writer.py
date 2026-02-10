@@ -139,7 +139,7 @@ class BaseSequenceWriter(ABC):
         if not error_in_block:
             try:
                 # Normal Exit: Finalize everything
-                self._close_topics(with_error=False)
+                self._close_topics()
                 self._finalize()
 
             except Exception as e:
@@ -157,7 +157,7 @@ class BaseSequenceWriter(ABC):
                 f"Exception in SequenceWriter '{self._name}' block. Inner err: '{out_exc}'"
             )
             try:
-                self._close_topics(with_error=True)
+                self._close_topics(error=out_exc)
             except Exception as e:
                 self._logger.error(
                     f"Exception during __exit__ with error in block (finalizing topics) for sequence '{self._name}': '{e}'"
@@ -522,17 +522,17 @@ class BaseSequenceWriter(ABC):
                     f"Error sending 'abort' for sequence '{self._name}'.", e
                 )
 
-    def _close_topics(self, with_error: bool) -> None:
+    def _close_topics(self, error: Optional[BaseException] = None) -> None:
         """
         Iterates over all TopicWriters and finalizes them.
         """
         self._logger.info(
-            f"Freeing TopicWriters {'WITH ERROR' if with_error else ''} for sequence '{self._name}'."
+            f"Freeing TopicWriters {'WITH ERROR' if error is not None else ''} for sequence '{self._name}'."
         )
         errors = []
         for topic_name, twriter in self._topic_writers.items():
             try:
-                twriter.finalize(with_error=with_error)
+                twriter.finalize(error=error)
             except Exception as e:
                 self._logger.error(f"Failed to finalize topic '{topic_name}': '{e}'")
                 errors.append(e)

@@ -26,6 +26,12 @@ class FlightAction(StrEnum):
     SEQUENCE_NOTIFY_CREATE = "sequence_notify_create"
     """Sends asynchronous notifications or error reports during the sequence creation phase."""
 
+    SEQUENCE_NOTIFY_LIST = "sequence_notify_list"
+    """Request the list of notifications for a specific sequence"""
+
+    SEQUENCE_NOTIFY_PURGE = "sequence_notify_purge"
+    """Request the deletion of the list of notifications for a specific sequence"""
+
     SEQUENCE_SYSTEM_INFO = "sequence_system_info"
     """Requests physical diagnostics such as storage size and lock status for a sequence."""
 
@@ -41,6 +47,12 @@ class FlightAction(StrEnum):
 
     TOPIC_NOTIFY_CREATE = "topic_notify_create"
     """Reports errors or status updates specific to an individual topic stream."""
+
+    TOPIC_NOTIFY_LIST = "topic_notify_list"
+    """Request the list of notifications for a specific topic in a sequence"""
+
+    TOPIC_NOTIFY_PURGE = "topic_notify_purge"
+    """Request the deletion of the list of notifications for a topic in a sequence"""
 
     TOPIC_SYSTEM_INFO = "topic_system_info"
     """Requests storage and chunk metadata for an individual topic."""

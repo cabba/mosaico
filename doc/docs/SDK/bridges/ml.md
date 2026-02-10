@@ -16,7 +16,7 @@ Working with robotics and multi-modal datasets presents three primary technical 
 
 ## From Sequences to DataFrames
 
-The `DataFrameExtractor` is a specialized utility designed to convert Mosaico sequences into tabular formats. Unlike standard streamers that instantiate individual Python objects, this extractor operates at the **Batch Level** by pulling raw `RecordBatch` objects directly from the underlying stream to maximize throughput.
+The [`DataFrameExtractor`][mosaicolabs.ml.DataFrameExtractor] is a specialized utility designed to convert Mosaico sequences into tabular formats. Unlike standard streamers that instantiate individual Python objects, this extractor operates at the **Batch Level** by pulling raw `RecordBatch` objects directly from the underlying stream to maximize throughput.
 
 ### Key Technical Features
 
@@ -30,48 +30,53 @@ The `DataFrameExtractor` is a specialized utility designed to convert Mosaico se
 
 | Method | Description |
 | --- | --- |
-| **`to_pandas_chunks()`** | The primary entry point for converting Mosaico data into windowed Pandas DataFrames. |
-
-!!! warning "Memory Usage"
-
-    Setting a very large `window_sec` will force the extractor to load the entire requested range into memory, which may exhaust available RAM.
+| **`to_pandas_chunks(topics, window_sec, ...)`** | The primary entry point for converting Mosaico data into windowed Pandas DataFrames. |
 
 This example demonstrates iterating through a sequence in 10-second tabular chunks.
 
 ```python
+from mosaicolabs import MosaicoClient
 from mosaicolabs.ml import DataFrameExtractor
 
-# Initialize from an existing SequenceHandler
-seq_handler = client.sequence_handler("drive_session_01")
-extractor = DataFrameExtractor(seq_handler)
+with MosaicoClient.connect("localhost", 6726):
+    # Initialize from an existing SequenceHandler
+    seq_handler = client.sequence_handler("drive_session_01")
+    extractor = DataFrameExtractor(seq_handler)
 
-# Iterate through 10-second chunks
-for df in extractor.to_pandas_chunks(window_sec=10.0):
-    # 'df' is a pandas DataFrame with semantic columns
-    # Example: df["/front/camera/imu.imu.acceleration.x"]
-    print(f"Processing chunk with {len(df)} rows")
+    # Iterate through 10-second chunks
+    for df in extractor.to_pandas_chunks(window_sec=10.0):
+        # 'df' is a pandas DataFrame with semantic columns
+        # Example: df["/front/camera/imu.imu.acceleration.x"]
+        print(f"Processing chunk with {len(df)} rows")
 
 ```
 
 For complex types like images that require specialized decoding, Mosaico allows you to "inflate" a flattened DataFrame row back into a strongly-typed `Message` object.
 
 ```python
+from mosaicolabs import MosaicoClient
+from mosaicolabs.ml import DataFrameExtractor
 from mosaicolabs.models import Message, Image
 
-# Get data chunks
-for df in extractor.to_pandas_chunks(topics=["/sensors/front/image_raw"]):
-    for _, row in df.iterrows():
-        # Reconstruct the full Message (envelope + payload) from a row
-        img_msg = Message.from_dataframe_row(
-            row=row,
-            topic_name="/sensors/front/image_raw",
-        )
+with MosaicoClient.connect("localhost", 6726):
+    # Initialize from an existing SequenceHandler
+    seq_handler = client.sequence_handler("drive_session_01")
+    extractor = DataFrameExtractor(seq_handler)
+
+    # Get data chunks
+    for df in extractor.to_pandas_chunks(topics=["/sensors/front/image_raw"]):
+        for _, row in df.iterrows():
+            # Reconstruct the full Message (envelope + payload) from a row
+            img_msg = Message.from_dataframe_row(
+                row=row,
+                topic_name="/sensors/front/image_raw",
+            )
         
-        if img_msg:
-            img = img_msg.get_data(Image).to_pillow()
-            # Access typed fields with IDE autocompletion
-            print(f"Time: {img_msg.timestamp_ns}")
-            img.show()
+            if img_msg:
+                img = img_msg.get_data(Image).to_pillow()
+                # Access typed fields with IDE autocompletion
+                print(f"Time: {img_msg.timestamp_ns}")
+                img.show()
 
 ```
 
@@ -94,17 +99,17 @@ Unlike standard resamplers that treat each data batch in isolation, this transfo
 
 Each policy defines a specific logic for how the transformer bridges temporal gaps between sparse data points.
 
-#### 1. **`SynchHold` (Last-Value-Hold)**
+#### 1. **`SynchHold`** (Last-Value-Hold)
 
 * **Behavior**: Finds the most recent valid measurement and "holds" it constant until a new one arrives.
 * **Best For**: Sensors where states remain valid until explicitly changed, such as robot joint positions or battery levels.
 
-#### 2. **`SynchAsOf` (Staleness Guard)**
+#### 2. **`SynchAsOf`** (Staleness Guard)
 
 * **Behavior**: Carries the last known value forward only if it has not exceeded a defined maximum "tolerance" (fresher than a specific age).
 * **Best For**: High-speed signals that become unreliable if not updated frequently, such as localization coordinates.
 
-#### 3. **`SynchDrop` (Interval Filter)**
+#### 3. **`SynchDrop`** (Interval Filter)
 
 * **Behavior**: Ensures a grid tick only receives a value if a new measurement actually occurred within that specific grid interval; otherwise, it returns `None`.
 * **Best For**: Downsampling high-frequency data where a strict 1-to-1 relationship between windows and unique hardware events is required.
@@ -114,20 +119,21 @@ Each policy defines a specific logic for how the transformer bridges temporal ga
 | Method | Description |
 | --- | --- |
 | **`__init__`** | Initializes the transformer with a target frequency (`target_fps`) and a `SynchPolicy`. |
-| **`fit`** | Captures the initial timestamp from the first chunk to align the grid and initialize state. |
-| **`transform`** | Executes temporal resampling logic on a sparse chunk to produce a dense, grid-aligned DataFrame. |
-| **`fit_transform`** | Chains the `fit` and `transform` operations. |
-| **`reset`** | Clears internal temporal state and cached values to start a new session. |
+| **`fit(X, y=None)`** | Captures the initial timestamp from the first chunk to align the grid and initialize state. |
+| **`transform(X)`** | Executes temporal resampling logic on a sparse chunk to produce a dense, grid-aligned DataFrame. |
+| **`fit_transform(X, y=None)`** | Chains the `fit` and `transform` operations. |
+| **`reset()`** | Clears internal temporal state and cached values to start a new session. |
 
 ### Scikit-Learn Compatibility
 
-By implementing the standard `fit`/`transform` interface, the `SyncTransformer` makes robotics data a "first-class citizen" of the Scikit-learn ecosystem. This allows for the plug-and-play integration of multi-rate sensor data into standard pipelines.
+By implementing the standard `fit`/`transform` interface, the [`SyncTransformer`][mosaicolabs.ml.SyncTransformer] makes robotics data a "first-class citizen" of the Scikit-learn ecosystem. This allows for the plug-and-play integration of multi-rate sensor data into standard pipelines.
 
 ```python
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from mosaicolabs.ml import SyncTransformer
-from mosaicolabs.ml.synch_policies import SynchHold
+from mosaicolabs import MosaicoClient
+from mosaicolabs.ml import DataFrameExtractor, SyncTransformer, SynchHold
+
 
 # Define a pipeline for physical AI preprocessing
 pipeline = Pipeline([
@@ -135,9 +141,14 @@ pipeline = Pipeline([
     ('scaler', StandardScaler())
 ])
 
-# Process sequential chunks while maintaining signal continuity
-for sparse_chunk in extractor.to_pandas_chunks(window_sec=5.0):
-    # The transformer automatically carries state across sequential calls
-    normalized_dense_chunk = pipeline.transform(sparse_chunk)
+with MosaicoClient.connect("localhost", 6726):
+    # Initialize from an existing SequenceHandler
+    seq_handler = client.sequence_handler("drive_session_01")
+    extractor = DataFrameExtractor(seq_handler)
+
+    # Process sequential chunks while maintaining signal continuity
+    for sparse_chunk in extractor.to_pandas_chunks(window_sec=5.0):
+        # The transformer automatically carries state across sequential calls
+        normalized_dense_chunk = pipeline.transform(sparse_chunk)
 
 ```

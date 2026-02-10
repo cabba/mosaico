@@ -216,7 +216,7 @@ class TopicWriter:
 
         try:
             # Attempt to flush remaining data and close stream
-            self.finalize(with_error=error_occurred)
+            self.finalize(error=exc_val)
         except Exception as e:
             # FINALIZE FAILED: treat this as an error condition
             logger.exception(f"Failed to finalize topic '{self._name}': '{e}'")
@@ -266,10 +266,11 @@ class TopicWriter:
 
     def _error_report(self, err: str):
         """Sends an 'error' notification to the server regarding this topic."""
+        ACTION = FlightAction.TOPIC_NOTIFY_CREATE
         try:
             _do_action(
                 client=self._fl_client,
-                action=FlightAction.TOPIC_NOTIFY_CREATE,
+                action=ACTION,
                 payload={
                     "name": pack_topic_resource_name(self._sequence_name, self._name),
                     "notify_type": "error",
@@ -277,11 +278,13 @@ class TopicWriter:
                 },
                 expected_type=None,
             )
-            logger.info(f"TopicWriter '{self._name}' reported error.")
+            logger.warning(f"TopicWriter '{self._name}' reported error: '{err}'.")
         except Exception as e:
-            raise _make_exception(
-                f"Error sending 'topic_report_error' action for sequence '{self._name}'.",
-                e,
+            logger.error(
+                _make_exception(
+                    f"Error sending '{ACTION}' action for sequence '{self._name}'.",
+                    e,
+                )
             )
 
     # --- Writing Logic ---
@@ -390,33 +393,79 @@ class TopicWriter:
         """
         return self._wrstate.writer is None
 
-    def finalize(self, with_error: bool = False) -> None:
+    def finalize(self, error: Optional[BaseException] = None) -> None:
         """
         Flushes all remaining buffered data and closes the remote Flight stream.
 
         This method ensures that any data residing in the local memory buffer is sent to the
-        server before the connection is severed.
+        server before the connection is severed. It transitions the individual topic stream
+        into a terminal state, allowing the platform to catalog the ingested data.
+
+        ### Use in Resilient Data Ingestion
+        In advanced ingestion workflows, `finalize()` is the primary mechanism for **sensor-level
+        resilience**. If an error occurs during the preparation or pushing of data for a
+        *specific* topic, you can catch the exception locally, call `finalize(error=...)`
+        for that topic, and allow other healthy sensors to continue their injection without
+        triggering a global sequence-wide failure.
+
+        Example: Defensive Topic Shutdown
+            ```python
+            with client.sequence_create(name="resilient_run", ...) as seq_writer:
+                imu_w = seq_writer.topic_create(name="imu", ontology_type=IMU)
+                cam_w = seq_writer.topic_create(name="camera", ontology_type=CompressedImage)
+
+                for data in stream:
+                    try:
+                        # Normal IMU injection
+                        imu_w.push(ontology_obj=data.imu)
+
+                        # Wrap risky or unstable logic (e.g., image processing)
+                        try:
+                            processed_img = risky_transformation(data.frame)
+                            cam_w.push(ontology_obj=processed_img)
+                        except Exception as topic_err:
+                            print(f"Camera failure: {topic_err}. Shutting down camera only.")
+                            # Manually close the failing topic to save prior data
+                            # and prevent the global context from seeing an exception.
+                            if not cam_w.finalized():
+                                cam_w.finalize(error=topic_err)
+
+                    except Exception as critical_err:
+                        # Let truly global/unrecoverable errors bubble up to seq_writer
+                        raise critical_err
+            ```
+
+        ### Error Reporting
+        When called with a non-null `error` object, this method automatically:
+
+        * **Reports the Failure**: Sends a server-side notification containing the
+            exception string.
+        * **Aborts the Buffer**: Closes the state machine immediately without
+            attempting to flush potentially corrupted data.
 
         Note: Automatic Finalization
             In typical workflows, you do not need to call this manually. It is
             **automatically invoked** by the `__exit__` method of the parent
-            [`SequenceWriter`][mosaicolabs.handlers.SequenceWriter] when the `with` block scope is closed.
+            [`SequenceWriter`][mosaicolabs.handlers.SequenceWriter] when the `with`
+            block scope is closed.
 
         Args:
-            with_error: If `True`, the writer closes without attempting to flush
-                incomplete buffers. This is typically used by the
-                [`SequenceWriter`][mosaicolabs.handlers.SequenceWriter] during error cleanup
-                to avoid sending potentially corrupted data.
+            error: If provided, the writer generates an error report and closes the
+                stream without attempting a final buffer flush.
 
         Raises:
-            Exception: If the server fails to acknowledge the stream closure or a
-                final buffer flush fails.
+            Exception: If the server fails to acknowledge the stream closure or if the
+                internal state machine encounters a terminal error.
         """
         try:
-            self._wrstate.close(with_error=with_error)
-        except Exception:
-            raise
+            self._error_report(str(error))
+            self._wrstate.close(with_error=error is not None)
+        except Exception as e:
+            raise _make_exception(
+                exc_msg=error,
+                msg=f"Error finalizing TopicWriter '{self._name}'.",
+            ) from e
 
         logger.info(
-            f"TopicWriter '{self._name}' finalized {'WITH ERROR' if with_error else ''} successfully."
+            f"TopicWriter '{self._name}' finalized {'WITH ERROR' if error is not None else ''} successfully."
         )

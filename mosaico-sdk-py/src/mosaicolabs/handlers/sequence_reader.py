@@ -217,7 +217,7 @@ class SequenceDataStreamer:
         self._in_iter = True
         return self
 
-    def next_timestamp(self) -> Optional[float]:
+    def next_timestamp(self) -> Optional[int]:
         """
         Peeks at the timestamp of the next chronological measurement without
         consuming the record.
@@ -269,7 +269,7 @@ class SequenceDataStreamer:
         if min_tstamp == float("inf"):
             return None
 
-        return min_tstamp
+        return int(min_tstamp)
 
     def __next__(self) -> tuple[str, Message]:
         """

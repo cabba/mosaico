@@ -9,6 +9,7 @@ creating resource handlers (sequences, topics) and executing queries.
 
 import os
 from typing import Any, Dict, List, Optional, Type
+from mosaicolabs.comm.notifications import Notified
 import pyarrow.flight as fl
 
 from mosaicolabs.models.query import Query, QueryResponse
@@ -18,7 +19,12 @@ from ..helpers import pack_topic_resource_name
 from ..handlers import TopicHandler, SequenceHandler, SequenceWriter
 from .connection import _get_connection, _ConnectionStatus, _ConnectionPool
 from .executor_pool import _ExecutorPool
-from .do_action import _do_action, _DoActionQueryResponse, _DoActionResponseSysInfo
+from .do_action import (
+    _do_action,
+    _DoActionQueryResponse,
+    _DoActionResponseSysInfo,
+    _DoActionNotifyList,
+)
 from ..logging_config import get_logger
 from ..enum import FlightAction, OnErrorPolicy
 from ..handlers.config import WriterConfig
@@ -601,6 +607,144 @@ class MosaicoClient:
             out_list.extend([p.decode("utf-8") for p in finfo.descriptor.path])
         return out_list
 
+    def list_sequence_notify(self, sequence_name: str) -> List[Notified]:
+        """
+        Retrieves a list of all notifications available on the server for a specific sequence.
+
+        Args:
+            sequence_name (str): The name of the sequence to list notifications for.
+
+        Returns:
+            List[Notified]: The list of sequence notifications.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                sequence_notifications = client.list_sequence_notify("my_sequence")
+                for notify in sequence_notifications:
+                    print(f"Notification Type: {notify.notify_type}")
+                    print(f"Notification Message: {notify.message}")
+                    print(f"Notification Created: {notify.created_datetime}")
+            ```
+        """
+        ACTION = FlightAction.SEQUENCE_NOTIFY_LIST
+
+        try:
+            act_resp = _do_action(
+                client=self._control_client,
+                action=ACTION,
+                payload={"name": sequence_name},
+                expected_type=_DoActionNotifyList,
+            )
+
+            if act_resp is None:
+                logger.error(f"Action '{ACTION}' returned no response.")
+                return []
+
+            return act_resp.notifies
+
+        except Exception as e:
+            logger.error(f"Query returned an internal error: '{e}'")
+            return []
+
+    def clear_sequence_notify(self, sequence_name: str):
+        """
+        Clears the notifications for a specific sequence from the server.
+
+        Args:
+            sequence_name (str): The name of the sequence.
+        """
+        ACTION = FlightAction.SEQUENCE_NOTIFY_PURGE
+
+        try:
+            _do_action(
+                client=self._control_client,
+                action=ACTION,
+                payload={"name": sequence_name},
+                expected_type=None,
+            )
+
+        except Exception as e:
+            logger.error(f"Query returned an internal error: '{e}'")
+            return []
+
+    def list_topic_notify(self, sequence_name: str, topic_name: str) -> List[Notified]:
+        """
+        Retrieves a list of all notifications available on the server for a specific topic
+
+        Args:
+            sequence_name (str): The name of the sequence to list notifications for.
+            topic_name (str): The name of the topic to list notifications for.
+
+        Returns:
+            List[str]: The list of topic notifications.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                topic_notifications = client.list_topic_notify("my_sequence", "my_topic")
+                for notify in topic_notifications:
+                    print(f"Notification Type: {notify.notify_type}")
+                    print(f"Notification Message: {notify.message}")
+                    print(f"Notification Created: {notify.created_datetime}")
+            ```
+        """
+        ACTION = FlightAction.TOPIC_NOTIFY_LIST
+
+        try:
+            act_resp = _do_action(
+                client=self._control_client,
+                action=ACTION,
+                payload={
+                    "name": pack_topic_resource_name(
+                        sequence_name=sequence_name,
+                        topic_name=topic_name,
+                    )
+                },
+                expected_type=_DoActionNotifyList,
+            )
+
+            if act_resp is None:
+                logger.error(f"Action '{ACTION}' returned no response.")
+                return []
+
+            return act_resp.notifies
+
+        except Exception as e:
+            logger.error(f"Query returned an internal error: '{e}'")
+            return []
+
+    def clear_topic_notify(self, sequence_name: str, topic_name: str):
+        """
+        Clears the notifications for a specific topic from the server.
+
+        Args:
+            sequence_name (str): The name of the sequence.
+            topic_name (str): The name of the topic.
+        """
+        ACTION = FlightAction.TOPIC_NOTIFY_PURGE
+
+        try:
+            _do_action(
+                client=self._control_client,
+                action=ACTION,
+                payload={
+                    "name": pack_topic_resource_name(
+                        sequence_name=sequence_name,
+                        topic_name=topic_name,
+                    )
+                },
+                expected_type=None,
+            )
+
+        except Exception as e:
+            logger.error(f"Query returned an internal error: '{e}'")
+            return []
+
     def query(
         self,
         *queries: QueryableProtocol,
@@ -709,15 +853,15 @@ class MosaicoClient:
                 expected_type=_DoActionQueryResponse,
             )
 
+            if act_resp is None:
+                logger.error(f"Action '{ACTION}' returned no response.")
+                return None
+
+            return act_resp.query_response
+
         except Exception as e:
             logger.error(f"Query returned an internal error: '{e}'")
             return None
-
-        if act_resp is None:
-            logger.error(f"Action '{ACTION}' returned no response.")
-            return None
-
-        return act_resp.query_response
 
     def clear_sequence_handlers_cache(self):
         """

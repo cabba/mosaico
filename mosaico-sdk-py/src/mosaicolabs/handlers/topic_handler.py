@@ -9,7 +9,7 @@ and create readers (`TopicDataStreamer`).
 import datetime
 import json
 import pyarrow.flight as fl
-from typing import Any, Dict, Optional, Tuple, Type
+from typing import Any, Dict, Optional, Tuple
 
 from .endpoints import TopicParsingError, TopicResourceManifest
 from .topic_reader import TopicDataStreamer
@@ -42,14 +42,6 @@ class TopicHandler:
         [`MosaicoClient.topic_handler()`][mosaicolabs.comm.MosaicoClient.topic_handler]
         factory method to retrieve an initialized handler.
 
-    Tip: Context Manager Usage
-        This class supports the context manager protocol to ensure that any
-        spawned data streamers are gracefully closed upon exit.
-
-        ```python
-        with client.topic_handler("sequence_01", "/sensor/lidar") as handler:
-            print(f"Topic storage size: {handler.total_size_bytes} bytes")
-        ```
     """
 
     def __init__(
@@ -189,50 +181,45 @@ class TopicHandler:
             timestamp_ns_max=topic_resrc_mdata.timestamp_ns_max,
         )
 
-    # --- Context Manager ---
-    def __enter__(self) -> "TopicHandler":
-        """Returns the TopicHandler instance for use in a 'with' statement."""
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[Any],
-    ) -> None:
-        """Context manager exit for TopicHandler."""
-        try:
-            self.close()
-        except Exception as e:
-            logger.exception(
-                f"Error releasing resources allocated from TopicHandler '{self._topic.name}'.\nInner err: '{e}'"
-            )
-
     # -------------------- Public methods --------------------
     @property
     def name(self) -> str:
         """
-        Returns the relative name of the topic (e.g., "/front_cam/image_raw").
+        The relative name of the topic (e.g., "/front_cam/image_raw").
+
+        Returns:
+            The relative name of the topic.
         """
         return self._topic.name
 
     @property
     def sequence_name(self) -> str:
         """
-        Returns the name of the parent sequence containing this topic.
+        The name of the parent sequence containing this topic.
+
+        Returns:
+            The name of the parent sequence.
         """
         return self._topic.sequence_name
 
     @property
     def user_metadata(self) -> Dict[str, Any]:
         """
-        Returns the user-defined metadata dictionary associated with this topic.
+        The user-defined metadata dictionary associated with this topic.
+
+        Returns:
+            The user-defined metadata dictionary.
         """
         return self._topic.user_metadata
 
     @property
     def created_datetime(self) -> datetime.datetime:
-        """The UTC timestamp indicating when the entity was created on the server."""
+        """
+        The UTC timestamp indicating when the entity was created on the server.
+
+        Returns:
+            The UTC timestamp indicating when the entity was created on the server.
+        """
         return self._topic._created_datetime
 
     @property
@@ -242,6 +229,9 @@ class TopicHandler:
 
         A locked state typically occurs during active writing or maintenance operations,
         preventing deletion or structural modifications.
+
+        Returns:
+            True if the resource is currently locked, False otherwise.
         """
         return self._topic._is_locked
 
@@ -250,7 +240,8 @@ class TopicHandler:
         """
         The number of physical data chunks stored for this topic.
 
-        May be `None` if the server did not provide detailed storage statistics.
+        Returns:
+            The number of physical data chunks stored for this topic, or `None` if the server did not provide detailed storage statistics.
         """
         return self._topic._chunks_number
 
@@ -261,6 +252,9 @@ class TopicHandler:
 
         This corresponds to the `__ontology_tag__` defined in the
         [`Serializable`][mosaicolabs.models.Serializable] class registry.
+
+        Returns:
+            The ontology type identifier.
         """
         return self._topic._ontology_tag
 
@@ -270,29 +264,39 @@ class TopicHandler:
         The format used to serialize the topic data (e.g., 'arrow', 'image').
 
         This corresponds to the [`SerializationFormat`][mosaicolabs.enum.SerializationFormat] enum.
+
+        Returns:
+            The serialization format.
         """
         return self._topic._serialization_format
 
     @property
     def total_size_bytes(self) -> int:
-        """The total physical storage footprint of the entity on the server in bytes."""
+        """
+        The total physical storage footprint of the entity on the server in bytes.
+
+        Returns:
+            The total physical storage footprint of the entity on the server in bytes.
+        """
         return self._topic._total_size_bytes
 
     @property
     def timestamp_ns_min(self) -> Optional[int]:
         """
-        Returns the lowest timestamp (nanoseconds) recorded in this topic.
+        The lowest timestamp (nanoseconds) recorded in this topic.
 
-        Returns `None` if the topic is empty or timestamps are unavailable.
+        Returns:
+            The lowest timestamp (nanoseconds) recorded in this topic, or `None` if the topic is empty or timestamps are unavailable.
         """
         return self._timestamp_ns_min
 
     @property
     def timestamp_ns_max(self) -> Optional[int]:
         """
-        Returns the highest timestamp (nanoseconds) recorded in this topic.
+        The highest timestamp (nanoseconds) recorded in this topic.
 
-        Returns `None` if the topic is empty or timestamps are unavailable.
+        Returns:
+            The highest timestamp (nanoseconds) recorded in this topic, or `None` if the topic is empty or timestamps are unavailable.
         """
         return self._timestamp_ns_max
 

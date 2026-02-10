@@ -48,7 +48,10 @@ nav:
     - SDK/index.md
     - SDK/client.md
     - SDK/ontology.md
-    - SDK/data-handling.md
+    - Data Handling:
+      - SDK/handling/data-handling.md
+      - SDK/handling/writing.md
+      - SDK/handling/reading.md
     - SDK/query.md
     - Bridges:
         - SDK/bridges/ml.md
