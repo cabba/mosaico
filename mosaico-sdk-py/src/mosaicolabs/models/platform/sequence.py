@@ -36,26 +36,40 @@ class Sequence(PlatformBase):
         method from a [`SequenceHandler`][mosaicolabs.handlers.SequenceHandler]
         instance.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The `user_metadata` field of this class is queryable when constructing a [`QuerySequence`][mosaicolabs.models.query.QuerySequence]
-    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+    via the **`.Q` proxy**.
+    Check the documentation of the [`PlatformBase`][mosaicolabs.models.platform.platform_base.PlatformBase--querying-with-the-q-proxy] to construct a
+    a valid expression for the builders involving the `user_metadata` component.
 
     Example:
         ```python
-        # Filter for a specific data value (using constructor)
-        qbuilder = QuerySequence(
-            Sequence.Q.user_metadata["project"].eq("Apollo"), # Access the keys using the [] operator
-            Sequence.Q.user_metadata["vehicle.software_stack.planning"].match("plan-4."), # Navigate the nested dicts using the dot notation
-        )
+        from mosaicolabs import MosaicoClient, Sequence, QuerySequence
 
-        # The same builder using `with_expression`
-        qbuilder = (
-            QuerySequence()
-            .with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
-            .with_expression(
-                Sequence.Q.user_metadata["vehicle.software_stack.planning"].match("plan-4.")
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value (using constructor)
+            qresponse = client.query(
+                QuerySequence(
+                    Sequence.Q.user_metadata["project"].eq("Apollo"), # Access the keys using the [] operator
+                    Sequence.Q.user_metadata["vehicle.software_stack.planning"].match("plan-4."), # Navigate the nested dicts using the dot notation
+                )
             )
-        )
+
+            # # The same query using `with_expression`
+            # qresponse = client.query(
+            #     QuerySequence()
+            #     .with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
+            #     .with_expression(
+            #         Sequence.Q.user_metadata["vehicle.software_stack.planning"].match("plan-4.")
+            #     )
+            # )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
         ```
     """
 
@@ -106,5 +120,26 @@ class Sequence(PlatformBase):
             with topic data or metadata, use the
             [`MosaicoClient.topic_handler()`][mosaicolabs.comm.MosaicoClient.topic_handler]
             factory.
+
+        ### Querying with **Query Builders**
+        The `topics` property is not queryable directly. Use [`QueryTopic`][mosaicolabs.models.query.QueryTopic] to query for topics.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, QueryTopic
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Filter for a specific data value (using constructor)
+                qresponse = client.query(
+                    QueryTopic().with_name("/sensors/camera/front/image_raw")
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
+            ```
         """
         return self._topics

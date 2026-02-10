@@ -146,8 +146,36 @@ class QueryOntologyCatalog:
 
     Example:
         ```python
-        # Filtering for IMU data where X-axis acceleration exceeds 9.8 m/s^2
-        query = QueryOntologyCatalog(IMU.Q.acceleration.x.gt(9.8))
+        from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value (using constructor)
+            qresponse = client.query(
+                QueryOntologyCatalog(IMU.Q.acceleration.x.lt(-4.0)) # Using constructor
+                .with_expression(IMU.Q.acceleration.y.gt(5.0)) # Using with_expression
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(IMU.Q.acceleration.x.lt(-4.0), include_timestamp_range=True)
+                .with_expression(IMU.Q.acceleration.y.gt(5.0))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -201,12 +229,38 @@ class QueryOntologyCatalog:
 
         Example:
             ```python
-            # Chain multiple sensor filters together
-            query = (
-                QueryOntologyCatalog()
-                .with_expression(GPS.Q.status.satellites.geq(8))
-                .with_expression(GPS.Q.position.x.between([44.0, 45.0]))
-            )
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Chain multiple sensor filters together
+                qresponse = client.query(
+                    QueryOntologyCatalog()
+                    .with_expression(GPS.Q.status.satellites.geq(8))
+                    .with_expression(GPS.Q.position.x.between([44.0, 45.0]))
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
+
+                # Filter for a specific component value and extract the first and last occurrence times
+                qresponse = client.query(
+                    QueryOntologyCatalog(include_timestamp_range=True)
+                    .with_expression(IMU.Q.acceleration.x.lt(-4.0))
+                    .with_expression(IMU.Q.acceleration.y.gt(5.0))
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {{topic.name:
+                                    [topic.timestamp_range.start, topic.timestamp_range.end]
+                                    for topic in item.topics}}")
             ```
         """
         _validate_expression_type(
@@ -340,13 +394,23 @@ class QueryTopic:
 
     Example:
         ```python
-        # Query for all 'camera' topics created in a specific timeframe, matching some metadata (key, value) pair
-        query = (
-            QueryTopic()
-            .with_ontology_tag(Camera.ontology_tag())
-            .with_created_timestamp(time_start=Time.from_float(1700000000))
-            .with_expression(Topic.Q.user_metadata["calibrated"].eq(True))
-        )
+        from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Query for all 'camera' topics created in a specific timeframe, matching some metadata (key, value) pair
+            qresponse = client.query(
+                QueryTopic()
+                .with_ontology_tag(Camera.ontology_tag())
+                .with_created_timestamp(time_start=Time.from_float(1700000000))
+                .with_expression(Topic.Q.user_metadata["calibrated"].eq(True))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
         ```
     """
 
@@ -363,12 +427,6 @@ class QueryTopic:
         This builder leverages the **`.Q` query proxy** on the `user_metadata`
         field of the [`Topic`][mosaicolabs.models.platform.Topic] model to provide
         a type-safe, fluent interface for filtering.
-
-        Example:
-            ```python
-            # Querying for a specific firmware version within user_metadata
-            query = QueryTopic(Topic.Q.user_metadata["version"].eq("1.0"))
-            ```
 
         Args:
             *expressions: A variable number of `Topic.Q` (`_QueryTopicExpression`) expression objects.
@@ -403,8 +461,20 @@ class QueryTopic:
 
         Example:
             ```python
-            # Target a specific known topic path
-            query = QueryTopic().with_expression(Topic.Q.user_metadata["version"].eq("1.0"))
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Target a specific known topic path
+                qresponse = client.query(
+                    QueryTopic().with_expression(Topic.Q.user_metadata["version"].eq("1.0"))
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
 
@@ -428,8 +498,20 @@ class QueryTopic:
 
         Example:
             ```python
-            # Target a specific known topic path
-            query = QueryTopic().with_name("vehicle/front_lidar")
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Target a specific known topic path
+                qresponse = client.query(
+                    QueryTopic().with_name("vehicle/front/camera")
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
         return self.with_expression(_QueryTopicExpression("name", "$eq", f"{name}"))
@@ -446,8 +528,20 @@ class QueryTopic:
 
         Example:
             ```python
-            # Search for all topics containing the word 'camera'
-            query = QueryTopic().with_name_match("camera")
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Search for all topics containing the word 'camera'
+                qresponse = client.query(
+                    QueryTopic().with_name_match("camera")
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
         return self.with_expression(
@@ -471,8 +565,20 @@ class QueryTopic:
 
         Example:
             ```python
-            # Filter for IMU-only data streams
-            query = QueryTopic().with_ontology_tag(IMU.ontology_tag())
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Filter for IMU-only data streams
+                qresponse = client.query(
+                    QueryTopic().with_ontology_tag(IMU.ontology_tag())
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
             **Note**: To ensure compatibility and avoid hardcoding strings, it is highly recommended to
             retrieve the tag dynamically using the
@@ -500,11 +606,23 @@ class QueryTopic:
 
         Example:
             ```python
-            # Find sequences created during a specific day
-            query = QueryTopic().with_created_timestamp(
-                time_start=Time.from_float(1704067200.0), # 2024-01-01
-                time_end=Time.from_float(1704153600.0)    # 2024-01-02
-            )
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Find sequences created during a specific day
+                qresponse = client.query(
+                    QueryTopic().with_created_timestamp(
+                        time_start=Time.from_float(1704067200.0), # 2024-01-01
+                        time_end=Time.from_float(1704153600.0)    # 2024-01-02
+                    )
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
         # .between() expects a list [start, end]
@@ -623,12 +741,20 @@ class QuerySequence:
 
     Example:
         ```python
-        # Search for sequences by project name and creation date
-        query = (
-            QuerySequence()
-            .with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
-            .with_created_timestamp(time_start=Time.from_float(1690000000.0))
-        )
+        from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Search for sequences by project name and creation date
+            qresponse = client.query(
+                QuerySequence()
+                .with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
+                .with_created_timestamp(time_start=Time.from_float(1690000000.0))
+            )
+
+            # Inspect the response
+            for item in qresponse:
+                print(f"Sequence: {item.sequence.name}")
+                print(f"Topics: {[topic.name for topic in item.topics]}")
         ```
     """
 
@@ -679,8 +805,18 @@ class QuerySequence:
 
         Example:
             ```python
-            # Target a specific known topic path
-            query = QueryTopic().with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Target a specific known topic path
+                qresponse = client.query(
+                    QuerySequence().with_expression(Sequence.Q.user_metadata["project"].eq("Apollo"))
+                )
+
+                # Inspect the response
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
         _validate_expression_type(
@@ -703,8 +839,18 @@ class QuerySequence:
 
         Example:
             ```python
-            # Find all sequences related to 'calibration'
-            query = QuerySequence().with_name("test_winter_01")
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Find all sequences with name equal to 'test_winter_01'
+                qresponse = client.query(
+                    QuerySequence().with_name("test_winter_01")
+                )
+
+                # Inspect the response
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
         return self.with_expression(
@@ -724,8 +870,18 @@ class QuerySequence:
 
         Example:
             ```python
-            # Find all sequences related to 'calibration'
-            query = QuerySequence().with_name_match("calibration_run_")
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Find all sequences with name containing 'calibration_run_'
+                qresponse = client.query(
+                    QuerySequence().with_name_match("calibration_run_")
+                )
+
+                # Inspect the response
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
         return self.with_expression(
@@ -749,11 +905,21 @@ class QuerySequence:
 
         Example:
             ```python
-            # Find sequences created during a specific day
-            query = QuerySequence().with_created_timestamp(
-                time_start=Time.from_float(1704067200.0), # 2024-01-01
-                time_end=Time.from_float(1704153600.0)    # 2024-01-02
-            )
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Find sequences created during a specific time range
+                qresponse = client.query(
+                    QuerySequence().with_created_timestamp(
+                        time_start=Time.from_float(1704067200.0), # 2024-01-01
+                        time_end=Time.from_float(1704153600.0)    # 2024-01-02
+                    )
+                )
+
+                # Inspect the response
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
         """
         # .between() expects a list [start, end]
@@ -885,18 +1051,21 @@ class Query:
                 )
                 .with_name_match("test_drive"),
                 # Append a filter with deep time-series data discovery and measurement time windowing
-                QueryOntologyCatalog()
+                QueryOntologyCatalog(include_timestamp_range=True)
                 .with_expression(IMU.Q.acceleration.x.gt(5.0))
                 .with_expression(IMU.Q.header.stamp.sec.gt(1700134567))
                 .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
             )
             # Perform the server side query
-            results = client.query(query=query)
-            # Inspect the results
-            if results is not None:
-                # Results are automatically grouped by Sequence for easier data management
-                for item in results:
-                    print(f"Sequence: {item.sequence.name}")
+            qresponse = client.query(query=query)
+            # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {{topic.name:
+                                    [topic.timestamp_range.start, topic.timestamp_range.end]
+                                    for topic in item.topics}}")
         ```
     """
 

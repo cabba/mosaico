@@ -42,15 +42,41 @@ class ForceTorque(
         To ensure platform-wide consistency, all force components should be
         specified in **Newtons** and torque in **Newton-meters**.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter ForceTorques with force X-component AND torque Z-component
-        query = QueryOntologyCatalog(ForceTorque.Q.force.x.gt(5.0))
-                .with_expression(ForceTorque.Q.torque.z.lt(10))
+        from mosaicolabs import MosaicoClient, ForceTorque, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter ForceTorques with force X-component AND torque Z-component
+            qresponse = client.query(
+                QueryOntologyCatalog(ForceTorque.Q.force.x.gt(5.0))
+                    .with_expression(ForceTorque.Q.torque.z.lt(10))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(ForceTorque.Q.force.x.gt(5.0), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -75,7 +101,7 @@ class ForceTorque(
     """
     3D linear force vector
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     Force components are queryable through the `force` field prefix.
 
     | Field Access Path | Queryable Type | Supported Operators |
@@ -84,18 +110,42 @@ class ForceTorque(
     | `ForceTorque.Q.force.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `ForceTorque.Q.force.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Find where the linear X-force exceeds 50N 
-    query = QueryOntologyCatalog(ForceTorque.Q.force.x.gt(50.0))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, ForceTorque, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Find where the linear X-force exceeds 50N 
+            qresponse = client.query(QueryOntologyCatalog(ForceTorque.Q.force.x.gt(50.0)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(ForceTorque.Q.force.x.gt(5.0), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     torque: Vector3d
     """
     3D torque vector
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     Torque components are queryable through the `torque` field prefix.
 
     | Field Access Path | Queryable Type | Supported Operators |
@@ -104,9 +154,33 @@ class ForceTorque(
     | `ForceTorque.Q.torque.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `ForceTorque.Q.torque.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Find where the linear Y-torque is small
-    query = QueryOntologyCatalog(ForceTorque.Q.torque.y.lt(0.02))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, ForceTorque, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Find where the linear Y-torque is small
+            qresponse = client.query(QueryOntologyCatalog(ForceTorque.Q.torque.y.lt(0.02)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(ForceTorque.Q.torque.y.gt(5.0), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """

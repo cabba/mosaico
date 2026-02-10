@@ -26,14 +26,38 @@ class Integer8(Serializable, HeaderMixin):
         data: The underlying 8-bit integer value.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Integer8.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Integer8, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer8.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer8.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -51,7 +75,7 @@ class Integer8(Serializable, HeaderMixin):
     """
     The underlying integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -59,11 +83,35 @@ class Integer8(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Integer8.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Integer8.Q.data.gt(-10))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Integer8, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer8.Q.data.gt(-10)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer8.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -75,14 +123,38 @@ class Integer16(Serializable, HeaderMixin):
         data: The underlying 16-bit integer value.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Integer16.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Integer16, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer16.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer16.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -100,7 +172,7 @@ class Integer16(Serializable, HeaderMixin):
     """
     The underlying integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -108,11 +180,35 @@ class Integer16(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Integer16.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()`|
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Integer16.Q.data.gt(-10))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Integer16, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer16.Q.data.gt(-10)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer16.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -124,14 +220,38 @@ class Integer32(Serializable, HeaderMixin):
         data: The underlying 32-bit integer value.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Integer32.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Integer32, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer32.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer32.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -149,7 +269,7 @@ class Integer32(Serializable, HeaderMixin):
     """
     The underlying integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -157,11 +277,35 @@ class Integer32(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Integer32.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Integer32.Q.data.gt(-10))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Integer32, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer32.Q.data.gt(-10)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer32.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -173,14 +317,38 @@ class Integer64(Serializable, HeaderMixin):
         data: The underlying 64-bit integer value.
         header: An optional metadata header injected by `HeaderMixin`.ù
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Integer64.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Integer64, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer64.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer64.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -198,7 +366,7 @@ class Integer64(Serializable, HeaderMixin):
     """
     The underlying integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -206,11 +374,35 @@ class Integer64(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Integer64.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Integer64.Q.data.gt(-10))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Integer64, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Integer64.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Integer64.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -225,14 +417,38 @@ class Unsigned8(Serializable, HeaderMixin):
     Raises:
         ValueError: If `data` is initialized with a negative value.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Unsigned8.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Unsigned8, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned8.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned8.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -250,7 +466,7 @@ class Unsigned8(Serializable, HeaderMixin):
     """
     The underlying unsigned integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -258,11 +474,35 @@ class Unsigned8(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Unsigned8.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Unsigned8.Q.data.leq(253))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Unsigned8, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned8.Q.data.leq(253)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned8.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     def model_post_init(self, context: Any) -> None:
@@ -288,14 +528,38 @@ class Unsigned16(Serializable, HeaderMixin):
     Raises:
         ValueError: If `data` is initialized with a negative value.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Unsigned16.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Unsigned16, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned16.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned16.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -313,7 +577,7 @@ class Unsigned16(Serializable, HeaderMixin):
     """
     The underlying unsigned integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -321,11 +585,35 @@ class Unsigned16(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Unsigned16.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Unsigned16.Q.data.eq(2))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Unsigned16, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned16.Q.data.eq(2)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned16.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     def model_post_init(self, context: Any) -> None:
@@ -351,14 +639,38 @@ class Unsigned32(Serializable, HeaderMixin):
     Raises:
         ValueError: If `data` is initialized with a negative value.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Unsigned32.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Unsigned32, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned32.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned32.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -376,7 +688,7 @@ class Unsigned32(Serializable, HeaderMixin):
     """
     The underlying unsigned integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -384,11 +696,35 @@ class Unsigned32(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Unsigned32.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Unsigned32.Q.data.gt(123))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Unsigned32, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned32.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned32.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     def model_post_init(self, context: Any) -> None:
@@ -414,14 +750,38 @@ class Unsigned64(Serializable, HeaderMixin):
     Raises:
         ValueError: If `data` is initialized with a negative value.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Unsigned64.Q.data.gt(123))
+        from mosaicolabs import MosaicoClient, Unsigned64, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned64.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned64.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -439,7 +799,7 @@ class Unsigned64(Serializable, HeaderMixin):
     """
     The underlying unsigned integer value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -447,11 +807,35 @@ class Unsigned64(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Unsigned64.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Unsigned64.Q.data.gt(123))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Unsigned64, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Unsigned64.Q.data.gt(123)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Unsigned64.Q.data.gt(123), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     def model_post_init(self, context: Any) -> None:
@@ -474,14 +858,38 @@ class Floating16(Serializable, HeaderMixin):
         data: The underlying single-precision float.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Floating16.Q.data.gt(123.45))
+        from mosaicolabs import MosaicoClient, Floating16, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Floating16.Q.data.gt(123.45)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Floating16.Q.data.gt(123.45), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -499,7 +907,7 @@ class Floating16(Serializable, HeaderMixin):
     """
     The underlying single-precision float.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -507,11 +915,35 @@ class Floating16(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Floating16.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Floating16.Q.data.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Floating16, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Floating16.Q.data.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Floating16.Q.data.gt(123.45), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -523,14 +955,38 @@ class Floating32(Serializable, HeaderMixin):
         data: The underlying single-precision float.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Floating32.Q.data.gt(123.45))
+        from mosaicolabs import MosaicoClient, Floating32, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Floating32.Q.data.gt(123.45)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Floating32.Q.data.gt(123.45), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -548,7 +1004,7 @@ class Floating32(Serializable, HeaderMixin):
     """
     The underlying single-precision float.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -556,11 +1012,35 @@ class Floating32(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Floating32.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Floating32.Q.data.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Floating32, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Floating32.Q.data.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Floating32.Q.data.gt(123.45), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -572,14 +1052,38 @@ class Floating64(Serializable, HeaderMixin):
         data: The underlying single-precision float.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Floating64.Q.data.gt(123.45))
+        from mosaicolabs import MosaicoClient, Floating64, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Floating64.Q.data.gt(123.45)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Floating64.Q.data.gt(123.45), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -597,7 +1101,7 @@ class Floating64(Serializable, HeaderMixin):
     """
     The underlying single-precision float.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -605,11 +1109,35 @@ class Floating64(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Floating64.Q.data` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Floating64.Q.data.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Floating64, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Floating64.Q.data.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Floating64.Q.data.gt(123.45), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -621,14 +1149,38 @@ class Boolean(Serializable, HeaderMixin):
         data: The underlying boolean value.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(Boolean.Q.data.eq(True))
+        from mosaicolabs import MosaicoClient, Boolean, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Boolean.Q.data.eq(True)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Boolean.Q.data.eq(True), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -646,7 +1198,7 @@ class Boolean(Serializable, HeaderMixin):
     """
     The underlying boolean value.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -654,11 +1206,35 @@ class Boolean(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `Boolean.Q.data` | `Bool` | `.eq()` |
 
-    **Example:**
-    ```python
-    # Filter for a specific data value
-    query = QueryOntologyCatalog(Boolean.Q.data.eq(True))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Boolean, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(Boolean.Q.data.eq(True)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Boolean.Q.data.eq(True), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -670,14 +1246,38 @@ class String(Serializable, HeaderMixin):
         data: The underlying string data.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(String.Q.data.eq("hello"))
+        from mosaicolabs import MosaicoClient, String, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(String.Q.data.eq("hello")))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(String.Q.data.eq("hello"), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -695,7 +1295,7 @@ class String(Serializable, HeaderMixin):
     """
     The underlying string data.
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -703,11 +1303,35 @@ class String(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `String.Q.data` | `String` | `.eq()`, `.match()` |
 
-    **Example:**
-    ```python
-    # Filter for strings containing a specific log pattern
-    query = QueryOntologyCatalog(String.Q.data.match("[ERR]"))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, String, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for strings containing a specific log pattern
+            qresponse = client.query(QueryOntologyCatalog(String.Q.data.match("[ERR]")))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(String.Q.data.eq("hello"), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -722,14 +1346,38 @@ class LargeString(Serializable, HeaderMixin):
         data: The underlying large string data.
         header: An optional metadata header injected by `HeaderMixin`.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The fields of this class are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific data value
-        query = QueryOntologyCatalog(LargeString.Q.data.eq("hello"))
+        from mosaicolabs import MosaicoClient, LargeString, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value
+            qresponse = client.query(QueryOntologyCatalog(LargeString.Q.data.eq("hello")))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(LargeString.Q.data.eq("hello"), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -747,7 +1395,7 @@ class LargeString(Serializable, HeaderMixin):
     """
     The underlying large string data.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -755,9 +1403,33 @@ class LargeString(Serializable, HeaderMixin):
     | :--- | :--- | :--- |
     | `LargeString.Q.data` | `String` | `.eq()`, `.match()` |
 
-    **Example:**
-    ```python
-    # Filter for large strings containing a specific log pattern
-    query = QueryOntologyCatalog(LargeString.Q.data.match("CRITICAL_ERR_"))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, LargeString, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for large strings containing a specific log pattern
+            qresponse = client.query(QueryOntologyCatalog(LargeString.Q.data.match("CRITICAL_ERR_")))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific data value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(LargeString.Q.data.eq("hello"), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """

@@ -240,12 +240,12 @@ initial_response = client.query(
 # 2. Domain Locking: Restrict the search scope to the results of the initial query
 if not initial_response.is_empty():
     # .to_query_sequence() generates a QuerySequence pre-filled with the matching sequence names.
-    refined_query = initial_response.to_query_sequence()
+    refined_query_builder = initial_response.to_query_sequence()
 
     # 3. Targeted Refinement: Search for error patterns ONLY within the restricted domain
     # This ensures the platform only scans for '[ERR]' strings within sequences already validated for GPS precision.
     final_response = client.query(
-        refined_query,                                         # The "locked" sequence domain
+        refined_query_builder,                                         # The "locked" sequence domain
         QueryTopic().with_name("/localization/log_string"),    # Target a specific log topic
         QueryOntologyCatalog(String.Q.data.match("[ERR]"))     # Filter by exact data content pattern
     )

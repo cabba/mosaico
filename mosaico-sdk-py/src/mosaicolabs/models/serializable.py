@@ -20,7 +20,7 @@ from mosaicolabs.helpers import camel_to_snake
 
 from .base_model import BaseModel
 
-from .query.generation.api import _QueryableModel
+from .query.generation.api import _QueryProxyMixin
 from .query.expressions import _QueryCatalogExpression
 from .internal.pyarrow_mapper import PyarrowFieldMapper
 from .internal.helpers import _fix_empty_dicts
@@ -31,7 +31,7 @@ from .internal.helpers import _fix_empty_dicts
 _SENSOR_REGISTRY: Dict[str, Type["Serializable"]] = {}
 
 
-class Serializable(BaseModel, _QueryableModel):
+class Serializable(BaseModel, _QueryProxyMixin):
     """
     The base class for all Mosaico ontology data payloads.
 
@@ -118,7 +118,7 @@ class Serializable(BaseModel, _QueryableModel):
 
         # Query Proxy Injection
         # Enables syntax like: MySensor.Q.field_name > value
-        _QueryableModel._inject_query_proxy(
+        _QueryProxyMixin._inject_query_proxy(
             cls,
             mapper=PyarrowFieldMapper(),
             query_expression_type=_QueryCatalogExpression,
@@ -240,14 +240,28 @@ class Serializable(BaseModel, _QueryableModel):
 
         Hint: **Practical Application: Topic Filtering**
             This method is particularly useful when constructing [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]
-            requests. By using `ontology_tag()`, you can filter topics by data type
-            without hardcoding strings that might change.
+            requests. By using the convenience method [`QueryTopic.with_ontology_tag()`][mosaicolabs.models.query.builders.QueryTopic.with_ontology_tag],
+            you can filter topics by data type without hardcoding strings that might change.
 
-        **Example:**
-        ```python
-        # Retrieve the tag dynamically for a type-safe query
-        query = QueryTopic().with_ontology_tag(IMU.ontology_tag())
-        ```
+            Example:
+                ```python
+                from mosaicolabs import MosaicoClient, Topic, IMU, QueryTopic
+
+                with MosaicoClient.connect("localhost", 6726) as client:
+                    # Filter for a specific data value (using constructor)
+                    qresponse = client.query(
+                        QueryTopic(
+                            Topic.with_ontology_tag(IMU.ontology_tag()),
+                        )
+                    )
+
+                    # Inspect the response
+                    if qresponse is not None:
+                        # Results are automatically grouped by Sequence for easier data management
+                        for item in qresponse:
+                            print(f"Sequence: {item.sequence.name}")
+                            print(f"Topics: {[topic.name for topic in item.topics]}")
+                ```
         """
         if not hasattr(cls, "__ontology_tag__") or cls.__ontology_tag__ is None:
             raise Exception(

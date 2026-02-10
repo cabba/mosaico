@@ -35,26 +35,40 @@ class Topic(PlatformBase):
         method from a [`TopicHandler`][mosaicolabs.handlers.TopicHandler]
         instance.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The `user_metadata` field of this class is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.QueryTopic]
-    via the **`.Q` proxy**. Check the fields documentation for detailed description.
+    via the **`.Q` proxy**.
+    Check the documentation of the [`PlatformBase`][mosaicolabs.models.platform.platform_base.PlatformBase--querying-with-the-q-proxy] to construct a
+    a valid expression for the builders involving the `user_metadata` component.
 
     Example:
         ```python
-        # Filter for a specific data value (using constructor)
-        qbuilder = QueryTopic(
-            Topic.Q.user_metadata["update_rate_hz"].eq(100), # Access the keys using the [] operator
-            Topic.Q.user_metadata["interface.type"].eq("canbus"), # Navigate the nested dicts using the dot notation
-        )
+        from mosaicolabs import MosaicoClient, Topic, QueryTopic
 
-        # The same builder using `with_expression`
-        qbuilder = (
-            QueryTopic()
-            .with_expression(Topic.Q.user_metadata["update_rate_hz"].eq(100))
-            .with_expression(
-                Topic.Q.user_metadata["interface.type"].match("canbus")
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific data value (using constructor)
+            qresponse = client.query(
+                QueryTopic(
+                    Topic.Q.user_metadata["update_rate_hz"].eq(100), # Access the keys using the [] operator
+                    Topic.Q.user_metadata["interface.type"].eq("canbus"), # Navigate the nested dicts using the dot notation
+                )
             )
-        )
+
+            # # The same query using `with_expression`
+            # qresponse = client.query(
+            #     QueryTopic()
+            #     .with_expression(Topic.Q.user_metadata["update_rate_hz"].eq(100))
+            #     .with_expression(
+            #         Topic.Q.user_metadata["interface.type"].match("canbus")
+            #     )
+            # )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
         ```
     """
 
@@ -115,12 +129,57 @@ class Topic(PlatformBase):
 
         This corresponds to the `__ontology_tag__` defined in the
         [`Serializable`][mosaicolabs.models.Serializable] class registry.
+
+        ### Querying with **Query Builders**
+        The `ontology_tag` property is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.QueryTopic]
+        via the convenience method [`QueryTopic.with_ontology_tag()`][mosaicolabs.models.query.builders.QueryTopic.with_ontology_tag].
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, Topic, IMU, QueryTopic
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Filter for a specific data value (using constructor)
+                qresponse = client.query(
+                    QueryTopic().with_ontology_tag(IMU.ontology_tag()),
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
+            ```
         """
         return self._ontology_tag
 
     @property
     def sequence_name(self) -> str:
-        """The name of the parent sequence containing this topic."""
+        """
+        The name of the parent sequence containing this topic.
+
+        ### Querying with **Query Builders**
+        The `sequence_name` property is not queryable directly. Use [`QuerySequence`][mosaicolabs.models.query.QuerySequence] to query for sequences.
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, Topic, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Filter for a specific data value (using constructor)
+                qresponse = client.query(
+                    QuerySequence().with_name("test_winter_20260129_103000")
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
+            ```
+        """
         return self._sequence_name
 
     @property
@@ -129,6 +188,9 @@ class Topic(PlatformBase):
         The number of physical data chunks stored for this topic.
 
         May be `None` if the server did not provide detailed storage statistics.
+
+        ### Querying with **Query Builders**
+        The `chunks_number` property is not queryable.
         """
         return self._chunks_number
 
@@ -138,5 +200,8 @@ class Topic(PlatformBase):
         The format used to serialize the topic data (e.g., 'arrow', 'image').
 
         This corresponds to the [`SerializationFormat`][mosaicolabs.enum.SerializationFormat] enum.
+
+        ### Querying with **Query Builders**
+        The `serialization_format` property is not queryable.
         """
         return self._serialization_format

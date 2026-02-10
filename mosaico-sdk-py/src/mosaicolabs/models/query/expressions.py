@@ -63,13 +63,13 @@ class _QueryTopicExpression(_QueryExpression):
     contamination.
 
     **Internal Translation Example:**
-    ```python
-    # When a user calls:
-    query.with_name("camera_front")
 
-    # The builder internally creates:
-    _QueryTopicExpression("name", "$eq", "camera_front")
-    ```
+    | User Call | Internal Translation |
+    | --- | --- |
+    | `Topic.Q.user_metadata["calibrated"].eq(True)` | `_QueryTopicExpression("user_metadata.calibrated", "$eq", True)` |
+    | `QueryTopic().with_name("camera_front")` | `_QueryTopicExpression("name", "$eq", "camera_front")` |
+    | `QueryTopic().with_ontology_tag("imu")` | `_QueryTopicExpression("ontology_tag", "$eq", "imu")` |
+
     """
 
     pass
@@ -87,13 +87,13 @@ class _QuerySequenceExpression(_QueryExpression):
     entries within the sequence's `user_metadata`.
 
     **Internal Translation Example:**
-    ```python
-    # When a user calls:
-    Sequence.Q.user_metadata["project"].eq("Apollo")
 
-    # It generates:
-    _QuerySequenceExpression("user_metadata.project", "$eq", "Apollo")
-    ```
+    | User Call | Internal Translation |
+    | --- | --- |
+    | `Sequence.Q.user_metadata["project"].eq("Apollo")` | `_QuerySequenceExpression("user_metadata.project", "$eq", "Apollo")` |
+    | `QuerySequence().with_name("Apollo")` | `_QuerySequenceExpression("name", "$eq", "Apollo")` |
+    | `QuerySequence().with_created_timestamp(Time.from_float(1704067200.0))` | `_QuerySequenceExpression("created_timestamp", "$between", [1704067200.0, None])` |
+
     """
 
     pass
@@ -112,13 +112,14 @@ class _QueryCatalogExpression(_QueryExpression):
     prefixed by the ontology tag.
 
     **Internal Translation Example:**
-    ```python
-    # When a user calls:
-    IMU.Q.acceleration.x.gt(9.8)
 
-    # The builder receives:
-    _QueryCatalogExpression("imu.acceleration.x", "$gt", 9.8)
-    ```
+    | User Call | Internal Translation |
+    | --- | --- |
+    | `IMU.Q.acceleration.x.gt(9.8)` | `_QueryCatalogExpression("imu.acceleration.x", "$gt", 9.8)` |
+    | `IMU.Q.acceleration.y.gt(9.8)` | `_QueryCatalogExpression("imu.acceleration.y", "$gt", 9.8)` |
+    | `IMU.Q.acceleration.z.gt(9.8)` | `_QueryCatalogExpression("imu.acceleration.z", "$gt", 9.8)` |
+    | `IMU.Q.acceleration.x.gt(9.8)` | `_QueryCatalogExpression("imu.acceleration.x", "$gt", 9.8)` |
+
     """
 
     pass

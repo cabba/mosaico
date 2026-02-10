@@ -110,9 +110,32 @@ class QueryResponse:
 
     Example:
         ```python
-        response = sdk.query_sequences(...)
-        # Refine the query to only look at topics within these specific sequences
-        next_query = response.to_query_topic()
+        from mosaicolabs import MosaicoClient, IMU, Floating64, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter IMU data by a specific acquisition second
+            qresponse = client.query(
+                QueryOntologyCatalog(IMU.Q.header.stamp.sec.lt(1770282868))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter primitive Floating64 telemetry by frame identifier
+            qresponse = client.query(
+                QueryOntologyCatalog(Floating64.Q.header.frame_id.eq("robot_base"))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
         ```
 
     Attributes:

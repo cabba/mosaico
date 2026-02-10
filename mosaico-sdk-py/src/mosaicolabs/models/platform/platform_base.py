@@ -12,10 +12,10 @@ from typing import Any, Dict
 
 from pydantic import PrivateAttr
 import pydantic
-from ..query.generation.api import _QueryableModel
+from ..query.generation.api import _QueryProxyMixin
 
 
-class PlatformBase(pydantic.BaseModel, _QueryableModel):
+class PlatformBase(pydantic.BaseModel, _QueryProxyMixin):
     """
     Base class for Mosaico Sequence and Topic entities.
 
@@ -27,7 +27,7 @@ class PlatformBase(pydantic.BaseModel, _QueryableModel):
     ### Core Functionality
     1.  **System Metadata**: Consolidates attributes like storage size and locking
         status that are common across the catalog.
-    2.  **Query Interface**: Inherits from `_QueryableModel` to support expressive
+    2.  **Query Interface**: Inherits from internal `_QueryableModel` to support expressive
         syntax for filtering resources (e.g., `Sequence.Q.user_metadata["env"] == "prod"`).
 
     Note: Read-Only Entities
@@ -37,7 +37,7 @@ class PlatformBase(pydantic.BaseModel, _QueryableModel):
     Attributes:
         user_metadata: A dictionary of custom key-value pairs assigned by the user.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     The `user_metadata` field is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]
     or [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] via the **`.Q` proxy**.
 
@@ -50,25 +50,62 @@ class PlatformBase(pydantic.BaseModel, _QueryableModel):
         [`PlatformBase`][mosaicolabs.models.platform.platform_base.PlatformBase]
         (i.e. [`Topic`][mosaicolabs.models.platform.Topic], [`Sequence`][mosaicolabs.models.platform.Sequence])
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryTopic(Topic.Q.user_metadata["update_rate_hz"].geq(100))
-    query = QuerySequence(Sequence.Q.user_metadata["project.version"].match("v1.0")) # Any "v1.0.*" will match
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Topic, Sequence, QueryTopic, QuerySequence
 
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific metadata key value.
+            qresponse = client.query(
+                QueryTopic(Topic.Q.user_metadata["update_rate_hz"].geq(100))
+            )
+            # Filter for a specific nested metadata key value.
+            qresponse = client.query(
+                QuerySequence(Sequence.Q.user_metadata["project.version"].match("v1.0"))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     user_metadata: Dict[str, Any]
     """
     Custom user-defined key-value pairs associated with the entity.
 
-    ### Querying with the `.Q` Proxy
-    Check the documentation of the [`PlatformBase`][mosaicolabs.models.platform.platform_base.PlatformBase] to construct a
-    a valid expression for the [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]
-    or [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] builder involving
-    the `user_metadata` component.
+    ### Querying with the **`.Q` Proxy**
+    The `user_metadata` field is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]
+    or [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] using the **`.Q` proxy**
 
+    | Field Access Path | Queryable Type | Supported Operators |
+    | :--- | :--- | :--- |
+    | `Sequence.Q.user_metadata["key"]` | `String`, `Numeric`, `Boolean` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()`, `.match()` |
+    | `Sequence.Q.user_metadata["key.subkey.subsubkey..."]` | `String`, `Numeric`, `Boolean` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()`, `.match()` |
+    | `Topic.Q.user_metadata["key"]` | `String`, `Numeric`, `Boolean` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()`, `.match()` |
+    | `Topic.Q.user_metadata["key.subkey.subsubkey..."]` | `String`, `Numeric`, `Boolean` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()`, `.match()` |
+
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Topic, Sequence, QueryTopic, QuerySequence
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific keys in sequence AND topic metadata.
+            qresponse = client.query(
+                QueryTopic(Topic.Q.user_metadata["update_rate_hz"].geq(100)),
+                QuerySequence(Sequence.Q.user_metadata["project.version"].match("v1.0"))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     # --- Private Attributes ---
@@ -108,12 +145,83 @@ class PlatformBase(pydantic.BaseModel, _QueryableModel):
     # --- Shared Properties ---
     @property
     def name(self) -> str:
-        """The unique identifier or resource name of the entity."""
+        """
+        The unique identifier or resource name of the entity.
+
+        ### Querying with **Query Builders**
+        The `name` property is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.QueryTopic]
+        or a [`QuerySequence`][mosaicolabs.models.query.QuerySequence]
+        via the convenience methods:
+
+        * [`QueryTopic.with_name()`][mosaicolabs.models.query.builders.QueryTopic.with_name]
+        * [`QueryTopic.with_name_match()`][mosaicolabs.models.query.builders.QueryTopic.with_name_match]
+        * [`QuerySequence.with_name()`][mosaicolabs.models.query.builders.QuerySequence.with_name]
+        * [`QuerySequence.with_name_match()`][mosaicolabs.models.query.builders.QuerySequence.with_name_match]
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, Topic, IMU, QueryTopic
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Filter for a specific data value (using constructor)
+                qresponse = client.query(
+                    QueryTopic().with_name("/front/imu"),
+                    QuerySequence().with_name_match("test_winter_2025_01_"),
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
+            ```
+        """
         return self._name
 
     @property
     def created_datetime(self) -> datetime.datetime:
-        """The UTC timestamp indicating when the entity was created on the server."""
+        """
+        The UTC timestamp indicating when the entity was created on the server.
+
+        ### Querying with **Query Builders**
+        The `created_datetime` property is queryable when constructing a [`QueryTopic`][mosaicolabs.models.query.QueryTopic]
+        or a [`QuerySequence`][mosaicolabs.models.query.QuerySequence]
+        via the convenience methods:
+
+        * [`QueryTopic.with_created_timestamp()`][mosaicolabs.models.query.builders.QueryTopic.with_created_timestamp]
+        * [`QuerySequence.with_created_timestamp()`][mosaicolabs.models.query.builders.QuerySequence.with_created_timestamp]
+
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, Topic, IMU, QueryTopic, Time
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Filter for a specific topic creation time
+                qresponse = client.query(
+                    QueryTopic().with_created_timestamp(time_start=Time.from_float(1765432100)),
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
+
+                # Filter for a specific sequence creation time
+                qresponse = client.query(
+                    QuerySequence().with_created_timestamp(time_start=Time.from_float(1765432100)),
+                )
+
+                # Inspect the response
+                if qresponse is not None:
+                    # Results are automatically grouped by Sequence for easier data management
+                    for item in qresponse:
+                        print(f"Sequence: {item.sequence.name}")
+                        print(f"Topics: {[topic.name for topic in item.topics]}")
+            ```
+        """
         return self._created_datetime
 
     @property
@@ -123,10 +231,18 @@ class PlatformBase(pydantic.BaseModel, _QueryableModel):
 
         A locked state typically occurs during active writing or maintenance operations,
         preventing deletion or structural modifications.
+
+        ### Querying with **Query Builders**
+        The `is_locked` property is not queryable.
         """
         return self._is_locked
 
     @property
     def total_size_bytes(self) -> int:
-        """The total physical storage footprint of the entity on the server in bytes."""
+        """
+        The total physical storage footprint of the entity on the server in bytes.
+
+        ### Querying with **Query Builders**
+        The `total_size_bytes` property is not queryable.
+        """
         return self._total_size_bytes

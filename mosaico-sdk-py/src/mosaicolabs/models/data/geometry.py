@@ -57,7 +57,7 @@ class _Vector2dStruct(BaseModel):
     """
     The Vector X component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -70,19 +70,52 @@ class _Vector2dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector2d.Q.x.leq(123.4))
-    query = QueryOntologyCatalog(Point2d.Q.x.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector2d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector2d.Q.x.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector2d.Q.x.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Point2d.Q.x.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     y: float
     """
     The Vector Y component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -95,12 +128,45 @@ class _Vector2dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector2d.Q.y.leq(123.4))
-    query = QueryOntologyCatalog(Point2d.Q.y.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector2d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector2d.Q.y.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector2d.Q.y.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Point2d.Q.y.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     @classmethod
@@ -164,7 +230,7 @@ class _Vector3dStruct(BaseModel):
     """
     The Vector X component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -177,19 +243,52 @@ class _Vector3dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector3d.Q.x.leq(123.4))
-    query = QueryOntologyCatalog(Point3d.Q.x.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector3d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector3d.Q.x.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector3d.Q.x.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Point3d.Q.x.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     y: float
     """
     The Vector Y component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -202,19 +301,52 @@ class _Vector3dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector3d.Q.y.leq(123.4))
-    query = QueryOntologyCatalog(Point3d.Q.y.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector3d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector3d.Q.y.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector3d.Q.y.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Point3d.Q.y.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     z: float
     """
     The Vector Z component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -227,12 +359,45 @@ class _Vector3dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector3d.Q.z.leq(123.4))
-    query = QueryOntologyCatalog(Point3d.Q.z.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector3d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector3d.Q.z.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector3d.Q.z.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Point3d.Q.z.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     @classmethod
@@ -302,7 +467,7 @@ class _Vector4dStruct(BaseModel):
     """
     The Vector X component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -315,19 +480,52 @@ class _Vector4dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector4d.Q.x.leq(123.4))
-    query = QueryOntologyCatalog(Quaternion.Q.x.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector4d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector4d.Q.x.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector4d.Q.x.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Quaternion.Q.x.leq(0.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     y: float
     """
     The Vector Y component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -340,19 +538,52 @@ class _Vector4dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector4d.Q.y.leq(123.4))
-    query = QueryOntologyCatalog(Quaternion.Q.y.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector4d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector4d.Q.y.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector4d.Q.y.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Quaternion.Q.y.leq(0.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     z: float
     """
     The Vector Z component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -365,19 +596,52 @@ class _Vector4dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector4d.Q.z.leq(123.4))
-    query = QueryOntologyCatalog(Quaternion.Q.z.leq(123.4))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector4d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector4d.Q.z.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector4d.Q.z.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Quaternion.Q.z.leq(0.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     w: float
     """
     The Vector W component
     
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This field is queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] 
     via the **`.Q` proxy**.
 
@@ -390,13 +654,45 @@ class _Vector4dStruct(BaseModel):
         or any custom user-defined [`Serializable`][mosaicolabs.models.Serializable] class that inherits
         from `HeaderMixin`.
 
-    **Example:**
-    ```python
-    # Filter for a specific component value.
-    query = QueryOntologyCatalog(Vector4d.Q.w.leq(123.4))
-    query = QueryOntologyCatalog(Quaternion.Q.w.leq(123.4))
-    ```
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Vector4d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Vector4d.Q.w.leq(123.4)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector4d.Q.w.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        
+            # Filter for a specific component value.
+            qresponse = client.query(QueryOntologyCatalog(Quaternion.Q.w.leq(0.707)))
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+        ```
     """
 
     @classmethod
@@ -441,15 +737,41 @@ class Vector2d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific component value.
-        query = QueryOntologyCatalog(Vector2d.Q.y.leq(123.4))
+        from mosaicolabs import MosaicoClient, Vector2d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector2d.Q.y.leq(123.4))
                 .with_expression(Vector2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector2d.Q.y.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -478,15 +800,41 @@ class Vector3d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific component value.
-        query = QueryOntologyCatalog(Vector3d.Q.y.leq(123.4))
+        from mosaicolabs import MosaicoClient, Vector3d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector3d.Q.y.leq(123.4))
                 .with_expression(Vector3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector3d.Q.z.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -516,15 +864,41 @@ class Vector4d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific component value.
-        query = QueryOntologyCatalog(Vector4d.Q.y.leq(123.4))
+        from mosaicolabs import MosaicoClient, Vector4d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector4d.Q.y.leq(123.4))
                 .with_expression(Vector4d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Vector4d.Q.y.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -553,15 +927,41 @@ class Point2d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific component value.
-        query = QueryOntologyCatalog(Point2d.Q.y.leq(123.4))
+        from mosaicolabs import MosaicoClient, Point2d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(
+                QueryOntologyCatalog(Point2d.Q.y.leq(123.4))
                 .with_expression(Point2d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Point2d.Q.y.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -591,15 +991,41 @@ class Point3d(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific component value.
-        query = QueryOntologyCatalog(Point3d.Q.y.leq(123.4))
+        from mosaicolabs import MosaicoClient, Point3d, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(
+                QueryOntologyCatalog(Point3d.Q.y.leq(123.4))
                 .with_expression(Point3d.Q.header.stamp.sec.between([1770282868, 1770290127]))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Point3d.Q.z.leq(123.4), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -630,15 +1056,41 @@ class Quaternion(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter for a specific component value.
-        query = QueryOntologyCatalog(Quaternion.Q.w.leq(0.707))
+        from mosaicolabs import MosaicoClient, Quaternion, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(
+                QueryOntologyCatalog(Quaternion.Q.w.leq(0.707))
                 .with_expression(Quaternion.Q.header.stamp.sec.between([1770282868, 1770290127]))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Quaternion.Q.w.leq(0.707), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -672,15 +1124,42 @@ class Transform(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter Transforms with translation X-component AND rotation W-component
-        query = QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
+        from mosaicolabs import MosaicoClient, Transform, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for a specific component value.
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
                 .with_expression(Transform.Q.rotation.w.lt(0.707))
+                .with_expression(Transform.Q.header.stamp.sec.between([1770282868, 1770290127]))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
     """
 
@@ -711,7 +1190,7 @@ class Transform(
     """
     The 3D translation vector component.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     Translation components are queryable through the `translation` field prefix.
 
     | Field Access Path | Queryable Type | Supported Operators |
@@ -720,18 +1199,45 @@ class Transform(
     | `Transform.Q.translation.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `Transform.Q.translation.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Find transforms where the linear X-translation exceeds 5 meters
-    query = QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Transform, QueryOntologyCatalog
+        
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Find transforms where the linear X-translation exceeds 5 meters
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0))
+                .with_expression(Transform.Q.translation.z.lt(150.3))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.translation.x.gt(5.0), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     rotation: Quaternion
     """
     The rotation quaternion component (x, y, z, w).
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     Rotation components are queryable through the `rotation` field prefix.
 
     | Field Access Path | Queryable Type | Supported Operators |
@@ -741,11 +1247,39 @@ class Transform(
     | `Transform.Q.rotation.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `Transform.Q.rotation.w` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for specific orientation states
-    query = QueryOntologyCatalog(Transform.Q.rotation.w.geq(0.707))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Transform, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for specific orientation states
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.rotation.w.geq(0.707))
+                .with_expression(Transform.Q.rotation.z.lt(0.4))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.rotation.x.gt(5.0), include_timestamp_range=True)
+                .with_expression(Transform.Q.rotation.z.lt(0.4))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     target_frame_id: Optional[str] = None
@@ -755,6 +1289,38 @@ class Transform(
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
     | `Transform.Q.target_frame_id` | `String` | `.eq()`, `.match()` |
+
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Transform, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for specific target frame id
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.target_frame_id.eq("camera_link"))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Transform.Q.target_frame_id.eq("camera_link"), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
 
@@ -779,15 +1345,42 @@ class Pose(
         covariance_type: Enum integer representing the parameterization of the
             covariance matrix.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     This class fields are queryable when constructing a [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog]
     via the **`.Q` proxy**. Check the fields documentation for detailed description.
 
     Example:
         ```python
-        # Filter Poses with position X-component AND orientation W-component
-        query = QueryOntologyCatalog(Pose.Q.position.x.gt(5.0))
+        from mosaicolabs import MosaicoClient, Pose, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter Poses with position X-component AND orientation W-component
+            qresponse = client.query(
+                QueryOntologyCatalog(Pose.Q.position.x.gt(5.0))
                 .with_expression(Pose.Q.orientation.w.lt(0.707))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Pose.Q.position.x.gt(5.0), include_timestamp_range=True)
+                .with_expression(Pose.Q.orientation.w.lt(0.707))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
         ```
 
     """
@@ -813,7 +1406,7 @@ class Pose(
     """
     The 3D position vector component.
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     Position components are queryable through the `position` field prefix.
 
     | Field Access Path | Queryable Type | Supported Operators |
@@ -822,30 +1415,84 @@ class Pose(
     | `Pose.Q.position.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `Pose.Q.position.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Find poses where the linear X-position exceeds 5 meters
-    query = QueryOntologyCatalog(Pose.Q.position.x.gt(123450.0))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Pose, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Find poses where the linear X-position exceeds 5 meters
+            qresponse = client.query(
+                QueryOntologyCatalog(Pose.Q.position.x.gt(123450.0))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(Pose.Q.position.x.gt(5.0), include_timestamp_range=True)
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
 
     rotation: Quaternion
     """
     The rotation quaternion component (x, y, z, w).
 
-    ### Querying with the `.Q` Proxy
+    ### Querying with the **`.Q` Proxy**
     Rotation components are queryable through the `rotation` field prefix.
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `Transform.Q.rotation.x` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
-    | `Transform.Q.rotation.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
-    | `Transform.Q.rotation.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
-    | `Transform.Q.rotation.w` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.rotation.x` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.rotation.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.rotation.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.rotation.w` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
-    **Example:**
-    ```python
-    # Filter for specific orientation states
-    query = QueryOntologyCatalog(Transform.Q.rotation.w.geq(0.707))
-    ```
+    Example:
+        ```python
+        from mosaicolabs import MosaicoClient, Pose, QueryOntologyCatalog
+
+        with MosaicoClient.connect("localhost", 6726) as client:
+            # Filter for specific orientation states
+            qresponse = client.query(
+                QueryOntologyCatalog(Pose.Q.rotation.w.geq(0.707))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {[topic.name for topic in item.topics]}")
+
+            # Filter for a specific component value and extract the first and last occurrence times
+            qresponse = client.query(
+                QueryOntologyCatalog(include_timestamp_range=True)
+                .with_expression(Pose.Q.rotation.w.geq(0.707))
+                .with_expression(Pose.Q.rotation.x.lt(0.1))
+            )
+
+            # Inspect the response
+            if qresponse is not None:
+                # Results are automatically grouped by Sequence for easier data management
+                for item in qresponse:
+                    print(f"Sequence: {item.sequence.name}")
+                    print(f"Topics: {{topic.name:
+                                [topic.timestamp_range.start, topic.timestamp_range.end]
+                                for topic in item.topics}}")
+        ```
     """
