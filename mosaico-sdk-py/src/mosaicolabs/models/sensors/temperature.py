@@ -34,7 +34,7 @@ class Temperature(Serializable, HeaderMixin, VarianceMixin):
         with MosaicoClient.connect("localhost", 6726) as client:
             # Filter for temperature values within a specific range
             qresponse = client.query(
-                QueryOntologyCatalog(Temperature.Q.value.between(273.15, 373.15))
+                QueryOntologyCatalog(Temperature.Q.value.between([273.15, 373.15]))
                 .with_expression(Temperature.Q.header.stamp.sec.between(1700000000, 1800000000)),
             )
 
@@ -47,7 +47,7 @@ class Temperature(Serializable, HeaderMixin, VarianceMixin):
 
             # Filter for a specific component value and extract the first and last occurrence times
             qresponse = client.query(
-                QueryOntologyCatalog(Temperature.Q.value.between(273.15, 373.15), include_timestamp_range=True)
+                QueryOntologyCatalog(Temperature.Q.value.between([273.15, 373.15]), include_timestamp_range=True)
             )
 
             # Inspect the response
@@ -89,7 +89,7 @@ class Temperature(Serializable, HeaderMixin, VarianceMixin):
         with MosaicoClient.connect("localhost", 6726) as client:
             # Filter for temperature values within a specific range
             qresponse = client.query(
-                QueryOntologyCatalog(Temperature.Q.value.between(273.15, 373.15))
+                QueryOntologyCatalog(Temperature.Q.value.between([273.15, 373.15]))
             )
 
             # Inspect the response
@@ -101,7 +101,7 @@ class Temperature(Serializable, HeaderMixin, VarianceMixin):
 
             # Filter for a specific component value and extract the first and last occurrence times
             qresponse = client.query(
-                QueryOntologyCatalog(Temperature.Q.value.between(273.15, 373.15), include_timestamp_range=True)
+                QueryOntologyCatalog(Temperature.Q.value.between([273.15, 373.15]), include_timestamp_range=True)
             )
 
             # Inspect the response

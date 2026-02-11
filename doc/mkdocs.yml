@@ -28,9 +28,10 @@ plugins:
           paths: [../mosaico-sdk-py/src] 
           options:
             filters:
-              - "!^__"           
-              - "^__init__$"     
-              - "!^_"         
+              - "!^__"
+              - "^__init__$"
+              - "!^_"
+              - "!^Q$"
             show_root_heading: true
             separate_signature: true     
             merge_init_into_class: true 
@@ -38,6 +39,7 @@ plugins:
             relative_crossrefs: true
             signature_crossrefs: true
             members_order: source
+            inherited_members: true
 
 nav:
   - Mosaico: index.md
@@ -59,7 +61,9 @@ nav:
     - API Reference:
       - SDK/API_reference/comm.md
       - SDK/API_reference/enum.md
-      - SDK/API_reference/handlers.md
+      - Data Handling:
+        - SDK/API_reference/handlers/reading.md
+        - SDK/API_reference/handlers/writing.md
       - Query Module:
         - SDK/API_reference/query/builders.md
         - SDK/API_reference/query/internal.md

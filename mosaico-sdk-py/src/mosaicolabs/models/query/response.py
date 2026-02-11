@@ -152,6 +152,28 @@ class QueryResponse:
         This allows for further filtering or operations on the specific set of
         sequences returned in this response.
 
+        Example:
+            This demonstrates query chaining to narrow your search to specific sequences and topics.
+            This is necessary when criteria span different data channels; otherwise,
+            the resulting filters chained in `AND` in a single query would produce an empty result.
+
+            ```python
+            from mosaicolabs import MosaicoClient, QuerySequence
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Broad Search: Find sequences with high-precision GPS
+                initial_response = client.query(QueryOntologyCatalog(GPS.Q.status.status.eq(2)))
+
+                # Chaining: Use results to "lock" the domain and find specific data in those sequences
+                # on different data channels
+                if not initial_response.is_empty():
+                    final_response = client.query(
+                        initial_response.to_query_sequence(),              # The "locked" sequence domain
+                        QueryTopic().with_name("/localization/log_string"), # Target a specific log topic
+                        QueryOntologyCatalog(String.Q.data.match("[ERR]"))  # Filter by content
+                    )
+            ```
+
         Returns:
             QuerySequence: A builder initialized with an '$in' filter on the sequence names.
 
@@ -177,11 +199,31 @@ class QueryResponse:
         Useful for narrowing down a search to specific topics found within
         the retrieved sequences.
 
+        Example:
+            ```python
+            from mosaicolabs import MosaicoClient, QueryTopic
+
+            with MosaicoClient.connect("localhost", 6726) as client:
+                # Broad Search: Find sequences with high-precision GPS
+                initial_response = client.query(
+                        QueryTopic().with_name("/localization/log_string"), # Target a specific log topic
+                        QuerySequence().with_name_match("test_winter_2025_")  # Filter by content
+                    )
+
+                # Chaining: Use results to "lock" the domain and find specific log-patterns in those sequences
+                if not initial_response.is_empty():
+                    final_response = client.query(
+                        initial_response.to_query_topic(),              # The "locked" topic domain
+                        QueryOntologyCatalog(String.Q.data.match("[ERR]"))  # Filter by content
+                    )
+            ```
+
         Returns:
             QueryTopic: A builder initialized with an '$in' filter on the topic names.
 
         Raises:
             ValueError: If the response is empty.
+
         """
         if not self.items:
             raise ValueError(

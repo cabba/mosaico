@@ -128,7 +128,7 @@ class PlatformBase(pydantic.BaseModel, _QueryProxyMixin):
         """
         Internal helper to populate system-controlled private attributes.
 
-        This is used by factory methods (`from_flight_info`) to set attributes
+        This is used by factory methods (`_from_flight_info`) to set attributes
         that are strictly read-only for the user.
 
         Args:
@@ -139,7 +139,9 @@ class PlatformBase(pydantic.BaseModel, _QueryProxyMixin):
         """
         self._is_locked = is_locked
         self._total_size_bytes = total_size_bytes
-        self._created_datetime = created_datetime or datetime.datetime.utcnow()
+        self._created_datetime = created_datetime or datetime.datetime.now(
+            datetime.timezone.utc
+        )
         self._name = name or ""
 
     # --- Shared Properties ---

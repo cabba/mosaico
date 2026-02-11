@@ -78,7 +78,7 @@ class Sequence(PlatformBase):
 
     # --- Factory Method ---
     @classmethod
-    def from_flight_info(
+    def _from_flight_info(
         cls, name: str, metadata: Any, sys_info: Any, topics: List[str]
     ) -> "Sequence":
         """

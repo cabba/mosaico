@@ -165,7 +165,7 @@ class TopicHandler:
             return None
 
         # Build Model
-        topic_model = Topic.from_flight_info(
+        topic_model = Topic._from_flight_info(
             sequence_name=_stzd_sequence_name,
             name=_stzd_topic_name,
             metadata=topic_metadata,

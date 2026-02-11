@@ -220,13 +220,6 @@ class QueryOntologyCatalog:
         Adds a new [`_QueryCatalogExpression`][mosaicolabs.models.query.expressions._QueryCatalogExpression]
         expression to the query using a fluent interface.
 
-        Args:
-            expr: A valid expression generated via the `.Q` proxy on an ontology model,
-                e.g., `GPS.Q.status.satellites.leq(10)`.
-
-        Returns:
-            The `QueryOntologyCatalog` instance for method chaining.
-
         Example:
             ```python
             from mosaicolabs import MosaicoClient, Topic, QuerySequence
@@ -262,6 +255,13 @@ class QueryOntologyCatalog:
                                     [topic.timestamp_range.start, topic.timestamp_range.end]
                                     for topic in item.topics}}")
             ```
+
+        Args:
+            expr: A valid expression generated via the `.Q` proxy on an ontology model,
+                e.g., `GPS.Q.status.satellites.leq(10)`.
+
+        Returns:
+            The `QueryOntologyCatalog` instance for method chaining.
         """
         _validate_expression_type(
             expr,
@@ -394,15 +394,15 @@ class QueryTopic:
 
     Example:
         ```python
-        from mosaicolabs import MosaicoClient, Topic, QuerySequence
+        from mosaicolabs import MosaicoClient, Image, Topic, QuerySequence
 
         with MosaicoClient.connect("localhost", 6726) as client:
-            # Query for all 'camera' topics created in a specific timeframe, matching some metadata (key, value) pair
+            # Query for all 'image' topics created in a specific timeframe, matching some metadata (key, value) pair
             qresponse = client.query(
                 QueryTopic()
-                .with_ontology_tag(Camera.ontology_tag())
+                .with_ontology_tag(Image.ontology_tag())
                 .with_created_timestamp(time_start=Time.from_float(1700000000))
-                .with_expression(Topic.Q.user_metadata["calibrated"].eq(True))
+                .with_expression(Topic.Q.user_metadata["camera_id.serial_number"].eq("ABC123_XYZ"))
             )
 
             # Inspect the response
@@ -453,12 +453,6 @@ class QueryTopic:
 
         This is the way to add filters for nested metadata.
 
-        Args:
-            expr: A `_QueryTopicExpression` constructed via a `Topic.Q` proxy.
-
-        Returns:
-            The `QueryTopic` instance for method chaining.
-
         Example:
             ```python
             from mosaicolabs import MosaicoClient, Topic, QuerySequence
@@ -476,6 +470,12 @@ class QueryTopic:
                         print(f"Sequence: {item.sequence.name}")
                         print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            expr: A `_QueryTopicExpression` constructed via a `Topic.Q` proxy.
+
+        Returns:
+            The `QueryTopic` instance for method chaining.
         """
 
         _validate_expression_type(
@@ -492,9 +492,6 @@ class QueryTopic:
     def with_name(self, name: str) -> "QueryTopic":
         """
         Adds an exact match filter for the topic 'name' field.
-
-        Args:
-            name: The exact name of the topic to match.
 
         Example:
             ```python
@@ -513,6 +510,12 @@ class QueryTopic:
                         print(f"Sequence: {item.sequence.name}")
                         print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            name: The exact name of the topic to match.
+
+        Returns:
+            The `QueryTopic` instance for method chaining.
         """
         return self.with_expression(_QueryTopicExpression("name", "$eq", f"{name}"))
 
@@ -522,9 +525,6 @@ class QueryTopic:
 
         This performs an 'in-between' search (equivalent to %name%) on the full
         `sequence/topic` path.
-
-        Args:
-            name: The string pattern to search for within the topic name.
 
         Example:
             ```python
@@ -543,6 +543,12 @@ class QueryTopic:
                         print(f"Sequence: {item.sequence.name}")
                         print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            name: The string pattern to search for within the topic name.
+
+        Returns:
+            The `QueryTopic` instance for method chaining.
         """
         return self.with_expression(
             # employs explicit _QueryTopicExpression composition for dealing with
@@ -556,12 +562,6 @@ class QueryTopic:
 
         This filter restricts the search to topics belonging to a specific data type
         identifier (e.g., 'imu', 'gnss').
-
-        Args:
-            ontology_tag: The string tag (e.g., 'imu', 'gps') to filter by.
-
-        Returns:
-            The current [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] instance for method chaining.
 
         Example:
             ```python
@@ -584,6 +584,12 @@ class QueryTopic:
             retrieve the tag dynamically using the
             [`ontology_tag()`][mosaicolabs.models.Serializable.ontology_tag]
             method of the desired ontology class.
+
+        Args:
+            ontology_tag: The string tag (e.g., 'imu', 'gps') to filter by.
+
+        Returns:
+            The `QueryTopic` instance for method chaining.
         """
         return self.with_expression(
             # employs explicit _QueryTopicExpression composition for dealing with
@@ -596,13 +602,6 @@ class QueryTopic:
     ) -> "QueryTopic":
         """
         Adds a filter for the 'created_timestamp' field using high-precision Time.
-
-        Args:
-            time_start: Optional lower bound (inclusive).
-            time_end: Optional upper bound (inclusive).
-
-        Raises:
-            ValueError: If both bounds are None or if `time_start > time_end`.
 
         Example:
             ```python
@@ -624,6 +623,16 @@ class QueryTopic:
                         print(f"Sequence: {item.sequence.name}")
                         print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            time_start: Optional lower bound (inclusive).
+            time_end: Optional upper bound (inclusive).
+
+        Returns:
+            The `QueryTopic` instance for method chaining.
+
+        Raises:
+            ValueError: If both bounds are None or if `time_start > time_end`.
         """
         # .between() expects a list [start, end]
         if time_start is None and time_end is None:
@@ -797,12 +806,6 @@ class QuerySequence:
 
         This is the way to add filters for nested metadata.
 
-        Args:
-            expr: A `_QuerySequenceExpression` constructed via a `Sequence.Q` proxy.
-
-        Returns:
-            The `QuerySequence` instance for method chaining.
-
         Example:
             ```python
             from mosaicolabs import MosaicoClient, Topic, QuerySequence
@@ -818,6 +821,13 @@ class QuerySequence:
                     print(f"Sequence: {item.sequence.name}")
                     print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            expr: A `_QuerySequenceExpression` constructed via a `Sequence.Q` proxy.
+
+        Returns:
+            The `QuerySequence` instance for method chaining.
+
         """
         _validate_expression_type(
             expr,
@@ -834,9 +844,6 @@ class QuerySequence:
         """
         Adds an exact match filter for the sequence 'name' field.
 
-        Args:
-            name: The exact name of the sequence to match.
-
         Example:
             ```python
             from mosaicolabs import MosaicoClient, Topic, QuerySequence
@@ -852,6 +859,12 @@ class QuerySequence:
                     print(f"Sequence: {item.sequence.name}")
                     print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            name: The exact name of the sequence to match.
+
+        Returns:
+            The `QuerySequence` instance for method chaining.
         """
         return self.with_expression(
             # employs explicit _QuerySequenceExpression composition for dealing with
@@ -864,9 +877,6 @@ class QuerySequence:
         Adds a partial (fuzzy) match filter for the sequence 'name' field.
 
         This performs an 'in-between' search (equivalent to %name%) on the sequence name.
-
-        Args:
-            name: The string pattern to search for within the sequence name.
 
         Example:
             ```python
@@ -883,6 +893,12 @@ class QuerySequence:
                     print(f"Sequence: {item.sequence.name}")
                     print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            name: The string pattern to search for within the sequence name.
+
+        Returns:
+            The `QuerySequence` instance for method chaining.
         """
         return self.with_expression(
             # employs explicit _QuerySequenceExpression composition for dealing with
@@ -895,13 +911,6 @@ class QuerySequence:
     ) -> "QuerySequence":
         """
         Adds a filter for the 'created_timestamp' field using high-precision Time.
-
-        Args:
-            time_start: Optional lower bound (inclusive).
-            time_end: Optional upper bound (inclusive).
-
-        Raises:
-            ValueError: If both bounds are `None` or if `time_start > time_end`.
 
         Example:
             ```python
@@ -921,6 +930,16 @@ class QuerySequence:
                     print(f"Sequence: {item.sequence.name}")
                     print(f"Topics: {[topic.name for topic in item.topics]}")
             ```
+
+        Args:
+            time_start: Optional lower bound (inclusive).
+            time_end: Optional upper bound (inclusive).
+
+        Returns:
+            The `QuerySequence` instance for method chaining.
+
+        Raises:
+            ValueError: If both bounds are `None` or if `time_start > time_end`.
         """
         # .between() expects a list [start, end]
         if time_start is None and time_end is None:

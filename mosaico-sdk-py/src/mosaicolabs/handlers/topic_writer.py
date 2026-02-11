@@ -26,6 +26,11 @@ from ..logging_config import get_logger
 logger = get_logger(__name__)
 
 
+# TODO: Better manage topic lifecycle and error policy handling
+# Policies:
+# - Report and Skip: Skip the current record and continue with the next one.
+# - Report and Close: Report via topic_notify and close the writer. Must manage writer disabling and actions on calling push on a disabled writer
+# - Report and Delete: Delete the topic and report the error via sequence_notify. Must manage writer disabling and actions on calling push on a disabled writer
 class TopicWriter:
     """
     Manages a high-performance data stream for a single Mosaico topic.
@@ -411,28 +416,19 @@ class TopicWriter:
         Example: Defensive Topic Shutdown
             ```python
             with client.sequence_create(name="resilient_run", ...) as seq_writer:
-                imu_w = seq_writer.topic_create(name="imu", ontology_type=IMU)
                 cam_w = seq_writer.topic_create(name="camera", ontology_type=CompressedImage)
 
                 for data in stream:
+                    # Wrap risky or unstable logic (e.g., image processing)
                     try:
-                        # Normal IMU injection
-                        imu_w.push(ontology_obj=data.imu)
-
-                        # Wrap risky or unstable logic (e.g., image processing)
-                        try:
-                            processed_img = risky_transformation(data.frame)
-                            cam_w.push(ontology_obj=processed_img)
-                        except Exception as topic_err:
-                            print(f"Camera failure: {topic_err}. Shutting down camera only.")
-                            # Manually close the failing topic to save prior data
-                            # and prevent the global context from seeing an exception.
-                            if not cam_w.finalized():
-                                cam_w.finalize(error=topic_err)
-
-                    except Exception as critical_err:
-                        # Let truly global/unrecoverable errors bubble up to seq_writer
-                        raise critical_err
+                        processed_img = risky_transformation(data.frame)
+                        cam_w.push(ontology_obj=processed_img)
+                    except Exception as topic_err:
+                        print(f"Camera failure: {topic_err}. Shutting down camera only.")
+                        # Manually close the failing topic to save prior data
+                        # and prevent the global context from seeing an exception.
+                        if not cam_w.finalized():
+                            cam_w.finalize(error=topic_err)
             ```
 
         ### Error Reporting

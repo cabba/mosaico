@@ -34,7 +34,7 @@ class Pressure(Serializable, HeaderMixin, VarianceMixin):
         with MosaicoClient.connect("localhost", 6726) as client:
             # Filter for pressure values within a specific range
             qresponse = client.query(
-                QueryOntologyCatalog(Pressure.Q.value.between(100000, 200000))
+                QueryOntologyCatalog(Pressure.Q.value.between([100000, 200000]))
             )
 
             # Inspect the response
@@ -46,7 +46,7 @@ class Pressure(Serializable, HeaderMixin, VarianceMixin):
 
             # Filter for a specific component value and extract the first and last occurrence times
             qresponse = client.query(
-                QueryOntologyCatalog(Pressure.Q.value.between(100000, 200000), include_timestamp_range=True)
+                QueryOntologyCatalog(Pressure.Q.value.between([100000, 200000]), include_timestamp_range=True)
             )
 
             # Inspect the response
@@ -92,7 +92,7 @@ class Pressure(Serializable, HeaderMixin, VarianceMixin):
         with MosaicoClient.connect("localhost", 6726) as client:
             # Filter for pressure values within a specific range
             qresponse = client.query(
-                QueryOntologyCatalog(Pressure.Q.value.between(100000, 200000))
+                QueryOntologyCatalog(Pressure.Q.value.between([100000, 200000]))
             )
 
             # Inspect the response
@@ -104,7 +104,7 @@ class Pressure(Serializable, HeaderMixin, VarianceMixin):
 
             # Filter for a specific component value and extract the first and last occurrence times
             qresponse = client.query(
-                QueryOntologyCatalog(Pressure.Q.value.between(100000, 200000), include_timestamp_range=True)
+                QueryOntologyCatalog(Pressure.Q.value.between([100000, 200000]), include_timestamp_range=True)
             )
 
             # Inspect the response

@@ -136,7 +136,7 @@ Once a topic is created, a `TopicWriter` is spawned to handle the actual transmi
 # and closes all connections and pools
 ```
 
-1. The metadata fields will be queryable via the [`Query` mechanism](./query.md). The mechanism allows creating query expressions like: `Topic.Q.user_metadata["interface.type"].eq("UART")`.
+1. The metadata fields will be queryable via the [`Query` mechanism](../query.md). The mechanism allows creating query expressions like: `Topic.Q.user_metadata["interface.type"].eq("UART")`.
     See also:
     * [`mosaicolabs.models.platform.Topic`][mosaicolabs.models.platform.Topic]
     * [`mosaicolabs.models.query.builders.QueryTopic`][mosaicolabs.models.query.builders.QueryTopic].
@@ -152,24 +152,71 @@ API Reference: [`mosaicolabs.handlers.TopicWriter`][mosaicolabs.handlers.TopicWr
 | **`finalized()`** | Returns True if the writer stream has been closed. |
 
 
-### Error Management
+### Resilient Data Ingestion & Error Management
 
-When recording data, the Mosaico SDK provides two distinct **Error Policies** to manage the lifecycle of a sequence if an exception occurs during the writing process. These policies are configured via the `WriterConfig` and determine whether Mosaico prioritizes **data integrity (clean state)** or **data recovery (partial state)**.
+Recording high-bandwidth sensor data in dynamic environments requires a tiered approach to error handling. While the Mosaico SDK provides automated recovery through **Error Policies**, these act as a "last line of defense". For robust production pipelines, you must implement **Defensive Ingestion Patterns** to prevent isolated failures from compromising your entire recording session.
+
+### Tier 1: *Last-Resort* Automated Error Policies
+
+Configured via `WriterConfig`, these policies dictate how the server handles a sequence if an unhandled exception bubbles up to the `SequenceWriter` context manager.
 
 #### 1. `OnErrorPolicy.Delete` (The "Clean Slate" Policy)
 
-This is the strictest policy, designed to prevent the platform from becoming cluttered with incomplete or corrupted datasets.
-
-* **Behavior**: If an error occurs within the `SequenceWriter` context, the SDK sends an `ABORT` signal to the server.
-* **Result**: The server immediately deletes the entire sequence and all associated topic data from storage.
-* **Best For**: Automated testing, CI/CD pipelines, or scenarios where a partial log is useless for analysis.
+* **Behavior**: If an error occurs, the SDK sends an `ABORT` signal to the server.
+* **Result**: The server immediately deletes the entire sequence and all associated topic data.
+* **Best For**: CI/CD pipelines, unit testing, or "Gold Dataset" generation where partial or corrupted logs are unacceptable.
 
 #### 2. `OnErrorPolicy.Report` (The "Recovery" Policy)
 
-This policy is designed for mission-critical recordings where even partial data is valuable for debugging or forensics.
+* **Behavior**: The SDK finalizes data that successfully reached the server and sends a `NOTIFY_CREATE` signal with error details.
+* **Result**: The sequence is preserved but remains in an **unlocked (pending) state**, allowing for forensic analysis.
+* **Best For**: Field tests and mission-critical logs where lead-up data is essential for debugging.
 
-* **Behavior**: If an error occurs, the SDK finalizes whatever data has successfully reached the server and sends a `NOTIFY_CREATE` signal with the error details.
-* **Result**: The sequence is preserved on the platform but remains in an **"unlocked" state**. This state allows the data to be read but also permits manual deletion later, which is otherwise forbidden for finalized, healthy sequences.
-* **Best For**: Field tests, long-running mission logs, or hardware-in-the-loop simulations where the root cause of a failure needs to be investigated using the data leading up to the crash.
+### Tier 2: Defensive Ingestion Patterns (The "Golden Rule")
 
-API Reference:[`mosaicolabs.enum.OnErrorPolicy`][mosaicolabs.enum.OnErrorPolicy]
+**The Golden Rule**: Always wrap data transformation and custom processing logic in local `try-except` blocks before calling `.push()`.
+
+The SDK cannot distinguish which specific topic failed within your custom code; it only knows that an exception occurred within the `SequenceWriter` block and will trigger the global Error Policy accordingly. Without local protection, a single failing data point will terminate the entire injection process.
+
+#### 1. Surgical Topic Finalization
+
+If a specific sensor fails or a transformation function bugs out, you can catch the error locally. This allows you to surgically close the failing topic while letting other healthy streams complete their job.
+
+* **Approach**: Catch the exception, call `finalize(error=e)` on the failing `TopicWriter`, and continue the loop.
+
+```python
+with client.sequence_create(name="resilient_mission") as seq_writer:
+    cam_writer = seq_writer.topic_create(name="camera", ontology_type=CompressedImage)
+
+    for data in sensor_source:
+
+        # Protect Risky Processing
+        try:
+            # Always protect conversion/processing before the push happens
+            processed_img = risky_image_transformation(data.raw_frame)
+            cam_writer.push(ontology_obj=processed_img)
+        except Exception as topic_e:
+            # Topic failure: Report and continue
+            print(f"Camera failure: {topic_e}. Continuing other topics.")
+            # Optionally finalize the topic to prevent further pushes
+            # e.g. if the topic is not critical for the mission
+            if not cam_writer.finalized():
+                cam_writer.finalize(error=topic_e) # Reports error to server
+
+```
+
+#### 2. Strategic Policy Selection
+
+Align your `OnErrorPolicy` with your operational environment to balance data integrity against recovery needs:
+
+| Scenario | Recommended Policy | Rationale |
+| --- | --- | --- |
+| **Edge/Field Tests** | `OnErrorPolicy.Report` | Forensic value: "Partial data is better than no data" for crash analysis. |
+| **Automated CI/CD** | `OnErrorPolicy.Delete` | Platform hygiene: Prevents cluttering the catalog with junk data from failed runs. |
+| **Ground Truth Generation** | `OnErrorPolicy.Delete` | Integrity: Ensures only 100% verified, complete sequences enter the database. |
+
+---
+
+### Summary of Resilience
+
+By implementing local error handling, you shift the `SequenceWriter` error policies from being the "default" failure mode to being a **last-resort recovery** for systemic issues (like total network failure). This ensures that minor software bugs do not result in the total loss of valuable multi-sensor datasets.

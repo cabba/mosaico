@@ -141,7 +141,7 @@ class SequenceHandler:
             logger.error(f"Action '{ACTION}' returned no response.")
             return None
 
-        sequence_model = Sequence.from_flight_info(
+        sequence_model = Sequence._from_flight_info(
             name=_stzd_sequence_name,
             metadata=seq_metadata,
             sys_info=act_resp,

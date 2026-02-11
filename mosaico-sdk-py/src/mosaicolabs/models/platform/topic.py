@@ -80,7 +80,7 @@ class Topic(PlatformBase):
 
     # --- Factory Method ---
     @classmethod
-    def from_flight_info(
+    def _from_flight_info(
         cls, sequence_name: str, name: str, metadata: Any, sys_info: Any
     ) -> "Topic":
         """
