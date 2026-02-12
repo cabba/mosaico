@@ -208,7 +208,7 @@ class Image(Serializable, HeaderMixin):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `Image.Q.format` | `String` | `.eq()`, `.match()` |
+    | `Image.Q.format` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python
@@ -328,7 +328,7 @@ class Image(Serializable, HeaderMixin):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `Image.Q.encoding` | `String` | `.eq()`, `.match()` |
+    | `Image.Q.encoding` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python
@@ -816,7 +816,7 @@ class CompressedImage(Serializable, HeaderMixin):
     ### Querying with the **`.Q` Proxy**
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `CompressedImage.Q.format` | `String` | `.eq()`, `.match()` |
+    | `CompressedImage.Q.format` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python

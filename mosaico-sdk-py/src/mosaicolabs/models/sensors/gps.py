@@ -554,7 +554,7 @@ class NMEASentence(Serializable, HeaderMixin):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `NMEASentence.Q.sentence` | `String` | `.eq()`, `.match()` |
+    | `NMEASentence.Q.sentence` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python

@@ -46,7 +46,7 @@ class HeaderMixin(BaseModel):
     | `<Model>.Q.header.seq` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `<Model>.Q.header.stamp.sec` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
     | `<Model>.Q.header.stamp.nanosec` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
-    | `<Model>.Q.header.frame_id` | `String` | `.eq()`, `.match()` |
+    | `<Model>.Q.header.frame_id` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Note: Universal Compatibility
         The `<Model>` placeholder represents any Mosaico ontology class (e.g., `IMU`, `GPS`, `Floating64`)

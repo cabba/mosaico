@@ -1288,7 +1288,7 @@ class Transform(
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `Transform.Q.target_frame_id` | `String` | `.eq()`, `.match()` |
+    | `Transform.Q.target_frame_id` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python

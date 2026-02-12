@@ -1,14 +1,15 @@
 # Sensors Models
 
 ::: mosaicolabs.models.sensors.IMU
-::: mosaicolabs.models.sensors.gps.GPSStatus
-::: mosaicolabs.models.sensors.gps.GPS
-::: mosaicolabs.models.sensors.magnetometer.Magnetometer
-::: mosaicolabs.models.sensors.pressure.Pressure
-::: mosaicolabs.models.sensors.range.Range
-::: mosaicolabs.models.sensors.temperature.Temperature
-::: mosaicolabs.models.sensors.robot.RobotJoint
-::: mosaicolabs.models.sensors.image.Image
-::: mosaicolabs.models.sensors.image.CompressedImage
-::: mosaicolabs.models.sensors.image.ImageFormat
-::: mosaicolabs.models.sensors.camera.CameraInfo
+::: mosaicolabs.models.sensors.GPSStatus
+::: mosaicolabs.models.sensors.GPS
+::: mosaicolabs.models.sensors.NMEASentence
+::: mosaicolabs.models.sensors.Magnetometer
+::: mosaicolabs.models.sensors.Pressure
+::: mosaicolabs.models.sensors.Range
+::: mosaicolabs.models.sensors.Temperature
+::: mosaicolabs.models.sensors.RobotJoint
+::: mosaicolabs.models.sensors.Image
+::: mosaicolabs.models.sensors.CompressedImage
+::: mosaicolabs.models.sensors.ImageFormat
+::: mosaicolabs.models.sensors.CameraInfo

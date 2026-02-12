@@ -40,7 +40,10 @@ class Time(BaseModel):
     )
 
     sec: int
+    """Seconds since the epoch (Unix time)."""
+
     nanosec: int
+    """Nanoseconds component within the current second, ranging from 0 to 999,999,999."""
 
     @field_validator("nanosec")
     @classmethod

@@ -598,7 +598,7 @@ class MotionState(
     ### Querying with the **`.Q` Proxy**
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `MotionState.Q.target_frame_id` | `String` | `.eq()`, `.match()` |
+    | `MotionState.Q.target_frame_id` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python

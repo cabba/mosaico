@@ -1301,7 +1301,7 @@ class String(Serializable, HeaderMixin):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `String.Q.data` | `String` | `.eq()`, `.match()` |
+    | `String.Q.data` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python
@@ -1401,7 +1401,7 @@ class LargeString(Serializable, HeaderMixin):
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `LargeString.Q.data` | `String` | `.eq()`, `.match()` |
+    | `LargeString.Q.data` | `String` | `.eq()`, `.neq()`, `.match()`, `.in_()` |
 
     Example:
         ```python

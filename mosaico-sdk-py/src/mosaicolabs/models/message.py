@@ -69,8 +69,13 @@ class Message(BaseModel):
 
     # Pydantic definitions
     timestamp_ns: int
+    """Middleware processing timestamp in nanoseconds (different from sensor acquisition time)."""
+
     data: Serializable
+    """The actual ontology data payload (e.g., an IMU or GPS instance)."""
+
     message_header: Optional[Header] = None
+    """Optional middleware-level header."""
 
     # Internal cache for efficient field separation during encoding
     _self_model_keys: set[str] = PrivateAttr(default_factory=set)

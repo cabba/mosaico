@@ -27,10 +27,11 @@ The [`DataFrameExtractor`][mosaicolabs.ml.DataFrameExtractor] is a specialized u
 * **Sparse Merging**: Creates a "sparse" DataFrame containing the union of all timestamps, using `NaN` for missing sensor readings at specific intervals.
 
 ### Quick Reference
+API Reference: [`mosaicolabs.ml.DataFrameExtractor`][mosaicolabs.ml.DataFrameExtractor]
 
 | Method | Description |
 | --- | --- |
-| **`to_pandas_chunks(topics, window_sec, ...)`** | The primary entry point for converting Mosaico data into windowed Pandas DataFrames. |
+| **[`to_pandas_chunks(topics, window_sec, ...)`][mosaicolabs.ml.DataFrameExtractor.to_pandas_chunks]** | The primary entry point for converting Mosaico data into windowed Pandas DataFrames. |
 
 This example demonstrates iterating through a sequence in 10-second tabular chunks.
 
@@ -115,14 +116,15 @@ Each policy defines a specific logic for how the transformer bridges temporal ga
 * **Best For**: Downsampling high-frequency data where a strict 1-to-1 relationship between windows and unique hardware events is required.
 
 ### Quick Reference
+API Reference: [`mosaicolabs.ml.SyncTransformer`][mosaicolabs.ml.SyncTransformer]
 
 | Method | Description |
 | --- | --- |
-| **`__init__`** | Initializes the transformer with a target frequency (`target_fps`) and a `SynchPolicy`. |
-| **`fit(X, y=None)`** | Captures the initial timestamp from the first chunk to align the grid and initialize state. |
-| **`transform(X)`** | Executes temporal resampling logic on a sparse chunk to produce a dense, grid-aligned DataFrame. |
-| **`fit_transform(X, y=None)`** | Chains the `fit` and `transform` operations. |
-| **`reset()`** | Clears internal temporal state and cached values to start a new session. |
+| **[`__init__`][mosaicolabs.ml.SyncTransformer]** | Initializes the transformer with a target frequency (`target_fps`) and a `SynchPolicy`. |
+| **[`fit(X, y=None)`][mosaicolabs.ml.SyncTransformer.fit]** | Captures the initial timestamp from the first chunk to align the grid and initialize state. |
+| **[`transform(X)`][mosaicolabs.ml.SyncTransformer.transform]** | Executes temporal resampling logic on a sparse chunk to produce a dense, grid-aligned DataFrame. |
+| **[`fit_transform(X, y=None)`][mosaicolabs.ml.SyncTransformer.fit_transform]** | Chains the `fit` and `transform` operations. |
+| **[`reset()`][mosaicolabs.ml.SyncTransformer.reset]** | Clears internal temporal state and cached values to start a new session. |
 
 ### Scikit-Learn Compatibility
 

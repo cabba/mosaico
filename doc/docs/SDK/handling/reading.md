@@ -40,25 +40,24 @@ with MosaicoClient.connect("localhost", 6726) as client:
 ```
 
 #### Quick Reference
-
 API Reference: [`mosaicolabs.handlers.SequenceHandler`][mosaicolabs.handlers.SequenceHandler].
 
 | Properties | Type | Description |
 | :--- | :--- | :--- |
-| **`name`** | `str` | Returns the unique sequence identifier. |
-| **`topics`** | `List[str]` | List of all available topic names in the sequence. |
-| **`user_metadata`** | `Dict[str, Any]` | Dictionary of tags attached during sequence creation. |
-| **`created_datetime`** | `datetime` | The datetime when the sequence was created. |
-| **`is_locked`** | `bool` | Returns `True` if the sequence is locked (i.e. actively being written to), `False` otherwise. |
-| **`total_size_bytes`** | `int` | The total physical storage footprint of the entity on the server in bytes. |
-| **`timestamp_ns_min`** | `Optional[int]`  | Return the lowest timestamp in nanoseconds, among all the topics. |
-| **`timestamp_ns_max`** | `Optional[int]` | Return the highest timestamp in nanoseconds, among all the topics. |
+| **[`name`][mosaicolabs.handlers.SequenceHandler.name]** | `str` | Returns the unique sequence identifier. |
+| **[`topics`][mosaicolabs.handlers.SequenceHandler.topics]** | `List[str]` | List of all available topic names in the sequence. |
+| **[`user_metadata`][mosaicolabs.handlers.SequenceHandler.user_metadata]** | `Dict[str, Any]` | Dictionary of tags attached during sequence creation. |
+| **[`created_datetime`][mosaicolabs.handlers.SequenceHandler.created_datetime]** | `datetime` | The datetime when the sequence was created. |
+| **[`is_locked`][mosaicolabs.handlers.SequenceHandler.is_locked]** | `bool` | Returns `True` if the sequence is locked (i.e. actively being written to), `False` otherwise. |
+| **[`total_size_bytes`][mosaicolabs.handlers.SequenceHandler.total_size_bytes]** | `int` | The total physical storage footprint of the entity on the server in bytes. |
+| **[`timestamp_ns_min`][mosaicolabs.handlers.SequenceHandler.timestamp_ns_min]** | `Optional[int]`  | Return the lowest timestamp in nanoseconds, among all the topics. |
+| **[`timestamp_ns_max`][mosaicolabs.handlers.SequenceHandler.timestamp_ns_max]** | `Optional[int]` | Return the highest timestamp in nanoseconds, among all the topics. |
 
 | Methods | Return Type | Description |
 | :--- | :--- | :--- |
-| **`get_topic_handler(topic_name)`** | `TopicHandler` | Returns a `TopicHandler` for a specific child topic. |
-| **`get_data_streamer(topics,start_timestamp_ns,end_timestamp_ns)`**| `SequenceDataStreamer` | Creates a unified, time-synchronized data stream. The method takes optional arguments to filter the interested topics and time bounds for limiting the stream to a specific window. |
-| **`close()`**| `None` | Closes the data streamer if active. |
+| **[`get_topic_handler(topic_name)`][mosaicolabs.handlers.SequenceHandler.get_topic_handler]** | `TopicHandler` | Returns a `TopicHandler` for a specific child topic. |
+| **[`get_data_streamer(topics,start_timestamp_ns,end_timestamp_ns)`][mosaicolabs.handlers.SequenceHandler.get_data_streamer]**| `SequenceDataStreamer` | Creates a unified, time-synchronized data stream. The method takes optional arguments to filter the interested topics and time bounds for limiting the stream to a specific window. |
+| **[`close()`][mosaicolabs.handlers.SequenceHandler.close]**| `None` | Closes the data streamer if active. |
 
 #### `TopicHandler`
 Represents a specific data channel within a sequence (e.g., a single IMU or Camera). It provides granular system info, such as the specific ontology model used and the data volume of that individual stream.
@@ -89,27 +88,26 @@ with MosaicoClient.connect("localhost", 6726) as client:
         top_handler.close()
 ```
 #### Quick Reference
-
 API Reference: [`mosaicolabs.handlers.TopicHandler`][mosaicolabs.handlers.TopicHandler].
 
 | Properties | Type | Description |
 | :--- | :--- | :--- |
-| **`name`** | `str` | Returns the unique topic identifier. |
-| **`sequence_name`** | `str` | Returns the unique parent sequence identifier. |
-| **`user_metadata`** | `Dict[str,Any]` | Dictionary of tags specific to this single topic. |
-| **`created_datetime`** | `datetime` | The datetime when the topic was created. |
-| **`is_locked`** | `bool` | Returns `True` if the resource is currently locked, `False` otherwise. |
-| **`chunks_number`** | `int` | The number of physical data chunks stored for this topic. |
-| **`ontology_tag`** | `str` | The ontology type identifier. |
-| **`serialization_format`** | `str` | The format used to serialize the topic data. |
-| **`total_size_bytes`** | `int` | The total physical storage footprint of the entity on the server in bytes. |
-| **`timestamp_ns_min`** | `Optional[int]` | Return the lowest timestamp in nanoseconds of this topic. |
-| **`timestamp_ns_max`** | `Optional[int]` | Return the highest timestamp in nanoseconds of this topic. |
+| **[`name`][mosaicolabs.handlers.TopicHandler.name]** | `str` | Returns the unique topic identifier. |
+| **[`sequence_name`][mosaicolabs.handlers.TopicHandler.sequence_name]** | `str` | Returns the unique parent sequence identifier. |
+| **[`user_metadata`][mosaicolabs.handlers.TopicHandler.user_metadata]** | `Dict[str,Any]` | Dictionary of tags specific to this single topic. |
+| **[`created_datetime`][mosaicolabs.handlers.TopicHandler.created_datetime]** | `datetime` | The datetime when the topic was created. |
+| **[`is_locked`][mosaicolabs.handlers.TopicHandler.is_locked]** | `bool` | Returns `True` if the resource is currently locked, `False` otherwise. |
+| **[`chunks_number`][mosaicolabs.handlers.TopicHandler.chunks_number]** | `int` | The number of physical data chunks stored for this topic. |
+| **[`ontology_tag`][mosaicolabs.handlers.TopicHandler.ontology_tag]** | `str` | The ontology type identifier. |
+| **[`serialization_format`][mosaicolabs.handlers.TopicHandler.serialization_format]** | `str` | The format used to serialize the topic data. |
+| **[`total_size_bytes`][mosaicolabs.handlers.TopicHandler.total_size_bytes]** | `int` | The total physical storage footprint of the entity on the server in bytes. |
+| **[`timestamp_ns_min`][mosaicolabs.handlers.TopicHandler.timestamp_ns_min]** | `Optional[int]` | Return the lowest timestamp in nanoseconds of this topic. |
+| **[`timestamp_ns_max`][mosaicolabs.handlers.TopicHandler.timestamp_ns_max]** | `Optional[int]` | Return the highest timestamp in nanoseconds of this topic. |
 
 | Methods | Return Type | Description |
 | :--- | :--- | :--- |
-| **`get_data_streamer(start_timestamp_ns,ebd_timestamp_ns)`**| `TopicDataStreamer` | Creates a direct stream for this topic's data. The method takes optional time bounds for limiting the stream to a specific window.|
-| **`close()`**| `None` | Closes the data streamer if active. |
+| **[`get_data_streamer(start_timestamp_ns,ebd_timestamp_ns)`][mosaicolabs.handlers.TopicHandler.get_data_streamer]**| `TopicDataStreamer` | Creates a direct stream for this topic's data. The method takes optional time bounds for limiting the stream to a specific window.|
+| **[`close()`][mosaicolabs.handlers.TopicHandler.close]**| `None` | Closes the data streamer if active. |
 
 
 ### Streamers: The Data Engines
@@ -158,13 +156,12 @@ with MosaicoClient.connect("localhost", 6726) as client:
 ```
 
 #### Quick Reference
-
 API Reference: [`mosaicolabs.handlers.SequenceDataStreamer`][mosaicolabs.handlers.SequenceDataStreamer].
 
 | Method | Return | Description |
 | :--- | :--- | :--- |
-| **`next_timestamp()`** | `Optional[int]` | **Look-ahead**: Peeks at the next available time without consuming it. |
-| **`close()`** | `None` | Shuts down the underlying network connections for all topics. |
+| **[`next_timestamp()`][mosaicolabs.handlers.SequenceDataStreamer.next_timestamp]** | `Optional[int]` | **Look-ahead**: Peeks at the next available time without consuming it. |
+| **[`close()`][mosaicolabs.handlers.SequenceDataStreamer.close]** | `None` | Shuts down the underlying network connections for all topics. |
 
 #### A more advanced pattern
 
@@ -271,13 +268,12 @@ with MosaicoClient.connect("localhost", 6726) as client:
 ```
 
 #### Quick Reference
-
 API Reference: [`mosaicolabs.handlers.TopicDataStreamer`][mosaicolabs.handlers.TopicDataStreamer].
 
 | Method | Return | Description |
 | :--- | :--- | :--- |
-| **`next_timestamp()`** | `Optional[int]` | **Look-ahead**: Peeks at the next message's time. |
-| **`name()`** | `str` | Returns the canonical name of the stream (e.g., `/sensors/imu`). |
-| **`ontology_tag()`** | `str` | Returns the ontology tag associated with this streamer. |
-| **`close()`** | `None` | Shuts down the underlying network connections for all topics. |
+| **[`next_timestamp()`][mosaicolabs.handlers.TopicDataStreamer.next_timestamp]** | `Optional[int]` | **Look-ahead**: Peeks at the next message's time. |
+| **[`name()`][mosaicolabs.handlers.TopicDataStreamer.name]** | `str` | Returns the canonical name of the stream (e.g., `/sensors/imu`). |
+| **[`ontology_tag()`][mosaicolabs.handlers.TopicDataStreamer.ontology_tag]** | `str` | Returns the ontology tag associated with this streamer. |
+| **[`close()`][mosaicolabs.handlers.TopicDataStreamer.close]** | `None` | Shuts down the underlying network connections for all topics. |
 

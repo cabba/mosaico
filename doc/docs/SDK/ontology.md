@@ -22,7 +22,52 @@ The ontology is designed to solve the "generic data" problem in robotics by ensu
 3. **Queryable**: Injects a fluent API (`.Q`) into every class, allowing you to filter databases based on physical values (e.g., `IMU.Q.acceleration.x > 6.0`).
 4. **Middleware-Agnostic**: Acts as an abstraction layer so that your analysis code doesn't care if the data originally came from ROS, a simulator, or a custom logger.
 
-## The Building Blocks
+## Available Ontology Classes
+
+The Mosaico SDK provides a comprehensive library of models that transform raw binary streams into validated, queryable Python objects. These are grouped by their physical and logical application below.
+
+### Base Data Models
+API Reference: [Base Data Types](./API_reference/models/data_types.md)
+
+These models serve as timestamped, metadata-aware wrappers for standard primitives. They allow simple diagnostic or scalar values to be treated as first-class members of the platform.
+
+| Module | Classes | Purpose |
+| --- | --- | --- |
+| **Primitives** | [`String`][mosaicolabs.models.data.base_types.String], [`LargeString`][mosaicolabs.models.data.base_types.LargeString] | UTF-8 text data for logs or status messages. |
+| **Booleans** | [`Boolean`][mosaicolabs.models.data.base_types.Boolean] | Logic flags (True/False). |
+| **Signed Integers** | [`Integer8`][mosaicolabs.models.data.base_types.Integer8], [`Integer16`][mosaicolabs.models.data.base_types.Integer16], [`Integer32`][mosaicolabs.models.data.base_types.Integer32], [`Integer64`][mosaicolabs.models.data.base_types.Integer64] | Signed whole numbers of varying bit-depth. |
+| **Unsigned Integers** | [`Unsigned8`][mosaicolabs.models.data.base_types.Unsigned8], [`Unsigned16`][mosaicolabs.models.data.base_types.Unsigned16], [`Unsigned32`][mosaicolabs.models.data.base_types.Unsigned32], [`Unsigned64`][mosaicolabs.models.data.base_types.Unsigned64] | Non-negative integers for counters or IDs. |
+| **Floating Point** | [`Floating16`][mosaicolabs.models.data.base_types.Floating16], [`Floating32`][mosaicolabs.models.data.base_types.Floating32], [`Floating64`][mosaicolabs.models.data.base_types.Floating64] | Real numbers for high-precision physical values. |
+
+### Geometry & Kinematics Models
+API Reference: [Geometry Models](./API_reference/models/geometry.md)
+
+These structures define spatial relationships and the movement states of objects in 2D or 3D coordinate frames.
+
+| Module | Classes | Purpose |
+| --- | --- | --- |
+| **Points & Vectors** | [`Vector2d/3d/4d`][mosaicolabs.models.data.geometry.Vector2d], [`Point2d/3d`][mosaicolabs.models.data.geometry.Point2d] | Fundamental spatial directions and locations. |
+| **Rotations** | [`Quaternion`][mosaicolabs.models.data.geometry.Quaternion] | Compact, singularity-free 3D orientation (). |
+| **Spatial State** | [`Pose`][mosaicolabs.models.data.geometry.Pose], [`Transform`][mosaicolabs.models.data.geometry.Transform] | Absolute positions or relative coordinate frame shifts. |
+| **Motion** | [`Velocity`][mosaicolabs.models.data.kinematics.Velocity], [`Acceleration`][mosaicolabs.models.data.kinematics.Acceleration] | Linear and angular movement rates (Twists and Accels). |
+| **Aggregated State** | [`MotionState`][mosaicolabs.models.data.kinematics.MotionState] | An atomic snapshot combining Pose, Velocity, and Acceleration. |
+
+### Sensor Models
+API Reference: [Sensor Models](./API_reference/models/sensors.md)
+
+High-level models representing physical hardware devices and their processed outputs.
+
+| Module | Classes | Purpose |
+| --- | --- | --- |
+| **Inertial** | [`IMU`][mosaicolabs.models.sensors.IMU] | 6-DOF inertial data: linear acceleration and angular velocity. |
+| **Navigation** | [`GPS`][mosaicolabs.models.sensors.GPS], [`GPSStatus`][mosaicolabs.models.sensors.GPSStatus], [`NMEASentence`][mosaicolabs.models.sensors.NMEASentence] | Geodetic fixes (WGS 84), signal quality, and raw NMEA strings. |
+| **Vision** | [`Image`][mosaicolabs.models.sensors.Image], [`CompressedImage`][mosaicolabs.models.sensors.CompressedImage], [`CameraInfo`][mosaicolabs.models.sensors.CameraInfo], [`ROI`][mosaicolabs.models.data.ROI] | Raw pixels, encoded streams (JPEG/H264), calibration, and regions of interest. |
+| **Environment** | [`Temperature`][mosaicolabs.models.sensors.Temperature], [`Pressure`][mosaicolabs.models.sensors.Pressure], [`Range`][mosaicolabs.models.sensors.Range] | Thermal readings (K), pressure (Pa), and distance intervals (m). |
+| **Dynamics** | [`ForceTorque`][mosaicolabs.models.data.dynamics.ForceTorque] | 3D force and torque vectors for load sensing. |
+| **Magnetic** | [`Magnetometer`][mosaicolabs.models.sensors.Magnetometer] | Magnetic field vectors measured in microTesla (). |
+| **Robotics** | [`RobotJoint`][mosaicolabs.models.sensors.RobotJoint] | States (position, velocity, effort) for index-aligned actuator arrays. |
+
+## Architecture
 
 The ontology architecture relies on three primary abstractions: the **Factory** (`Serializable`), the **Envelope** (`Message`) and the **Mixins**
 
@@ -44,9 +89,11 @@ If missing, it raises an error at definition time (import time), preventing runt
 4.  **Injects Query Proxy:** It dynamically adds a `.Q` attribute to the class, enabling the fluent query syntax (e.g., `MyCustomSensor.Q.voltage > 12.0`).
 
 #### Quick Reference
+API Reference: [`mosaicolabs.models.Serializable`][mosaicolabs.models.Serializable]
+
 | Method | Return | Description |
 | :--- | :--- | :--- |
-| **`ontology_tag()`** | `str` | Returns the unique string identifier for a class or instance. |
+| **[`ontology_tag()`][mosaicolabs.models.Serializable.ontology_tag]** | `str` | Returns the unique string identifier for a class or instance. |
 
 
 ### 2. `Message` (The Envelope)
@@ -67,16 +114,19 @@ temp_msg = Message(
     )
 )
 ```
+
 #### Quick Reference
+API Reference: [`mosaicolabs.models.Message`][mosaicolabs.models.Message]
+
 | Field/Method | Type/Return | Description |
 | :--- | :--- | :--- |
-| **`timestamp_ns`** | `int` | Middleware processing timestamp in nanoseconds (different from sensor acquisition time). |
-| **`data`** | `Serializable` | The polymorphic payload (e.g., an IMU object). |
-| **`message_header`** | `Optional[Header]` | Middleware-level header. |
-| **`get_data()`** | `Serializable` | A type-safe accessor that returns the payload bound to the specified ontology model. |
-| **`ontology_type()`** | `Type[Serializable]` | Retrieves the Python class type of the payload stored in the `data` field. |
-| **`ontology_tag()`** | `str` | Returns the unique string identifier (tag) for the payload (e.g., `"imu"`). |
-| **`from_dataframe_row()`** | `Message` | **(Static)** Reconstructs a full `Message` object from a flattened row produced by the [`DataFrameExtractor`](./bridges/ml.md#from-sequences-to-dataframes).
+| **[`timestamp_ns`][mosaicolabs.models.Message.timestamp_ns]** | `int` | Middleware processing timestamp in nanoseconds (different from sensor acquisition time). |
+| **[`data`][mosaicolabs.models.Message.data]** | `Serializable` | The polymorphic payload (e.g., an IMU object). |
+| **[`message_header`][mosaicolabs.models.Message.message_header]** | `Optional[Header]` | Middleware-level header. |
+| **[`get_data()`][mosaicolabs.models.Message.get_data]** | `Serializable` | A type-safe accessor that returns the payload bound to the specified ontology model. |
+| **[`ontology_type()`][mosaicolabs.models.Message.ontology_type]** | `Type[Serializable]` | Retrieves the Python class type of the payload stored in the `data` field. |
+| **[`ontology_tag()`][mosaicolabs.models.Message.ontology_tag]** | `str` | Returns the unique string identifier (tag) for the payload (e.g., `"imu"`). |
+| **[`from_dataframe_row()`][mosaicolabs.models.Message.from_dataframe_row]** | `Message` | **(Static)** Reconstructs a full `Message` object from a flattened row produced by the [`DataFrameExtractor`](./bridges/ml.md#from-sequences-to-dataframes).
 
 While logically a `Message` contains a `data` object (e.g., an instance of an Ontology type), physically on the wire (PyArrow/Parquet), the fields are **flattened**.
 
@@ -91,32 +141,59 @@ This ensures zero-overhead access to nested data during queries while maintainin
 
 Mosaico uses **Mixins** to inject standard fields across different data types, ensuring a consistent interface.
 Almost every class in the ontology, from high-level sensors down to elementary data primitives like `Vector3d` or `Float32`, 
-inherits from two Mixin classes, which inject standard fields into data models via composition, ensuring consistency across different sensor types:
+inherits from two Mixin classes, which inject standard fields into data models via composition, ensuring consistency across different sensor types.
+The integration of mixins into the Mosaico Data Ontology enables a flexible dual-usage pattern, **Standalone Messages** and **Embedded Fields**, 
+which will be detailed later and allow base geometric types to serve as either independent data streams or granular components of complex sensor models.
 
-* **`HeaderMixin`**: Injects a standard (Optional) `header` containing a sequence ID, a frame ID (e.g., `"base_link"`), and a high-precision acquisition timestamp (`stamp`).
+#### `HeaderMixin`
+Injects a standard (Optional) `header` containing a sequence ID, a frame ID (e.g., `"base_link"`), and a high-precision acquisition timestamp (`stamp`).
 
-    | Field | Type | Description |
-    | :--- | :--- | :--- |
-    | **`stamp`** | `Time` | Time of data acquisition. |
-    | **`frame_id`** | `str` | Coordinate frame ID. |
-    | **`seq`** | `Optional[int]` | Sequence ID. Legacy field. |
+```python
+class MySensor(Serializable, HeaderMixin):
+    # Injects a header with stamp, frame_id, and seq fields
+    ...
+```
 
-* **`CovarianceMixin`**: Injects multidimensional uncertainty fields, typically used for flattened covariance matrices in sensor fusion applications.
+##### Quick Reference
+API Reference: [`mosaicolabs.models.mixins.HeaderMixin`][mosaicolabs.models.mixins.HeaderMixin]
 
-    | Field | Type | Description |
-    | :--- | :--- | :--- |
-    | **`covariance`** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
-    | **`covariance_type`** | `Optional[int]` | Enum integer representing the covariance parameterization. |
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| **[`header`][mosaicolabs.models.HeaderMixin.header]** | [`Header`][mosaicolabs.models.Header] | Header containing the timestamp, frame ID, and sequence number. |
 
-* **`VarianceMixin`**: Injects monodimensional uncertainty fields, useful for sensors with 1-dimensional uncertain data (like `Temperature` or `Pressure`).
+#### `CovarianceMixin`
+Injects multidimensional uncertainty fields, typically used for flattened covariance matrices in sensor fusion applications.
 
-    | Field | Type | Description |
-    | :--- | :--- | :--- |
-    | **`variance`** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
-    | **`variance_type`** | `Optional[int]` | Enum integer representing the covariance parameterization. |
+```python
+class MySensor(Serializable, CovarianceMixin):
+    # Injects a covariance matrix with covariance and covariance_type fields
+    ...
+```
 
-The integration of **`HeaderMixin`** and **`Covariance/VarianceMixin`** into the Mosaico Data Ontology enables a flexible dual-usage pattern: **Standalone Messages** and **Embedded Fields**. 
-This design ensures that base geometric types can serve as either independent data streams or granular components of complex sensor models.
+##### Quick Reference
+API Reference: [`mosaicolabs.models.mixins.CovarianceMixin`][mosaicolabs.models.mixins.CovarianceMixin]
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| **[`covariance`][mosaicolabs.models.mixins.CovarianceMixin.covariance]** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
+| **[`covariance_type`][mosaicolabs.models.mixins.CovarianceMixin.covariance_type]** | `Optional[int]` | Enum integer representing the covariance parameterization. |
+
+#### `VarianceMixin`
+Injects monodimensional uncertainty fields, useful for sensors with 1-dimensional uncertain data (like `Temperature` or `Pressure`).
+
+```python
+class MySensor(Serializable, VarianceMixin):
+    # Injects a variance with variance and variance_type fields
+    ...
+```
+
+##### Quick Reference
+API Reference: [`mosaicolabs.models.mixins.VarianceMixin`][mosaicolabs.models.mixins.VarianceMixin]
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| **[`variance`][mosaicolabs.models.mixins.VarianceMixin.variance]** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
+| **[`variance_type`][mosaicolabs.models.mixins.VarianceMixin.variance_type]** | `Optional[int]` | Enum integer representing the covariance parameterization. |
 
 #### Standalone Usage
 
@@ -148,7 +225,10 @@ error_msg = String(
 log_writer.push(message=Message(timestamp_ns=ts, data=error_msg))
 ```
 
-1. The `push` command will be covered in the documentation of the Writers 
+1. The `push` command will be covered in the documentation of the [Writers](./handling/writing.md#the-data-engine-topicwriter)
+    API Reference:
+    * [`mosaicolabs.handlers.SequenceWriter`][mosaicolabs.handlers.SequenceWriter]
+    * [`mosaicolabs.handlers.TopicWriter`][mosaicolabs.handlers.TopicWriter]
 
 #### Embedded Usage
 
@@ -182,6 +262,69 @@ imu_msg = IMU(
 imu_writer.push(imu_msg)
 
 ```
+
+
+## Querying Data Ontology with the [Query (`.Q`) Proxy](./query.md)
+
+The Mosaico SDK allows you to perform deep discovery directly on the physical content of your sensor streams. Every class inheriting from [`Serializable`][mosaicolabs.models.Serializable], including standard sensors, geometric primitives, and custom user models, is automatically injected with a static **`.Q` proxy** attribute.
+
+This proxy acts as a type-safe bridge between your Python data models and the platform's search engine, enabling you to construct complex filters using standard Python dot notation.
+
+### How the Proxy Works
+
+The `.Q` proxy recursively inspects the model’s schema to expose every queryable field path. It identifies the data type of each field and provides only the operators valid for that type (e.g., numeric comparisons for acceleration, substring matches for frame IDs).
+
+* **Direct Field Access**: Filter based on primary values, such as `Temperature.Q.value.gt(25.0)`.
+* **Nested Navigation**: Traverse complex, embedded structures. For example, in the [`GPS`][mosaicolabs.models.sensors.GPS] model, you can drill down into the status sub-field: `GPS.Q.status.satellites.geq(8)`.
+* **Mixin Integration**: Fields inherited from mixins are automatically included in the proxy. This allows you to query standard metadata (from `HeaderMixin`) or uncertainty metrics (from `VarianceMixin` or `CovarianceMixin`) across any model.
+
+### Queryability Examples
+
+The following table illustrates how the proxy flattens complex hierarchies into queryable paths:
+
+| Type Field Path | Proxy Field Path | Source Type | Queryable Type | Supported Operators |
+| --- | --- | --- | --- | --- |
+| `IMU.acceleration.x` | `IMU.Q.acceleration.x` | `float` | **Numeric** | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+| `GPS.status.hdop` | `GPS.Q.status.hdop` | `float` | **Numeric** | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+| `IMU.header.frame_id` | `IMU.Q.header.frame_id` | `str` | **String** | `.eq()`, `.neq()`, `.match()`, `.in_()` |
+| `GPS.covariance_type` | `GPS.Q.covariance_type` | `int` | **Numeric** | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+
+### Practical Usage
+
+To execute these filters, pass the expressions generated by the proxy to the [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] builder.
+
+```python
+from mosaicolabs import MosaicoClient, IMU, GPS, QueryOntologyCatalog
+
+with MosaicoClient.connect("localhost", 6726) as client:
+    # orchestrate a query filtering by physical thresholds AND metadata
+    qresponse = client.query(
+        QueryOntologyCatalog(include_timestamp_range=True) # Ask for the start/end timestamps of occurrences
+        .with_expression(IMU.Q.acceleration.z.gt(15.0))
+        .with_expression(GPS.Q.status.service.eq(2))
+    )
+
+    # The server returns a QueryResponse grouped by Sequence for structured data management
+    if qresponse is not None:
+        for item in qresponse:
+            # 'item.sequence' contains the name for the matched sequence
+            print(f"Sequence: {item.sequence.name}") 
+            
+            # 'item.topics' contains only the topics and time-segments 
+            # that satisfied the QueryOntologyCatalog criteria
+            for topic in item.topics:
+                # Access high-precision timestamps for the data segments found
+                start, end = topic.timestamp_range.start, topic.timestamp_range.end
+                print(f"  Topic: {topic.name} | Match Window: {start} to {end}")
+```
+
+For a comprehensive list of all supported operators and advanced filtering strategies (such as query chaining), see the **[Full Query Documentation](./query.md)** and the Ontology types SDK Reference in the **API Reference**:
+
+* [Base Data Models](./API_reference/models/data_types.md)
+* [Sensors Models](./API_reference/models/sensors.md)
+* [Geometry Models](./API_reference/models/geometry.md)
+* [Platform Models](./API_reference/models/platform.md)
+
 ## Customizing the Ontology
 
 The Mosaico SDK is built for extensibility, allowing you to define domain-specific data structures that can be registered to the platform and live alongside standard types.
@@ -205,6 +348,8 @@ You must define a class-level `__msco_pyarrow_struct__` using `pyarrow.struct`. 
 #### 2.1 Serialization Format Optimization
 
 You can optimize remote server performance by overriding the `__serialization_format__` attribute. This controls how the server compresses and organizes your data.
+
+API Reference: [`mosaicolabs.enum.SerializationFormat`][mosaicolabs.enum.SerializationFormat]
 
 | Format | Identifier | Use Case Recommendation |
 | --- | --- | --- |
@@ -269,32 +414,4 @@ meas = EnvironmentSensor(
   ![Ontology customization example](../assets/ontology_customization.png)
   <figcaption>Schema for defining a custom ontology model.</figcaption>
 </figure>
-
-
-
-### Available Ontology Classes
-
-The following classes are categorized into base geometric building blocks and high-level sensor types:
-
-#### Base & Geometric Types
-
-| Module | Classes | Purpose |
-| --- | --- | --- |
-| **Base Types** | `String`, `LargeString`, `Boolean`, `Integer8/16/32/64`, `Unsigned8/16/32/64`, `Floating16/32/64` | Timestamped wrappers for Python primitives. |
-| **Geometry** | `Vector2d/3d/4d`, `Point2d/3d`, `Quaternion` | Fundamental spatial components. |
-| **Spatial** | `Transform`, `Pose` | Spatial relationships and object positions. |
-| **Vision** | `ROI` | Region of Interest in image coordinates. |
-
-#### Sensor & Kinematic Types
-
-| Module | Classes | Purpose |
-| --- | --- | --- |
-| **Kinematics** | `Velocity`, `Acceleration`, `MotionState` | Movement snapshots (linear and angular). |
-| **Inertial** | `IMU` | Linear acceleration () and angular velocity (). |
-| **Navigation** | `GPS`, `GPSStatus`, `NMEASentence` | Satellite positioning and raw receiver strings. |
-| **Environment** | `Temperature`, `Pressure`, `Range` | Environmental and distances.|
-| **Vision** | `Image`, `CompressedImage`, `CameraInfo` | Raw pixels, compressed blobs (JPEG/PNG), and calibration info. |
-| **Dynamics** | `ForceTorque` | 3D force () and torque () vectors. |
-| **Robotics** | `RobotJoint` | Names, positions, and efforts of robot joints. |
-| **Magnetic** | `Magnetometer` | Magnetic field vectors in microTesla (). |
 
