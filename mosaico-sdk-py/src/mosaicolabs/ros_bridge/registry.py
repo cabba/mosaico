@@ -28,21 +28,15 @@ logger = get_logger(__name__)
 
 class ROSTypeRegistry:
     """
-    A singleton registry for managing custom ROS message definitions.
+    A context-aware singleton registry for custom ROS message definitions.
 
-    It allows users to register `.msg` files or raw definition strings, either globally
-    or scoped to a specific ROS distribution. This ensures that the `ROSDataLoader`
-    can deserialize proprietary or non-standard message types.
+    Because ROS message definitions (`.msg`) differ across distributions (e.g., Noetic vs. Humble),
+    this registry employs a "Profile" system (Stores) to manage version-specific schemas and
+    proprietary data types.
 
-    **Structure:**
-    The internal storage is a nested dictionary:
-    ```python
-    {
-        "GLOBAL": { "pkg/msg/Type": "def..." },
-        "ros1_noetic": { "pkg/msg/Type": "def_v1..." },
-        "ros2_foxy": { "pkg/msg/Type": "def_v2..." }
-    }
-    ```
+    Structure:
+        - GLOBAL Profile: Shared definitions applied to all loaders.
+        - Scoped Profiles: Definitions specific to a distribution (e.g., Stores.ROS2_HUMBLE).
     """
 
     # Internal storage.
@@ -60,14 +54,29 @@ class ROSTypeRegistry:
         """
         Registers a single custom message type.
 
+        Example:
+            ```python
+            # Register a message type from a file
+            ROSTypeRegistry.register("my_pkg/msg/Battery", "path/to/Battery.msg", store=Stores.ROS2_HUMBLE)
+
+            # Register a message type from a string
+            msg_definition = \"""
+                uint32 id
+                string status
+                float64 voltage
+                \"""
+
+            ROSTypeRegistry.register(
+                msg_type="custom_pkg/msg/PowerInfo",
+                source=msg_definition
+            )
+            ```
+
         Args:
-            msg_type (str): The full ROS type name (e.g., "my_robot_msgs/msg/Status").
-            source (Union[str, Path]): The definition source. Can be:
-                - A `Path` object pointing to a `.msg` file.
-                - A `str` containing the raw message definition text.
-            store (Optional[Union[Stores, str]]): The scope of this definition.
-                - `None` (Default): Registers as **GLOBAL**. Applies to all loaders.
-                - `Stores.ROS2_FOXY` (or similar): Registers only for loaders using this specific store.
+            msg_type: The full ROS type name (e.g., "my_pkg/msg/Battery").
+            source: A Path to a .msg file or the raw definition string.
+            store: The target ROS distribution scope. If None, it is registered globally.
+
 
         Notes:
             Overwrites existing definition if the same type is registered twice in the same scope.
@@ -106,6 +115,15 @@ class ROSTypeRegistry:
 
         This helper infers the message type name based on the filename and the provided package name.
         e.g., `dir/Status.msg` -> `{package_name}/msg/Status`.
+
+        Example:
+            ```python
+            ROSTypeRegistry.register_directory(
+                "my_robot_msgs",
+                "workspace/src/my_robot_msgs/msg",
+                store=Stores.ROS2_HUMBLE,
+            )
+            ```
 
         Args:
             package_name (str): The ROS package name to prefix (e.g., "my_robot_msgs").

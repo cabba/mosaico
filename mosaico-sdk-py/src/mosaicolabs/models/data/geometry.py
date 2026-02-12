@@ -1448,19 +1448,19 @@ class Pose(
         ```
     """
 
-    rotation: Quaternion
+    orientation: Quaternion
     """
-    The rotation quaternion component (x, y, z, w).
+    The orientation quaternion component (x, y, z, w).
 
     ### Querying with the **`.Q` Proxy**
-    Rotation components are queryable through the `rotation` field prefix.
+    Rotation components are queryable through the `orientation` field prefix.
 
     | Field Access Path | Queryable Type | Supported Operators |
     | :--- | :--- | :--- |
-    | `Pose.Q.rotation.x` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
-    | `Pose.Q.rotation.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
-    | `Pose.Q.rotation.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
-    | `Pose.Q.rotation.w` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.orientation.x` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.orientation.y` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.orientation.z` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
+    | `Pose.Q.orientation.w` | `Numeric` | `.eq()`, `.neq()`, `.lt()`, `.gt()`, `.leq()`, `.geq()`, `.in_()`, `.between()` |
 
     Example:
         ```python
@@ -1469,7 +1469,7 @@ class Pose(
         with MosaicoClient.connect("localhost", 6726) as client:
             # Filter for specific orientation states
             qresponse = client.query(
-                QueryOntologyCatalog(Pose.Q.rotation.w.geq(0.707))
+                QueryOntologyCatalog(Pose.Q.orientation.w.geq(0.707))
             )
 
             # Inspect the response
@@ -1482,8 +1482,8 @@ class Pose(
             # Filter for a specific component value and extract the first and last occurrence times
             qresponse = client.query(
                 QueryOntologyCatalog(include_timestamp_range=True)
-                .with_expression(Pose.Q.rotation.w.geq(0.707))
-                .with_expression(Pose.Q.rotation.x.lt(0.1))
+                .with_expression(Pose.Q.orientation.w.geq(0.707))
+                .with_expression(Pose.Q.orientation.x.lt(0.1))
             )
 
             # Inspect the response

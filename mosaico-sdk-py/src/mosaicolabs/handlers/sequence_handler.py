@@ -366,11 +366,8 @@ class SequenceHandler:
                     if top_handler:
                         print(f"Sequence: {top_handler.sequence_name}")
                         print(f"\t|Topic: {top_handler.sequence_name}:{top_handler.name}")
-                        # Inspect the stored user metadata
-                        print(f"\t|Metadata: {top_handler.user_metadata}")
-                        # Inspect the timestamps spanned by the topic data-stream (without downloading data)
+                        print(f"\t|User metadata: {top_handler.user_metadata}")
                         print(f"\t|Timestamp span: {top_handler.timestamp_ns_min} - {top_handler.timestamp_ns_max}")
-                        # Inspect the system level info
                         print(f"\t|Created {top_handler.created_datetime}")
                         print(f"\t|Size (MB) {top_handler.total_size_bytes/(1024*1024)}")
 

@@ -229,16 +229,7 @@ with MosaicoClient.connect("localhost", 6726) as client:
         print(f"Topics: {[topic.name for topic in item.topics]}")
 ```
 
-##### Quick reference
 API Reference: [`mosaicolabs.models.query.builders.QuerySequence`][mosaicolabs.models.query.builders.QuerySequence].
-
-| Methods | Return | Target Resource |
-| :--- | :--- | :--- |
-| **[`__init__(*expressions)`][mosaicolabs.models.query.builders.QuerySequence]** | `None` | Initializes the query with an optional set of initial expressions (via the `.Q` proxy on the [`Sequence`][mosaicolabs.models.platform.Sequence] model). |
-| **[`with_name(name)`][mosaicolabs.models.query.builders.QuerySequence.with_name]** | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] | Add a filter for the sequence exact 'name' field. |
-| **[`with_name_match(name)`][mosaicolabs.models.query.builders.QuerySequence.with_name_match]** | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence]| Add a filter for the partial sequence 'name' field (subsring). |
-| **[`with_created_timestamp(time_start, time_end)`][mosaicolabs.models.query.builders.QuerySequence.with_created_timestamp]** | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence]| Add a filter for the 'creation_unix_timestamp' field. |
-| **[`with_expression(expr)`][mosaicolabs.models.query.builders.QuerySequence.with_expression]** | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] | Adds a new expression to the query (via the `.Q` proxy on the [`Sequence`][mosaicolabs.models.platform.Sequence] model). |
 
 #### [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] (Topic Layer)
 
@@ -266,17 +257,7 @@ with MosaicoClient.connect("localhost", 6726) as client:
             print(f"Topics: {[topic.name for topic in item.topics]}")
 ```
 
-##### Quick reference
 API Reference: [`mosaicolabs.models.query.builders.QueryTopic`][mosaicolabs.models.query.builders.QueryTopic].
-
-| Methods | Return | Target Resource |
-| :--- | :--- | :--- |
-| **[`__init__(*expressions)`][mosaicolabs.models.query.builders.QueryTopic]** | `None` | Initializes the query with an optional set of initial expressions (via the `.Q` proxy on the [`Topic`][mosaicolabs.models.platform.Topic] model). |
-| **[`with_name(name)`][mosaicolabs.models.query.builders.QueryTopic.with_name]** | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] | Add a filter for the topic exact 'name' field. |
-| **[`with_name_match(name)`][mosaicolabs.models.query.builders.QueryTopic.with_name_match]** | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]| Add a filter for the partial topic 'name' field (subsring). |
-| **[`with_ontology_tag(tag)`][mosaicolabs.models.query.builders.QueryTopic.with_ontology_tag]** | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]| Add a filter for the 'ontology_tag' supported by the topic. |
-| **[`with_created_timestamp(time_start, time_end)`][mosaicolabs.models.query.builders.QueryTopic.with_created_timestamp]** | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]| Add a filter for the 'creation_unix_timestamp' field. |
-| **[`with_expression(expr)`][mosaicolabs.models.query.builders.QueryTopic.with_expression]** | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] | Adds a new expression to the query (via the `.Q` proxy on the [`Topic`][mosaicolabs.models.platform.Topic] model). |
 
 #### [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] (Ontology Catalog Layer)
 
@@ -321,15 +302,8 @@ from mosaicolabs import MosaicoClient, QueryOntologyCatalog, GPS, IMU
                             for topic in item.topics}}")
 ```
 
-##### Quick reference
 API Reference: [`mosaicolabs.models.query.builders.QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog].
 
-| Methods |  Return | Target Resource |
-| :--- | :--- | :--- |
-| **[`__init__(*expressions,include_timestamp_range)`][mosaicolabs.models.query.builders.QueryOntologyCatalog]** | `None`| Initializes the query with an optional set of initial expressions (via the `.Q` proxy on any [`Serializable`][mosaicolabs.models.Serializable] model, e.g. [`IMU`][mosaicolabs.models.sensors.IMU--querying-with-the-q-proxy]). If `include_timestamp_range==True`, the server returns the start and end timestamps of the queried condition.|
-| **[`with_expression(expr)`][mosaicolabs.models.query.builders.QueryOntologyCatalog.with_expression]** | [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] | Adds a new expression to the query (via the `.Q` proxy on any [`Serializable`][mosaicolabs.models.Serializable] model, e.g. [`IMU`][mosaicolabs.models.sensors.IMU--querying-with-the-q-proxy]). |
-
----
 
 The Mosaico Query Module offers two distinct paths for defining filters,  **Convenience Methods** and **Generic Expression Method**, both of which support **method chaining** to compose multiple criteria into a single query using a logical **AND**.
 

@@ -63,16 +63,7 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
 1. The metadata fields will be queryable via the [`Query` mechanism](../query.md). The mechanism allows creating queries like: `Sequence.Q.user_metadata["vehicle.software_stack.planning"].match("plan-4.")`
 
-#### Quick Reference
 API Reference: [`mosaicolabs.handlers.SequenceWriter`][mosaicolabs.handlers.SequenceWriter].
-
-| Method | Return | Description |
-| :--- | :--- | :--- |
-| **[`topic_create(topic_name, metadata, ontology_type)`][mosaicolabs.handlers.SequenceWriter.topic_create]** | [`Optional[TopicWriter]`][mosaicolabs.handlers.TopicWriter] | Registers a new topic and returns a `TopicWriter`. |
-| **[`get_topic_writer(topic_name)`][mosaicolabs.handlers.SequenceWriter.get_topic_writer]** | [`Optional[TopicWriter]`][mosaicolabs.handlers.TopicWriter] | Returns a `TopicWriter` instance, if it exists. |
-| **[`topic_writer_exists(topic_name)`][mosaicolabs.handlers.SequenceWriter.topic_writer_exists]** | `bool` | Checks if a local `TopicWriter` exists for that topic. |
-| **[`sequence_status()`][mosaicolabs.handlers.SequenceWriter.sequence_status]** | [`SequenceStatus`][mosaicolabs.enum.SequenceStatus] | Returns the current state (e.g., `Pending`, `Finalized`). |
-| **[`list_topic_writers()`][mosaicolabs.handlers.SequenceWriter.list_topic_writers]** | `List[str]` | Returns all active topics currently being managed. |
 
 ### The Data Engine: `TopicWriter`
 
@@ -140,15 +131,7 @@ Once a topic is created, a `TopicWriter` is spawned to handle the actual transmi
     * [`mosaicolabs.models.platform.Topic`][mosaicolabs.models.platform.Topic]
     * [`mosaicolabs.models.query.builders.QueryTopic`][mosaicolabs.models.query.builders.QueryTopic].
 
-#### Quick Reference
 API Reference: [`mosaicolabs.handlers.TopicWriter`][mosaicolabs.handlers.TopicWriter].
-
-| Method | Description |
-| --- | --- |
-| **[`push(message,message_timestamp_ns,message_header,ontology_obj)`][mosaicolabs.handlers.TopicWriter.push]** | Adds a new record to the internal buffer for transmission. The method can be called passing a pre-built `Message` object or passing distinct components (`ontology_obj`, `message_timestamp_ns`, `message_header`).|
-| **[`finalize()`][mosaicolabs.handlers.TopicWriter.finalize]** | Flushes remaining data and closes the specific data stream. |
-| **[`finalized()`][mosaicolabs.handlers.TopicWriter.finalized]** | Returns True if the writer stream has been closed. |
-
 
 ### Resilient Data Ingestion & Error Management
 

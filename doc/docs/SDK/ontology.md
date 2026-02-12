@@ -88,13 +88,7 @@ If missing, it raises an error at definition time (import time), preventing runt
 3.  **Registers Class:** It adds the new class to the global types registry.
 4.  **Injects Query Proxy:** It dynamically adds a `.Q` attribute to the class, enabling the fluent query syntax (e.g., `MyCustomSensor.Q.voltage > 12.0`).
 
-#### Quick Reference
 API Reference: [`mosaicolabs.models.Serializable`][mosaicolabs.models.Serializable]
-
-| Method | Return | Description |
-| :--- | :--- | :--- |
-| **[`ontology_tag()`][mosaicolabs.models.Serializable.ontology_tag]** | `str` | Returns the unique string identifier for a class or instance. |
-
 
 ### 2. `Message` (The Envelope)
 
@@ -115,18 +109,7 @@ temp_msg = Message(
 )
 ```
 
-#### Quick Reference
 API Reference: [`mosaicolabs.models.Message`][mosaicolabs.models.Message]
-
-| Field/Method | Type/Return | Description |
-| :--- | :--- | :--- |
-| **[`timestamp_ns`][mosaicolabs.models.Message.timestamp_ns]** | `int` | Middleware processing timestamp in nanoseconds (different from sensor acquisition time). |
-| **[`data`][mosaicolabs.models.Message.data]** | `Serializable` | The polymorphic payload (e.g., an IMU object). |
-| **[`message_header`][mosaicolabs.models.Message.message_header]** | `Optional[Header]` | Middleware-level header. |
-| **[`get_data()`][mosaicolabs.models.Message.get_data]** | `Serializable` | A type-safe accessor that returns the payload bound to the specified ontology model. |
-| **[`ontology_type()`][mosaicolabs.models.Message.ontology_type]** | `Type[Serializable]` | Retrieves the Python class type of the payload stored in the `data` field. |
-| **[`ontology_tag()`][mosaicolabs.models.Message.ontology_tag]** | `str` | Returns the unique string identifier (tag) for the payload (e.g., `"imu"`). |
-| **[`from_dataframe_row()`][mosaicolabs.models.Message.from_dataframe_row]** | `Message` | **(Static)** Reconstructs a full `Message` object from a flattened row produced by the [`DataFrameExtractor`](./bridges/ml.md#from-sequences-to-dataframes).
 
 While logically a `Message` contains a `data` object (e.g., an instance of an Ontology type), physically on the wire (PyArrow/Parquet), the fields are **flattened**.
 
@@ -154,12 +137,7 @@ class MySensor(Serializable, HeaderMixin):
     ...
 ```
 
-##### Quick Reference
 API Reference: [`mosaicolabs.models.mixins.HeaderMixin`][mosaicolabs.models.mixins.HeaderMixin]
-
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| **[`header`][mosaicolabs.models.HeaderMixin.header]** | [`Header`][mosaicolabs.models.Header] | Header containing the timestamp, frame ID, and sequence number. |
 
 #### `CovarianceMixin`
 Injects multidimensional uncertainty fields, typically used for flattened covariance matrices in sensor fusion applications.
@@ -170,13 +148,7 @@ class MySensor(Serializable, CovarianceMixin):
     ...
 ```
 
-##### Quick Reference
 API Reference: [`mosaicolabs.models.mixins.CovarianceMixin`][mosaicolabs.models.mixins.CovarianceMixin]
-
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| **[`covariance`][mosaicolabs.models.mixins.CovarianceMixin.covariance]** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
-| **[`covariance_type`][mosaicolabs.models.mixins.CovarianceMixin.covariance_type]** | `Optional[int]` | Enum integer representing the covariance parameterization. |
 
 #### `VarianceMixin`
 Injects monodimensional uncertainty fields, useful for sensors with 1-dimensional uncertain data (like `Temperature` or `Pressure`).
@@ -187,13 +159,7 @@ class MySensor(Serializable, VarianceMixin):
     ...
 ```
 
-##### Quick Reference
 API Reference: [`mosaicolabs.models.mixins.VarianceMixin`][mosaicolabs.models.mixins.VarianceMixin]
-
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| **[`variance`][mosaicolabs.models.mixins.VarianceMixin.variance]** | `Optional[List[float]]` | The covariance matrix (flattened) of the data. |
-| **[`variance_type`][mosaicolabs.models.mixins.VarianceMixin.variance_type]** | `Optional[int]` | Enum integer representing the covariance parameterization. |
 
 #### Standalone Usage
 

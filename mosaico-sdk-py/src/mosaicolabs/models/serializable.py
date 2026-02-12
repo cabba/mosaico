@@ -103,6 +103,9 @@ class Serializable(BaseModel, _QueryProxyMixin):
                 "Classes for Data Ontology must have a pyarrow '__msco_pyarrow_struct__' attribute."
             )
 
+        # This ensures that names match exactly before registration
+        cls._validate_schema_alignment()
+
         # Tag Generation
         tag = cls.__ontology_tag__ or camel_to_snake(cls.__name__)
         cls.__ontology_tag__ = tag
@@ -126,6 +129,37 @@ class Serializable(BaseModel, _QueryProxyMixin):
         )
 
     # --- Factory Methods ---
+
+    @classmethod
+    def _validate_schema_alignment(cls):
+        """
+        Ensures a 1:1 mapping between Pydantic fields and the PyArrow struct schema.
+        """
+        # Get the names from the PyArrow struct
+        pa_field_names = set(f.name for f in cls.__msco_pyarrow_struct__)
+
+        # Exclude the Serializable inner fields + the Query Proxy
+        ignore_fields = set(_QueryProxyMixin.__annotations__)
+
+        python_fields = set()
+        for base in cls.mro():
+            # Collect all annotations but filter out internal Mosaico or Python dunders
+            annotations = getattr(base, "__annotations__", {})
+            python_fields.update(
+                k
+                for k in annotations.keys()
+                if k not in ignore_fields and not k.startswith("_")
+            )
+
+        # Perform the Symmetric Difference check
+        discrepancies = pa_field_names ^ python_fields
+        if discrepancies:
+            raise TypeError(
+                f"Schema mismatch in ontology class '{cls.__name__}':\n"
+                f" - Fields in PyArrow but missing or renamed in class fields: {list(discrepancies)}\n"
+                f"Hint: Every field in the __msco_pyarrow_struct__ must have a "
+                f"corresponding type-hinted attribute in the class or its mixins."
+            )
 
     @classmethod
     def _create(cls, tag: str, *args, **kwargs) -> "Serializable":

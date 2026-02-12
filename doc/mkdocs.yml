@@ -74,7 +74,17 @@ nav:
         - SDK/API_reference/models/geometry.md
         - SDK/API_reference/models/platform.md
         - SDK/API_reference/models/sensors.md
-      - SDK/API_reference/ml.md
+      - Bridges:
+        - SDK/API_reference/bridges/ml.md
+        - ROS-Bridge:
+          - SDK/API_reference/bridges/ros/ros.md
+          - Adapters:
+            - SDK/API_reference/bridges/ros/adapters/base.md
+            - SDK/API_reference/bridges/ros/adapters/std_msgs.md
+            - SDK/API_reference/bridges/ros/adapters/geometry_msgs.md
+            - SDK/API_reference/bridges/ros/adapters/sensor_msgs.md
+            - SDK/API_reference/bridges/ros/adapters/nav_msgs.md
+            - SDK/API_reference/bridges/ros/adapters/tf2_msgs.md
   - Daemon:
     - daemon/index.md
     - daemon/control.md
