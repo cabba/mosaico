@@ -50,10 +50,10 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
 The provided example illustrates the core architecture of the Mosaico Query DSL. To effectively use this module, it is important to understand the two primary mechanisms that drive data discovery:
 
-* **The `.Q` Proxy (Dynamic Model Inspection)**: Every [`Serializable`][mosaicolabs.models.serializable.Serializable] model in the Mosaico ontology features a static `.Q` attribute. This proxy dynamically intercepts attribute access (e.g., `IMU.Q.acceleration.x`) by inspecting the model's underlying schema to build dot-notated field paths. When a terminal method is called—such as `.gt()`, `.lt()`, or `.between()`—it generates a type-safe **Atomic Expression** used by the platform to filter physical sensor data or metadata fields.
 * **Query Builders (Fluent Logic Collectors)**: Specialized builders like [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence], [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic], and [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] serve as containers for your search criteria. They provide a **Fluent Interface** where you can chain two types of methods:
     * **Convenience Methods**: High-level helpers for common fields, such as `with_name()`, `with_name_match()`, or `with_created_timestamp()`.
     * **Generic `with_expression()`**: A versatile method that accepts any expression obtained via the **`.Q` proxy**, allowing you to define complex filters for nested user metadata or deep sensor payloads.
+* **The `.Q` Proxy (Dynamic Model Inspection)**: Every [`Serializable`][mosaicolabs.models.serializable.Serializable] model in the Mosaico ontology features a static `.Q` attribute. This proxy dynamically inspects the model's underlying schema to build dot-notated field paths and intercepts attribute access (e.g., `IMU.Q.acceleration.x`). When a terminal method is called—such as `.gt()`, `.lt()`, or `.between()`—it generates a type-safe **Atomic Expression** used by the platform to filter physical sensor data or metadata fields.
 
 By combining these mechanisms, the Query Module delivers a robust filtering experience:
 
@@ -66,7 +66,7 @@ Queries are executed via the [`query()`][mosaicolabs.comm.MosaicoClient.query] m
 
 | Method | Return | Description |
 | :--- | :--- | :--- |
-| [`query(*queries, query)`][mosaicolabs.comm.MosaicoClient.query] | [`Optional[QueryResponse]`][mosaicolabs.models.query.response.QueryResponse] | Executes one or more queries against the platform catalogs. The provided queries are joined in AND condition. The method accepts a variable arguments of query builder objects or a pre-constructed *Query* object.|
+| [`query(*queries, query)`][mosaicolabs.comm.MosaicoClient.query] | [`Optional[QueryResponse]`][mosaicolabs.models.query.response.QueryResponse] | Executes one or more queries against the platform catalogs. The provided queries are joined in AND condition. The method accepts a variable arguments of query builder objects or a pre-constructed [`Query`][mosaicolabs.models.query.builders.Query] object.|
 
 
 The query execution returns a [`QueryResponse`][mosaicolabs.models.query.response.QueryResponse] object, which behaves like a standard Python list containing [`QueryResponseItem`][mosaicolabs.models.query.response.QueryResponseItem] objects.
@@ -95,6 +95,12 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
     # Execute the query via the client
     results = client.query(impact_qbuilder)
+    # The same can be obtained by using the Query object
+    # results = client.query(
+    #     query = Query(
+    #         impact_qbuilder
+    #     )
+    # )
     
     # Handle potential server-side execution errors
     if results is not None:
@@ -122,7 +128,7 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
 ### Restricted Queries (Chaining)
 The `QueryResponse` class enables a powerful mechanism for **iterative search refinement** by allowing you to convert your current results back into a new query builder.
-This approach is essential for resolving complex, multi-modal dependencies where a single monolithic query would be logically ambiguous or technically impossible.
+This approach is essential for resolving complex, multi-modal dependencies where a single monolithic query would be logically ambiguous, inefficient or technically impossible.
 
 | Method | Return Type | Description |
 | --- | --- | --- |
@@ -132,24 +138,27 @@ This approach is essential for resolving complex, multi-modal dependencies where
 When you invoke these factory methods, the SDK generates a new query expression containing an explicit `$in` filter populated with the identifiers held in the current response. This effectively **"locks" the search domain**, allowing you to apply new criteria to a restricted subset of your data without re-scanning the entire platform catalog.
 
 ```python
-# Broad Search: Find all sequences where a GPS sensor reached a high-precision state (status=2)
-initial_response = client.query(
-    QueryOntologyCatalog(GPS.Q.status.status.eq(2))
-)
-# 'initial_response' now acts as a filtered container of matching sequences.
+from mosaicolabs import MosaicoClient, QueryTopic, QueryOntologyCatalog, GPS, String
 
-# Domain Locking: Restrict the search scope to the results of the initial query
-if not initial_response.is_empty():
-    # .to_query_sequence() generates a QuerySequence pre-filled with the matching sequence names.
-    refined_query_builder = initial_response.to_query_sequence()
-
-    # Targeted Refinement: Search for error patterns ONLY within the restricted domain
-    # This ensures the platform only scans for '[ERR]' strings within sequences already validated for GPS precision.
-    final_response = client.query(
-        refined_query_builder,                                         # The "locked" sequence domain
-        QueryTopic().with_name("/localization/log_string"),    # Target a specific log topic
-        QueryOntologyCatalog(String.Q.data.match("[ERR]"))     # Filter by exact data content pattern
+with MosaicoClient.connect("localhost", 6726) as client:
+    # Broad Search: Find all sequences where a GPS sensor reached a high-precision state (status=2)
+    initial_response = client.query(
+        QueryOntologyCatalog(GPS.Q.status.status.eq(2))
     )
+    # 'initial_response' now acts as a filtered container of matching sequences.
+
+    # Domain Locking: Restrict the search scope to the results of the initial query
+    if not initial_response.is_empty():
+        # .to_query_sequence() generates a QuerySequence pre-filled with the matching sequence names.
+        refined_query_builder = initial_response.to_query_sequence()
+
+        # Targeted Refinement: Search for error patterns ONLY within the restricted domain
+        # This ensures the platform only scans for '[ERR]' strings within sequences already validated for GPS precision.
+        final_response = client.query(
+            refined_query_builder,                                         # The "locked" sequence domain
+            QueryTopic().with_name("/localization/log_string"),    # Target a specific log topic
+            QueryOntologyCatalog(String.Q.data.match("[ERR]"))     # Filter by exact data content pattern
+        )
 
 ```
 
@@ -177,7 +186,7 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
 #### When Chaining is Necessary
 
-The previous example of the GPS query and the subsequent `/localization/log_string` topic search highlight exactly when *query chaining* becomes a technical necessity rather than just a recommendation. In the Mosaico Data Platform, a single `client.query()` call applies a logical **AND** across all provided builders to locate individual **data streams (topics)** that satisfy every condition simultaneously.
+The previous example of the `GPS.status` query and the subsequent `/localization/log_string` topic search highlight exactly when *query chaining* becomes a technical necessity rather than just a recommendation. In the Mosaico Data Platform, a single `client.query()` call applies a logical **AND** across all provided builders to locate individual **data streams (topics)** that satisfy every condition simultaneously.
 Because a single topic cannot physically represent two different sensor types at once, such as being both a `GPS` sensor and a `String` log, a monolithic query attempting to filter for both on the same stream will inherently return zero results. Chaining resolves this by allowing you to find the correct **Sequence** context in step one, then "locking" that domain to find a different **Topic** within that same context in step two.
 
 ```python
@@ -226,11 +235,11 @@ API Reference: [`mosaicolabs.models.query.builders.QuerySequence`][mosaicolabs.m
 
 | Methods | Return | Target Resource |
 | :--- | :--- | :--- |
-| [`__init__(*expressions)`][mosaicolabs.models.query.builders.QuerySequence] | `None` | Initializes the query with an optional set of initial expressions (via the `.Q` proxy). |
+| [`__init__(*expressions)`][mosaicolabs.models.query.builders.QuerySequence] | `None` | Initializes the query with an optional set of initial expressions (via the `.Q` proxy on the [`Sequence`][mosaicolabs.models.platform.Sequence] model). |
 | [`with_name(name)`][mosaicolabs.models.query.builders.QuerySequence.with_name] | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] | Add a filter for the sequence exact 'name' field. |
 | [`with_name_match(name)`][mosaicolabs.models.query.builders.QuerySequence.with_name_match] | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence]| Add a filter for the partial sequence 'name' field (subsring). |
 | [`with_created_timestamp(time_start, time_end)`][mosaicolabs.models.query.builders.QuerySequence.with_created_timestamp] | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence]| Add a filter for the 'creation_unix_timestamp' field. |
-| [`with_expression(expr)`][mosaicolabs.models.query.builders.QuerySequence.with_expression] | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] | Adds a new expression to the query (via the `.Q` proxy). |
+| [`with_expression(expr)`][mosaicolabs.models.query.builders.QuerySequence.with_expression] | [`QuerySequence`][mosaicolabs.models.query.builders.QuerySequence] | Adds a new expression to the query (via the `.Q` proxy on the [`Sequence`][mosaicolabs.models.platform.Sequence] model). |
 
 #### [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] (Topic Layer)
 
@@ -264,12 +273,12 @@ API Reference: [`mosaicolabs.models.query.builders.QueryTopic`][mosaicolabs.mode
 
 | Methods | Return | Target Resource |
 | :--- | :--- | :--- |
-| [`__init__(*expressions)`][mosaicolabs.models.query.builders.QueryTopic] | `None` | Initializes the query with an optional set of initial expressions. |
+| [`__init__(*expressions)`][mosaicolabs.models.query.builders.QueryTopic] | `None` | Initializes the query with an optional set of initial expressions (via the `.Q` proxy on the [`Topic`][mosaicolabs.models.platform.Topic] model). |
 | [`with_name(name)`][mosaicolabs.models.query.builders.QueryTopic.with_name] | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] | Add a filter for the topic exact 'name' field. |
 | [`with_name_match(name)`][mosaicolabs.models.query.builders.QueryTopic.with_name_match] | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]| Add a filter for the partial topic 'name' field (subsring). |
 | [`with_ontology_tag(tag)`][mosaicolabs.models.query.builders.QueryTopic.with_ontology_tag] | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]| Add a filter for the 'ontology_tag' supported by the topic. |
 | [`with_created_timestamp(time_start, time_end)`][mosaicolabs.models.query.builders.QueryTopic.with_created_timestamp] | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic]| Add a filter for the 'creation_unix_timestamp' field. |
-| [`with_expression(expr)`][mosaicolabs.models.query.builders.QueryTopic.with_expression] | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] | Adds a new expression to the query (via the `.Q` proxy). |
+| [`with_expression(expr)`][mosaicolabs.models.query.builders.QueryTopic.with_expression] | [`QueryTopic`][mosaicolabs.models.query.builders.QueryTopic] | Adds a new expression to the query (via the `.Q` proxy on the [`Topic`][mosaicolabs.models.platform.Topic] model). |
 
 #### [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] (Ontology Catalog Layer)
 
@@ -320,8 +329,8 @@ API Reference: [`mosaicolabs.models.query.builders.QueryOntologyCatalog`][mosaic
 
 | Methods |  Return | Target Resource |
 | :--- | :--- | :--- |
-| [`__init__(*expressions,include_timestamp_range)`][mosaicolabs.models.query.builders.QueryOntologyCatalog] | `None`| Initializes the query with an optional set of initial expressions. If `include_timestamp_range==True`, the server returns the start and end timestamps of the queried condition.|
-| [`with_expression(expr)`][mosaicolabs.models.query.builders.QueryOntologyCatalog.with_expression] | [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] | Adds a new expression to the query (via the `.Q` proxy). |
+| [`__init__(*expressions,include_timestamp_range)`][mosaicolabs.models.query.builders.QueryOntologyCatalog] | `None`| Initializes the query with an optional set of initial expressions (via the `.Q` proxy on any [`Serializable`][mosaicolabs.models.Serializable] model, e.g. [`IMU`][mosaicolabs.models.sensors.IMU--querying-with-the-q-proxy]). If `include_timestamp_range==True`, the server returns the start and end timestamps of the queried condition.|
+| [`with_expression(expr)`][mosaicolabs.models.query.builders.QueryOntologyCatalog.with_expression] | [`QueryOntologyCatalog`][mosaicolabs.models.query.builders.QueryOntologyCatalog] | Adds a new expression to the query (via the `.Q` proxy on any [`Serializable`][mosaicolabs.models.Serializable] model, e.g. [`IMU`][mosaicolabs.models.sensors.IMU--querying-with-the-q-proxy]). |
 
 ---
 
@@ -329,7 +338,7 @@ The Mosaico Query Module offers two distinct paths for defining filters,  **Conv
 
 #### Convenience Methods
 
-The query layers provide high-level helpers (`with_<attribute>`), built directly into the query builder classes and designed for ease of use.
+The query layers provide high-level fluent helpers (`with_<attribute>`), built directly into the query builder classes and designed for ease of use.
 They allow you to filter data without deep knowledge of the internal model schema. 
 The builder automatically selects the appropriate field and operator (such as exact match vs. substring pattern) based on the method used.
 
@@ -417,7 +426,7 @@ The Query Proxy is the cornerstone of Mosaico's type-safe data discovery. Every 
 The proxy follows a three-step lifecycle to ensure that your queries are both semantically correct and high-performance:
 
 1. **Intelligent Mapping**: During system initialization, the proxy inspects the sensor's schema recursively. It maps every nested field path (e.g., `"acceleration.x"`) to a dedicated *queryable* object, i.e. an object providing comparison operators and expression generation methods.
-2. **Type-Aware Operators**: The proxy identifies the data type of each field (numeric, string, or boolean) and exposes only the operators valid for that type. This prevents logical errors, such as attempting a substring `.match()` on a numeric acceleration value.
+2. **Type-Aware Operators**: The proxy identifies the data type of each field (numeric, string, dictionary, or boolean) and exposes only the operators valid for that type. This prevents logical errors, such as attempting a substring `.match()` on a numeric acceleration value.
 3. **Intent Generation**: When you invoke an operator (e.g., `.gt(15.0)`), the proxy generates a `QueryExpression`. This object encapsulates your search intent and is serialized into an optimized JSON format for the platform to execute.
 
 To understand how the proxy handles nested structures, inherited attributes, and data types, consider the `IMU` ontology class:
@@ -465,159 +474,6 @@ While the `.Q` proxy is highly versatile, it enforces specific rules on which da
 
 * **Unsupported Types (Lists and Tuples)**: Any field defined as a container, such as a **List** or **Tuple** (e.g., `covariance: List[float]`), is currently skipped by the proxy generator. These fields will not appear in autocomplete and cannot be used in a query expression.
 
-## Query Execution & The Response Model
-
-Queries are executed via the `query()` method exposed by the `MosaicoClient` class. When multiple builders are provided, they are combined with a logical **AND**.
-
-| Method | Return | Description |
-| :--- | :--- | :--- |
-| `query(*queries, query)` | `Optional[QueryResponse]` | Executes one or more queries against the platform catalogs. The provided queries are joined in AND condition. The method accepts a variable arguments of query builder objects or a pre-constructed *Query* object.|
-
-
-### The Response Hierarchy
-
-Execution returns a `QueryResponse` object, which behaves like a standard Python list containing `QueryResponseItem` objects.
-
-| Class | Description |
-| --- | --- |
-| **`QueryResponseItem`** | Groups all matches belonging to the same **Sequence**. Constains a `QueryResponseItemSequence` and a list of related `QueryResponseItemTopic`.|
-| **`QueryResponseItemSequence`** | Represents a specific **Sequence** where matches were found. It includes the sequence name. |
-| **`QueryResponseItemTopic`** | Represents a specific **Topic** where matches were found. It includes the normalized topic path and the optional `timestamp_range` (the first and last occurrence of the condition). |
-
-This example demonstrates a complete query execution and the inspection of the query response. By enabling the `include_timestamp_range` flag, the platform identifies the exact temporal windows where the physical conditions were met.
-
-```python
-import sys
-from mosaicolabs import MosaicoClient, QueryOntologyCatalog
-from mosaicolabs.models.sensors import IMU
-
-# Establish a connection to the Mosaico Data Platform
-with MosaicoClient.connect("localhost", 6726) as client:
-    
-    # Define a Deep Data Filter using the .Q Query Proxy
-    # We are searching for vertical impact events where acceleration.z > 15.0 m/s^2
-    impact_qbuilder = QueryOntologyCatalog(
-        IMU.Q.acceleration.z.gt(15.0),
-        # include_timestamp_range returns the precise start/end of the matching event
-        include_timestamp_range=True
-    )
-
-    # Execute the query via the client
-    results = client.query(impact_qbuilder)
-    
-    # Handle potential server-side execution errors
-    if results is not None:
-        # Parse the structured QueryResponse object
-        # Results are automatically grouped by Sequence for easier data management
-        for item in results:
-            print(f"Sequence: {item.sequence.name}")
-            
-            # Iterate through matching topics within the sequence
-            for topic in item.topics:
-                # Topic names are normalized (sequence prefix is stripped) for direct use
-                print(f"  - Match in: {topic.name}")
-                
-                # Extract the temporal bounds of the event
-                if topic.timestamp_range:
-                    start = topic.timestamp_range.start
-                    end = topic.timestamp_range.end
-                    print(f"    Occurrence: {start} ns to {end} ns")
-
-```
-
-### Technical Highlights
-
-* **Type-Safe Discovery**: By using `IMU.Q.acceleration.z`, the SDK ensures you are querying a numeric field that physically exists in the IMU ontology.
-* **Temporal Windows**: The `timestamp_range` provides the first and last occurrence of the queried condition within a topic, allowing you to slice data accurately for further analysis.
-* **Result Normalization**: `topic.name` returns the relative topic path (e.g., `/sensors/imu`), making it immediately compatible with other SDK methods like `get_topic_handler()`.
-
-
-### Restricted Queries (Chaining)
-The `QueryResponse` class enables a powerful mechanism for **iterative search refinement** by allowing you to convert your current results back into a new query builder.
-This approach is essential for resolving complex, multi-modal dependencies where a single monolithic query would be logically ambiguous or technically impossible.
-
-| Method | Return Type | Description |
-| --- | --- | --- |
-| **`to_query_sequence()`** | `QuerySequence` | Returns a query builder pre-filtered to include only the **sequences** present in the response. |
-| **`to_query_topic()`** | `QueryTopic` | Returns a query builder pre-filtered to include only the specific **topics** identified in the response. |
-
-When you invoke these factory methods, the SDK generates a new query expression containing an explicit `$in` filter populated with the identifiers held in the current response. This effectively **"locks" the search domain**, allowing you to apply new criteria to a restricted subset of your data without re-scanning the entire platform catalog.
-
-```python
-# 1. Broad Search: Find all sequences where a GPS sensor reached a high-precision state (status=2)
-initial_response = client.query(
-    QueryOntologyCatalog(GPS.Q.status.status.eq(2))
-)
-# 'initial_response' now acts as a filtered container of matching sequences.
-
-# 2. Domain Locking: Restrict the search scope to the results of the initial query
-if not initial_response.is_empty():
-    # .to_query_sequence() generates a QuerySequence pre-filled with the matching sequence names.
-    refined_query_builder = initial_response.to_query_sequence()
-
-    # 3. Targeted Refinement: Search for error patterns ONLY within the restricted domain
-    # This ensures the platform only scans for '[ERR]' strings within sequences already validated for GPS precision.
-    final_response = client.query(
-        refined_query_builder,                                         # The "locked" sequence domain
-        QueryTopic().with_name("/localization/log_string"),    # Target a specific log topic
-        QueryOntologyCatalog(String.Q.data.match("[ERR]"))     # Filter by exact data content pattern
-    )
-
-```
-
-When a specific set of topics has been identified through a data-driven query (e.g., finding every camera topic that recorded a specific event), you can use `to_query_topic()` to "lock" your next search to those specific data channels. This is particularly useful when you need to verify a condition on a very specific subset of sensors across many sequences, bypassing the need to re-identify those topics in the next step.
-
-In the next example, we first find all topics that are tagged as "High-Resolution" in their metadata and then search specifically within *those* topics for any instances where the sensor acquisition time indicates a lag.
-
-```python
-from mosaicolabs.models.platform import Topic
-from mosaicolabs.models.query import QueryTopic, QueryOntologyCatalog
-from mosaicolabs.models.sensors import Image
-
-# 1. Initial Query: Find all topics that have a specific user_metadata tag
-# We look for topics tagged with a 'quality' level of 'high-res'
-initial_response = client.query(
-    QueryTopic().with_expression(Topic.Q.user_metadata["quality"].eq("high-res"))
-)
-
-# 2. Topic-Level Domain Locking
-if not initial_response.is_empty():
-    # .to_query_topic() generates a QueryTopic pre-filled with the specific 
-    # topic paths identified in the first step.
-    restricted_topic_scope = initial_response.to_query_topic()
-
-    # 3. Targeted Refinement: Search for data events within those exact topics
-    # We now look for frames within those high-res topics where the 
-    # internal sensor stamp exceeds a certain epoch.
-    final_results = client.query(
-        restricted_topic_scope,                            # The "locked" topic paths
-        QueryOntologyCatalog(
-            Image.Q.header.stamp.sec.gt(1704067200),       # Filter by data content
-            include_timestamp_range=True                   # pinpoint the exact time range
-        )
-    )
-    
-    # Process results as usual
-    for item in final_results:
-        print(f"Verified high-res data in sequence: {item.sequence.name}")
-
-```
-
-#### When Chaining is Necessary
-
-The previous example of the GPS query and the subsequent `/localization/log_string` topic search highlight exactly when *query chaining* becomes a technical necessity rather than just a recommendation. In the Mosaico Data Platform, a single `client.query()` call applies a logical **AND** across all provided builders to locate individual **data streams (topics)** that satisfy every condition simultaneously.
-Because a single topic cannot physically represent two different sensor types at once, such as being both a `GPS` sensor and a `String` log, a monolithic query attempting to filter for both on the same stream will inherently return zero results. Chaining resolves this by allowing you to find the correct **Sequence** context in step one, then "locking" that domain to find a different **Topic** within that same context in step two.
-
-```python
-# AMBIGUOUS: This looks for ONE topic that is BOTH GPS and String
-response = client.query(
-    QueryOntologyCatalog(GPS.Q.status.status.eq(DGPS_FIX)),
-    QueryOntologyCatalog(String.Q.data.match("[ERR]")),
-    QueryTopic().with_name("/localization/log_string")
-)
-
-```
-
 ## Constraints & Limitations
 
 While fully functional, the current implementation (v0.x) has a **Single Occurrence Constraint**.
@@ -627,7 +483,7 @@ While fully functional, the current implementation (v0.x) has a **Single Occurre
     # INVALID: The same field (acceleration.x) is used twice in the constructor
     QueryOntologyCatalog() \
         .with_expression(IMU.Q.acceleration.x.gt(0.5))
-        .with_expression(IMU.Q.acceleration.x.lt(1.0)) # <- Duplicate field path
+        .with_expression(IMU.Q.acceleration.x.lt(1.0)) # <- Error! Duplicate field path
 
     ```
 * **Solution**: Use the built-in **`.between([min, max])`** operator to perform range filtering on a single field path.
