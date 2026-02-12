@@ -147,8 +147,7 @@ impl ActionRequest {
 #[derive(Serialize)]
 #[serde(tag = "action", content = "response", rename_all = "snake_case")]
 pub enum ActionResponse {
-    #[serde(rename="sequence_create")]
-    SequenceCreate,
+    SequenceCreate(()),
     SequenceDelete(()),
     SequenceAbort(()),
     SequenceNotifyCreate(()),
@@ -180,7 +179,7 @@ impl ActionResponse {
     }
 
     pub fn sequence_create() -> Self {
-        Self::SequenceCreate
+        Self::SequenceCreate(())
     }
 
     pub fn sequence_delete() -> Self {
