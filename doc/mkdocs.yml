@@ -46,7 +46,7 @@ nav:
   - Getting Started:
     - getting_started/mosaicod.md
     - getting_started/python-sdk.md
-  - SDK:
+  - Python SDK:
     - SDK/index.md
     - SDK/client.md
     - SDK/ontology.md
@@ -58,7 +58,7 @@ nav:
     - Bridges:
         - SDK/bridges/ml.md
         - SDK/bridges/ros.md
-    - API Reference:
+    - Python API Reference:
       - SDK/API_reference/comm.md
       - SDK/API_reference/enum.md
       - Data Handling:

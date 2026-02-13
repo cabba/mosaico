@@ -1,8 +1,8 @@
 """
-Header Mixin Module.
+Mixins Module.
 
-This module provides `HeaderMixin`, a helper class used to inject standard
-header fields into ontology models via composition.
+This module provides helper classes used to inject standard
+fields (header, covariance and variance) into ontology models via composition.
 """
 
 from typing import List, Optional

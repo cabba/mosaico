@@ -73,7 +73,7 @@ The query execution returns a [`QueryResponse`][mosaicolabs.models.query.respons
 
 | Class | Description |
 | --- | --- |
-| [`QueryResponseItem`][mosaicolabs.models.query.response.QueryResponseItem] | Groups all matches belonging to the same **Sequence**. Constains a `QueryResponseItemSequence` and a list of related `QueryResponseItemTopic`.|
+| [`QueryResponseItem`][mosaicolabs.models.query.response.QueryResponseItem] | Groups all matches belonging to the same **Sequence**. Contains a `QueryResponseItemSequence` and a list of related `QueryResponseItemTopic`.|
 | [`QueryResponseItemSequence`][mosaicolabs.models.query.response.QueryResponseItemSequence] | Represents a specific **Sequence** where matches were found. It includes the sequence name. |
 | [`QueryResponseItemTopic`][mosaicolabs.models.query.response.QueryResponseItemTopic] | Represents a specific **Topic** where matches were found. It includes the normalized topic path and the optional `timestamp_range` (the first and last occurrence of the condition). |
 
@@ -102,7 +102,6 @@ with MosaicoClient.connect("localhost", 6726) as client:
     #     )
     # )
     
-    # Handle potential server-side execution errors
     if results is not None:
         # Parse the structured QueryResponse object
         # Results are automatically grouped by Sequence for easier data management

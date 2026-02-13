@@ -181,7 +181,7 @@ class ROSLoader:
         # We allow an external observer hook for progress bars
         # This removes `rich` dependency from the core class
 
-        for connection, timestamp, rawdata in self._reader.messages(
+        for connection, bag_timestamp_ns, rawdata in self._reader.messages(
             connections=self._connections
         ):
             try:
@@ -190,7 +190,7 @@ class ROSLoader:
                 # Yield the standard SDK message
                 yield (
                     ROSMessage(
-                        timestamp=timestamp,
+                        bag_timestamp_ns=bag_timestamp_ns,
                         topic=connection.topic,
                         msg_type=connection.msgtype,
                         data=_to_dict(msg_obj),
@@ -202,7 +202,7 @@ class ROSLoader:
                 self._handle_error(connection.topic, connection.msgtype, e)
                 yield (
                     ROSMessage(
-                        timestamp=timestamp,
+                        bag_timestamp_ns=bag_timestamp_ns,
                         topic=connection.topic,
                         msg_type=connection.msgtype,
                         data=None,

@@ -96,17 +96,17 @@ class PoseAdapter(ROSAdapterBase[Pose]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod
@@ -241,17 +241,17 @@ class TwistAdapter(ROSAdapterBase[Velocity]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod
@@ -384,17 +384,17 @@ class AccelAdapter(ROSAdapterBase[Acceleration]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod
@@ -519,17 +519,17 @@ class Vector3Adapter(ROSAdapterBase[Vector3d]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod
@@ -649,17 +649,17 @@ class PointAdapter(ROSAdapterBase[Point3d]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod
@@ -779,17 +779,17 @@ class QuaternionAdapter(ROSAdapterBase[Quaternion]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod
@@ -910,17 +910,17 @@ class TransformAdapter(ROSAdapterBase[Transform]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod
@@ -1042,17 +1042,17 @@ class WrenchAdapter(ROSAdapterBase[ForceTorque]):
         """
         if ros_msg.data is None:
             raise Exception(
-                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}"
+                f"'data' attribute in ROSMessage is None. Cannot translate! Ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}"
             )
         try:
             return Message(
                 message_header=ros_msg.header.translate() if ros_msg.header else None,
-                timestamp_ns=ros_msg.timestamp,
+                timestamp_ns=ros_msg.bag_timestamp_ns,
                 data=cls.from_dict(ros_msg.data),
             )
         except Exception as e:
             raise Exception(
-                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.timestamp}.\nInner err: '{e}'"
+                f"Raised Exception while translating ros topic '{ros_msg.topic}' @time: {ros_msg.bag_timestamp_ns}.\nInner err: '{e}'"
             )
 
     @classmethod

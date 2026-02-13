@@ -58,9 +58,13 @@ class ROSMessage:
     """
 
     def __init__(
-        self, timestamp: int, topic: str, msg_type: str, data: Optional[Dict[str, Any]]
+        self,
+        bag_timestamp_ns: int,
+        topic: str,
+        msg_type: str,
+        data: Optional[Dict[str, Any]],
     ):
-        self.timestamp = timestamp
+        self.bag_timestamp_ns = bag_timestamp_ns
         self.topic = topic
         self.msg_type = msg_type
         self.data = data
@@ -69,8 +73,12 @@ class ROSMessage:
             if header_dict:
                 self.header = ROSHeader.from_dict(header_dict)
 
-    timestamp: int
-    """The nanosecond-precise timestamp of the message."""
+    bag_timestamp_ns: int
+    """
+    Timestamp (nanoseconds) when the message was written to the rosbag.
+    This corresponds to the rosbag storage time and may differ from
+    the time the data was originally generated.
+    """
     topic: str
     """The topic string of the message source."""
     msg_type: str
@@ -78,3 +86,4 @@ class ROSMessage:
     data: Optional[Dict[str, Any]]
     """The message payload, converted into a standard nested Python dictionary."""
     header: Optional[ROSHeader] = None
+    """The message payload header"""

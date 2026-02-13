@@ -100,7 +100,7 @@ from mosaicolabs import Message, Time, Header, Temperature
 # Use Case: Create a Temperature timestamped message with uncertainty
 meas_time = Time.now()
 temp_msg = Message(
-    timestamp_ns=msg_time.to_nanoseconds(), # here the message timestamp is the same as the measurement, but it can be different
+    timestamp_ns=meas_time.to_nanoseconds(), # here the message timestamp is the same as the measurement, but it can be different
     data=Temperature.from_celsius(
         value=57,
         header=Header(stamp=meas_time, frame_id="comp_case"),
@@ -113,8 +113,8 @@ API Reference: [`mosaicolabs.models.Message`][mosaicolabs.models.Message]
 
 While logically a `Message` contains a `data` object (e.g., an instance of an Ontology type), physically on the wire (PyArrow/Parquet), the fields are **flattened**.
 
-  * **Logical:** `Message(timestamp_ns=123, data=IMU(acceleration=Vector3d(x=1.0,...)))`
-  * **Physical:** `Struct(timestamp_ns=123, acceleration, ...)`
+  * **Logical:** `Message(timestamp_ns=123567890, data=IMU(acceleration=Vector3d(x=1.0,...)))`
+  * **Physical:** `Struct(timestamp_ns=123567890, acceleration, ...)`
 
 This flattening is handled automatically by the class internal methods.
 This ensures zero-overhead access to nested data during queries while maintaining a clean object-oriented API in Python.
