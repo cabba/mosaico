@@ -28,7 +28,7 @@ jobs:
           restore-keys: |
             mkdocs-material-
 
-      - run: pip install mkdocs-material 
+      - run: pip install mkdocs-material 'mkdocstrings[python]'
 
       - run: mkdocs gh-deploy --force
         working-directory: ./doc
