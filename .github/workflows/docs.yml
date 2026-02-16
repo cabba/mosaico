@@ -1,4 +1,5 @@
 # Copied from original mkdocs docs: https://squidfunk.github.io/mkdocs-material/publishing-your-site/
+
 name: docs
 on:
   push:
