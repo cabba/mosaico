@@ -99,10 +99,15 @@ jobs:
             type=raw,value=latest,enable=${{ !contains(github.ref, 'rc') }}
 
       - name: Create manifest list and push
-        working-directory: /tmp/digests
+        env:
+          DOCKER_METADATA_OUTPUT_JSON: ${{ steps.meta.outputs.json }}
         run: |
-          docker buildx imagetools create $(display_with_name_and_tags=$(printf 'ghcr.io/${{ github.repository_owner }}/mosaicod:%s ' ${{ steps.meta.outputs.tags }})) \
-            $(printf 'ghcr.io/${{ github.repository_owner }}/mosaicod@sha256:%s ' *)
+          # Extract tags from the JSON output and prefix them with the image name
+          TAGS=$(echo $DOCKER_METADATA_OUTPUT_JSON | jq -r '.tags[] | "-t " + .')
+          
+          # Combine the tags and the digests into the final command
+          docker buildx imagetools create $TAGS \
+            $(printf 'ghcr.io/${{ github.repository_owner }}/mosaicod@sha256:%s ' $(ls /tmp/digests))
 
       - name: Inspect image
         run: |
