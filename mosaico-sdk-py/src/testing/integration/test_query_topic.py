@@ -1,5 +1,5 @@
 from mosaicolabs.comm import MosaicoClient
-from mosaicolabs.models import Time
+from mosaicolabs.types import Time
 from mosaicolabs.models.platform import Topic
 from mosaicolabs.models.query import QuerySequence, QueryTopic
 import pytest

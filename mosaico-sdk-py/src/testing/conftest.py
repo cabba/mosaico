@@ -87,10 +87,7 @@ def _make_sequence_data_stream(host, port):
         topic, msg_maker = next(msg_maker_gen)
         ontology_type = topic_to_ontology_class_dict[topic]
 
-        msg = msg_maker(
-            msg_time=t * (dt_nanosec),  # simulation time
-            meas_time=meas_time,
-        )
+        msg = msg_maker(meas_time=meas_time)
 
         out_stream.items.append(
             DataStreamItem(

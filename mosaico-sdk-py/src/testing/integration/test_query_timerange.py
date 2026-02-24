@@ -1,5 +1,5 @@
 from mosaicolabs.comm import MosaicoClient
-from mosaicolabs.models import Time
+from mosaicolabs.types import Time
 from mosaicolabs.models.query import QueryOntologyCatalog, QueryTopic
 from mosaicolabs.models.sensors import IMU, GPS
 from testing.integration.config import (
@@ -69,9 +69,9 @@ def test_query_ontology_with_timestamp_imu(
     # Query by multiple condition: time and value
     tstamp = Time.from_float(1700000000.26)
     query_resp = _client.query(
-        QueryOntologyCatalog(include_timestamp_range=True)
-        .with_expression(IMU.Q.header.stamp.sec.eq(tstamp.sec))
-        .with_expression(IMU.Q.header.stamp.nanosec.geq(tstamp.nanosec)),
+        QueryOntologyCatalog(include_timestamp_range=True).with_expression(
+            IMU.Q.timestamp_ns.geq(tstamp.to_nanoseconds())
+        ),
     )
 
     assert query_resp is not None and not query_resp.is_empty()
@@ -124,8 +124,7 @@ def test_query_mixed_ontology_with_timestamp(
     query_resp = _client.query(
         QueryOntologyCatalog(include_timestamp_range=True)
         .with_expression(IMU.Q.acceleration.x.geq(0))
-        .with_expression(GPS.Q.header.stamp.sec.geq(tstamp.sec))
-        .with_expression(GPS.Q.header.stamp.nanosec.geq(tstamp.nanosec)),
+        .with_expression(GPS.Q.timestamp_ns.geq(tstamp.to_nanoseconds())),
     )
 
     assert query_resp is not None and not query_resp.is_empty()
@@ -186,9 +185,9 @@ def test_query_multi_criteria_with_timestamp(
     # Query by multiple condition: time and value
     tstamp = Time.from_float(1700000000.33)
     query_resp = _client.query(
-        QueryOntologyCatalog(include_timestamp_range=True)
-        .with_expression(IMU.Q.header.stamp.sec.geq(tstamp.sec))
-        .with_expression(IMU.Q.header.stamp.nanosec.geq(tstamp.nanosec)),
+        QueryOntologyCatalog(include_timestamp_range=True).with_expression(
+            IMU.Q.timestamp_ns.geq(tstamp.to_nanoseconds())
+        ),
         QueryTopic().with_name(UPLOADED_IMU_FRONT_TOPIC),
     )
 

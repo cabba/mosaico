@@ -672,8 +672,7 @@ class MosaicoClient:
                     # Append a filter with deep time-series data discovery and measurement time windowing
                     QueryOntologyCatalog()
                     .with_expression(IMU.Q.acceleration.x.gt(5.0))
-                    .with_expression(IMU.Q.header.stamp.sec.gt(1700134567))
-                    .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
+                    .with_expression(IMU.Q.timestamp_ns.gt(1700134567))
                 )
                 # Inspect the results
                 if results is not None:
@@ -700,8 +699,7 @@ class MosaicoClient:
                     # Append a filter with deep time-series data discovery and measurement time windowing
                     QueryOntologyCatalog()
                     .with_expression(IMU.Q.acceleration.x.gt(5.0))
-                    .with_expression(IMU.Q.header.stamp.sec.gt(1700134567))
-                    .with_expression(IMU.Q.header.stamp.nanosec.between([123456, 789123])),
+                    .with_expression(IMU.Q.timestamp_ns.gt(1700134567))
                 )
                 # Perform the server side query
                 results = client.query(query=query)

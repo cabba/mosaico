@@ -115,7 +115,7 @@ class QueryResponse:
         with MosaicoClient.connect("localhost", 6726) as client:
             # Filter IMU data by a specific acquisition second
             qresponse = client.query(
-                QueryOntologyCatalog(IMU.Q.header.stamp.sec.lt(1770282868))
+                QueryOntologyCatalog(IMU.Q.timestamp_ns.lt(1770282868))
             )
 
             # Inspect the response
@@ -127,7 +127,7 @@ class QueryResponse:
 
             # Filter primitive Floating64 telemetry by frame identifier
             qresponse = client.query(
-                QueryOntologyCatalog(Floating64.Q.header.frame_id.eq("robot_base"))
+                QueryOntologyCatalog(Floating64.Q.frame_id.eq("robot_base"))
             )
 
             # Inspect the response
