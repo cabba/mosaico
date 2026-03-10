@@ -34,6 +34,7 @@ from .do_action import (
     _DoActionQueryResponse,
 )
 from .executor_pool import _ExecutorPool
+from .middlewares import MosaicoAuthMiddlewareFactory
 
 # Set the hierarchical logger
 logger = get_logger(__name__)
@@ -54,7 +55,11 @@ class MosaicoClient:
         ```python
         from mosaicolabs import MosaicoClient
 
-        with MosaicoClient.connect("localhost", 6726) as client:
+        with MosaicoClient.connect(
+            "localhost",
+            6726,
+            api_key="msco_s3l8gcdwuadege3pkhou0k0n2t5omfij_f9010b9e",
+        ) as client:
             sequences = client.list_sequences()
             print(f"Available data: {sequences}")
         ```
@@ -64,6 +69,7 @@ class MosaicoClient:
     # Used to ensure the constructor is only called via the `connect()` factory.
     _CONNECT_SENTINEL = object()
     _MOSAICO_TLS_CERT_ENV_VAR: str = "MOSAICO_TLS_CERT_FILE"
+    _MOSAICO_AUTH_API_KEY: str = "MOSAICO_API_KEY"
 
     def __init__(
         self,
@@ -76,6 +82,7 @@ class MosaicoClient:
         executor_pool: Optional[_ExecutorPool],
         sentinel: object,
         tls_cert: Optional[bytes],
+        middlewares: dict[str, fl.ClientMiddlewareFactory],
     ):
         """
         **Internal Constructor** (do not call this directly): The `MosaicoClient` enforces a strict
@@ -97,6 +104,7 @@ class MosaicoClient:
             executor_pool: Internal pool for async I/O.
             sentinel: Private object used to verify factory-based instantiation.
             tls_cert: The TLS certificate.
+            middlewares: The middlewares to be used for the connection.
         """
         if sentinel is not MosaicoClient._CONNECT_SENTINEL:
             raise RuntimeError(
@@ -119,6 +127,8 @@ class MosaicoClient:
         """The pool of thread executors used for offloading serialization and I/O."""
         self._tls_cert: Optional[bytes] = tls_cert
         """The path to the TLS certificate file."""
+        self._middlewares: dict[str, fl.ClientMiddlewareFactory] = middlewares
+        """The middlewares to be used for the connection."""
 
         # Initialize caches
         self._sequence_handlers_cache: Dict[str, SequenceHandler] = {}
@@ -142,6 +152,7 @@ class MosaicoClient:
                     pool_size=os.cpu_count(),
                     timeout=self._timeout,
                     tls_cert=self._tls_cert,
+                    middlewares=self._middlewares,
                 )
 
             return self._connection_pool
@@ -172,6 +183,7 @@ class MosaicoClient:
         port: int,
         timeout: int = 5,
         tls_cert_path: Optional[str] = None,
+        api_key: Optional[str] = None,
     ) -> "MosaicoClient":
         """
         The primary entry point to the Mosaico Data Platform.
@@ -193,6 +205,7 @@ class MosaicoClient:
             timeout (int): Maximum time in seconds to wait for a connection response.
                 Defaults to 5.
             tls_cert_path (Optional[str]): Path to the TLS certificate file. Defaults to None.
+            api_key (Optional[str]): The API key for authentication. Defaults to None.
 
         Returns:
             MosaicoClient: An initialized and connected client ready for operations.
@@ -206,7 +219,11 @@ class MosaicoClient:
             from mosaicolabs import MosaicoClient
 
             # Establish a connection to the Mosaico Data Platform
-            with MosaicoClient.connect("localhost", 6726) as client:
+            with MosaicoClient.connect(
+                "localhost",
+                6726,
+                api_key="msco_vy9lqa7u4lr7w3vimhz5t8bvvc0xbmk2_9c94a86",
+            ) as client:
                 # Perform operations using the client
                 pass
             ```
@@ -217,12 +234,17 @@ class MosaicoClient:
 
         resolved_tls_cert = cls._resolve_tls_cert_path(tls_cert_path)
 
+        middlewares = {}
+        if api_key:
+            middlewares["mosaico_auth"] = MosaicoAuthMiddlewareFactory(api_key=api_key)
+
         try:
             control_client: fl.FlightClient = _get_connection(
                 host=host,
                 port=port,
                 timeout=timeout,
                 tls_cert=resolved_tls_cert,
+                middlewares=middlewares,
             )
         except Exception as e:
             raise ConnectionError(
@@ -239,16 +261,22 @@ class MosaicoClient:
             executor_pool=None,
             sentinel=cls._CONNECT_SENTINEL,
             tls_cert=resolved_tls_cert,
+            middlewares=middlewares,
         )
 
     @classmethod
-    def from_env(cls, host: str, port: int) -> "MosaicoClient":
+    def from_env(
+        cls,
+        host: str,
+        port: int,
+        timeout: int = 5,
+    ) -> "MosaicoClient":
         """
         Creates a MosaicoClient instance by resolving configuration from environment variables.
 
         This method acts as a smart constructor that automatically discovers system
         settings. It currently focuses on security configurations, specifically
-        resolving TLS settings if the required environment variables are present.
+        resolving TLS settings and Auth API-Key if the required environment variables are present.
 
         As the SDK evolves, this method will be expanded to automatically detect
         additional parameters from the environment.
@@ -256,6 +284,8 @@ class MosaicoClient:
         Args:
             host (str): The server hostname or IP address.
             port (int): The port number of the Mosaico service.
+            timeout (int): Maximum time in seconds to wait for a connection response.
+                Defaults to 5.
 
         Returns:
             MosaicoClient: A client instance pre-configured with discovered settings.
@@ -270,9 +300,11 @@ class MosaicoClient:
         """
 
         return cls.connect(
-            host,
-            port,
+            host=host,
+            port=port,
+            timeout=timeout,
             tls_cert_path=os.environ.get(MosaicoClient._MOSAICO_TLS_CERT_ENV_VAR),
+            api_key=os.environ.get(MosaicoClient._MOSAICO_AUTH_API_KEY),
         )
 
     # --- Context Manager Protocol ---
@@ -869,6 +901,32 @@ class MosaicoClient:
         except Exception as e:
             logger.error(f"Query returned an internal error: '{e}'")
             return None
+
+    def version(self):
+        """
+        Get the version of the Mosaico server.
+
+        Returns:
+            str: The version of the Mosaico server.
+        """
+        ACTION = FlightAction.VERSION
+        try:
+            act_resp = _do_action(
+                client=self._control_client,
+                action=ACTION,
+                payload={},
+                expected_type=None,
+            )
+
+            if act_resp is None:
+                logger.error(f"Action '{ACTION}' returned no response.")
+                return []
+
+            return act_resp
+
+        except Exception as e:
+            logger.error(f"'Version' action returned an internal error: '{e}'")
+            return []
 
     def clear_sequence_handlers_cache(self):
         """

@@ -164,7 +164,7 @@ impl Topic {
     }
 
     /// Finalize the write procedure of the topic. The topic is locked and additional data are
-    /// consolidated (e.g. manifest, timestamp bounds). This function is intended to be called by
+    /// consolidated (e.g. timestamp bounds). This function is intended to be called by
     /// [`TopicWriterGuard`] to finilize the writing process.
     async fn finalize(
         &mut self,
@@ -450,7 +450,7 @@ pub struct TopicWriterGuard<'a> {
 }
 
 impl<'a> TopicWriterGuard<'a> {
-    /// Performs all the operations required to finilize the writing stream, consolidate topic data
+    /// Performs all the operations required to finalize the writing stream, consolidate topic data
     /// and lock the topic
     pub async fn finalize(self) -> Result<(), Error> {
         trace!("internal writer finalized");
