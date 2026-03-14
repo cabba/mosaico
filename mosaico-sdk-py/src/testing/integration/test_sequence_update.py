@@ -1,7 +1,7 @@
 import pytest
 
 from mosaicolabs.comm import MosaicoClient
-from mosaicolabs.enum.on_error_policy import OnErrorPolicy
+from mosaicolabs.enum.session_level_error_policy import SessionLevelErrorPolicy
 from mosaicolabs.models import Message
 from mosaicolabs.models.query.builders import QueryOntologyCatalog, QueryTopic
 from mosaicolabs.models.sensors import Pressure, Temperature
@@ -37,7 +37,7 @@ def test_sequence_update_on_error_report(
     # Sequence must exist
     assert seqhandler is not None
     session_uuid = ""
-    with seqhandler.update() as seq_updater:  # default OnErrorPolicy.Report
+    with seqhandler.update() as seq_updater:  # default SessionLevelErrorPolicy.Report
         session_uuid = seq_updater.session_uuid
         with pytest.raises(RuntimeError, match="__inner_exception__"):
             seq_updater.topic_create(
@@ -63,7 +63,7 @@ def test_sequence_update_on_error_delete(
     # Sequence must exist
     assert seqhandler is not None
     with pytest.raises(RuntimeError, match="__inner_exception__"):
-        with seqhandler.update(on_error=OnErrorPolicy.Delete) as seq_updater:
+        with seqhandler.update(on_error=SessionLevelErrorPolicy.Delete) as seq_updater:
             seq_updater.topic_create(
                 "test_topic_delete",
                 {},
