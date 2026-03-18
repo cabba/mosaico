@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["main", "release/*"]
+    branches:
+      - "main"
+      - "release/*"
     paths:
       - "**.rs"
       - "**.py"
@@ -11,7 +13,9 @@ on:
       - "**/pyproject.toml"
       - "**/poetry.lock"
   pull_request:
-    branches: ["main", "release/*"]
+    branches:
+      - "main"
+      - "release/*"
     paths:
       - "**.rs"
       - "**.py"
