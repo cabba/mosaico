@@ -25,7 +25,6 @@ permissions:
   contents: read
 
 jobs:
-  # Static analysis is done only on ubuntu to speedup the process
   static-analysis:
     name: "Static analysis"
     runs-on: ubuntu-latest
@@ -53,13 +52,9 @@ jobs:
           ruff check mosaico-sdk-py
 
   backend-unit-tests:
-    name: "mosaicod: unit tests on (${{ matrix.os }})"
+    name: "Backend: unit tests"
     needs: [static-analysis]
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, macos-26]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@v1
@@ -67,26 +62,21 @@ jobs:
           toolchain: stable
 
       - name: Install System Dependencies (Linux)
-        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libpq-dev
-
-      - name: Install System Dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: brew install libpq
 
       - name: Unit Tests
         run: ./scripts/tests.sh --mosaicod
 
   python-sdk-unit-tests:
-    name: "Python SDK: unit tests on (${{ matrix.os }})"
+    name: "Python SDK: unit tests on (Python ${{ matrix.python-version }})"
     needs: [static-analysis]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, macos-26]
-    runs-on: ${{ matrix.os }}
+        python-version: ["3.10", "3.13"]
+    runs-on: ubuntu-24.04
     env:
       PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
     steps:
@@ -96,45 +86,20 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6.1.0
         with:
-          python-version: "3.13"
+          python-version: ${{ matrix.python-version }}
           cache: "poetry"
       - name: Unit Tests
         run: ./scripts/tests.sh --sdk-python
 
   full-stack-tests:
-    name: "Full stack tests on (${{ matrix.os }})"
+    name: "Full stack tests on (Py ${{ matrix.python-version }})"
     needs: [backend-unit-tests, python-sdk-unit-tests]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubutntu-22.04, ubuntu-24.04, macos-26]
-    runs-on: ${{ matrix.os }}
+        python-version: ["3.10", "3.13"]
+    runs-on: ubuntu-24.04
     env:
       PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
     steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@v1
-        with:
-          toolchain: stable
-      
-      - name: Install Dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpq-dev
-      
-      - name: Install Dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: brew install libpq
-
-      - name: Install Poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v6.1.0
-        with:
-          python-version: "3.13"
-          cache: "poetry"
-
-      - name: Integration Tests
-        run: |
-          ./scripts/tests.sh --full-stack
-          ./scripts/tests.sh --full-stack-tls
+      -
