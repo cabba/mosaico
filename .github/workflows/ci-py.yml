@@ -53,5 +53,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
       - name: Unit Tests
-        run: ./scripts/tests.sh --sdk-python
+        run: ./scripts/tests --sdk-python
 
