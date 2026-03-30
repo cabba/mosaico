@@ -1,0 +1,114 @@
+#!/bin/bash
+
+MOSAICOD_DIR="mosaicod"
+PY_DIR="mosaico-sdk-py"
+PY_VERSION=""
+MOSAICOD_VERSION=""
+PUSH=false
+
+FILE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PROJECT_DIR=$(readlink -f "${FILE_DIR}/..")
+MOSAICOD_PATH="${PROJECT_DIR}/${MOSAICOD_DIR}"
+PY_PATH="${PROJECT_DIR}/${PY_DIR}"
+CARGO_PATH="$MOSAICOD_PATH/Cargo.toml"
+PYPROJECT_PATH="$PY_PATH/pyproject.toml"
+README_PATH="$PROJECT_DIR/README.md"
+
+
+# SemVer Regex: Matches x.y.z (with optional pre-release/build metadata)
+SEMVER_REGEX="^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$"
+
+validate_semver() {
+    if [[ ! $1 =~ $SEMVER_REGEX ]]; then
+        echo "Error: '$1' is not a valid SemVer string (expected x.y.z)."
+        exit 1
+    fi
+}
+
+show_help() {
+    cat << EOF
+Mosaico release tool.
+
+Usage: release [OPTIONS]
+
+Options:
+    --mosaicod [SEMVER]         Creates a new mosaicod version
+    --py       [SEMVER]         Creaes a new python sdk version 
+    --push                      Pushes changes to remote
+    --help                      Show this help message
+EOF
+}
+
+
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --py) 
+            validate_semver "$2"
+            PY_VERSION="$2"
+            shift 
+            ;;
+        --mosaicod) 
+            validate_semver "$2"
+            MOSAICOD_VERSION="$2"
+            shift 
+            ;;
+        --push) 
+            PUSH=true
+            ;;
+        *) 
+            echo "Unknown parameter: $1"
+            exit 1 
+            ;;
+    esac
+    shift
+done
+
+release_py() {
+    if [[ ! -f $PYPROJECT_PATH ]]; then
+        echo "Error: $PYPROJECT_PATH not found."
+        exit 1
+    fi
+    echo "Updating pyproject.toml to $PY_VERSION"
+    sed -i "s/^version = \".*\"/version = \"$PY_VERSION\"/" "$PYPROJECT_PATH"
+    
+    git add "$PYPROJECT_PATH"
+    git commit -m "Release mosaico Python SDK v$PY_VERSION"
+    git tag -a "mosaico-py/v$PY_VERSION" -m "Mosaico python SDK release v$PY_VERSION"
+}
+
+# Function to handle Mosaicod release
+release_mosaicod() {
+    if [[ ! -f $CARGO_PATH ]]; then
+        echo "Error: $CARGO_PATH not found."
+        exit 1
+    fi
+    if [[ ! -f $README_PATH ]]; then
+        echo "Error: $README_PATH not found."
+        exit 1
+    fi
+    echo "Updating $CARGO_PATH to $MOSAICOD_VERSION"
+    # Only replaces the first instance (the package version)
+    sed -i "0,/^version = \".*\"/{s/^version = \".*\"/version = \"$MOSAICOD_VERSION\"/}" "$CARGO_PATH"
+
+    echo "Updating README.md mosaicod badge to $MOSAICOD_VERSION"
+    sed -i "s|img.shields.io/badge/mosaicod-v[0-9.]*|img.shields.io/badge/mosaicod-v$MOSAICOD_VERSION|g" "$README_PATH"
+    
+    git add "$CARGO_PATH $README_PATH"
+    echo "Committing changes"
+    git commit -m "Release mosaicod v$MOSAICOD_VERSION"
+    echo "Creating tags"
+    git tag -a "mosaicod/v$MOSAICOD_VERSION" -m "mosaicod release v$MOSAICOD_VERSION"
+}
+
+# Execute updates
+[ -n "$PY_VERSION" ] && release_py
+[ -n "$MOSAICOD_VERSION" ] && release_mosaicod
+
+# Push logic
+if [ "$PUSH" = true ]; then
+    echo "Pushing changes and tags"
+    git push origin main --follow-tags
+else
+    echo "Dry run: skipping push."
+fi
