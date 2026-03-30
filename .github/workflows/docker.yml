@@ -3,8 +3,8 @@ name: Build mosaicod Docker Image
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+      - 'mosaicod/v[0-9]+.[0-9]+.[0-9]+'
+      - 'mosaicod/v[0-9]+.[0-9]+.[0-9]+-*'
   workflow_dispatch:
 
 permissions:
@@ -95,9 +95,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/mosaicod
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ !contains(github.ref, 'rc') }}
+            type=match,pattern=mosaicod/(v.*),group=1
+            type=match,pattern=mosaicod/v(.*),group=1,suffix=
 
       - name: Create manifest list and push
         env:
