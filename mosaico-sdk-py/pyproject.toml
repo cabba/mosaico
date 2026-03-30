@@ -2,7 +2,7 @@
 name = "mosaicolabs"
 version = "0.3.0"
 description = "Python SDK for Mosaico Data-Platform"
-authors = ["Mosaico Labs <info@mosaico.com>"]
+authors = ["Mosaico Labs <info@mosaico.dev>"]
 readme = "README.md"
 license = "AGPL-3.0"
 keywords = [
