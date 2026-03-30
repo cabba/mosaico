@@ -55,5 +55,5 @@ jobs:
           sudo apt-get install -y libpq-dev
 
       - name: Unit Tests
-        run: ./scripts/tests.sh --mosaicod
+        run: ./scripts/tests --mosaicod
 

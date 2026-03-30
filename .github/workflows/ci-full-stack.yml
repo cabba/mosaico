@@ -27,7 +27,6 @@ permissions:
 jobs:
   full-stack-tests:
     name: "Tests on (Py ${{ matrix.python-version }})"
-    needs: [backend-unit-tests, python-sdk-unit-tests]
     strategy:
       fail-fast: false
       matrix:
@@ -55,5 +54,5 @@ jobs:
 
       - name: Integration Tests
         run: |
-          ./scripts/tests.sh --full-stack
-          ./scripts/tests.sh --full-stack-tls
+          ./scripts/tests --full-stack
+          ./scripts/tests --full-stack-tls
