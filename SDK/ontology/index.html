@@ -1,0 +1,5509 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Strongly typed data structures.">
+      
+      
+      
+        <link rel="canonical" href="https://docs.mosaico.dev/SDK/ontology/">
+      
+      
+        <link rel="prev" href="../client/">
+      
+      
+        <link rel="next" href="../handling/data-handling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Data Models & Ontology - Mosaico Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Manrope:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Manrope";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#core-philosophy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Mosaico Documentation" class="md-header__button md-logo" aria-label="Mosaico Documentation" data-md-component="logo">
+      
+  <img src="../../assets/mosaico_logomark.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Mosaico Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data Models & Ontology
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mosaico-labs/mosaico" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+    
+  
+  Mosaico
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  SDK
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../daemon/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Daemon
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/release_cycle/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Mosaico Documentation" class="md-nav__button md-logo" aria-label="Mosaico Documentation" data-md-component="logo">
+      
+  <img src="../../assets/mosaico_logomark.svg" alt="logo">
+
+    </a>
+    Mosaico Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mosaico-labs/mosaico" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../.." class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mosaico
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Mosaico
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents_docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Docs for Agents
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code_contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Contributing
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-To
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/serialized_writing_from_csv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing a Single Topic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/serialized_writing_from_multi_csv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Multiple Topics Serially
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/interleaved_writing_from_multi_topics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Interleaved Topics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/streaming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Streaming Data from Sequences and Topics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/query_sequences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Querying Sequences by Name and Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/query_topics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Querying Topics by Name and Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/query_multi_domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Domain Querying
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/query_chained/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complex Chained Queries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/secure_connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Secure Connection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../examples/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/ros_injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ROS Ingestion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/data_inspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Discovery and Inspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/query_catalogs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Querying Catalogs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/ontology_customization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customizing the Data Ontology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    In Depth
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    In Depth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models & Ontology
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models & Ontology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Core Philosophy
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-ontology-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Available Ontology Classes
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available Ontology Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#base-data-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Base Data Models
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geometry-kinematics-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Geometry &amp; Kinematics Models
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sensor-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Sensor Models
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sensor Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#futures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Futures
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaicotype-mosaicofield" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          MosaicoType &amp; MosaicoField
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MosaicoType &amp; MosaicoField">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaicotype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          MosaicoType
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MosaicoType">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scalar-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Scalar types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-type-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Explicit type definition
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-fallback-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Using Fallback types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          List types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Matrix types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tensor3d-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Tensor3d types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-arrow-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Custom Arrow types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaicofield" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          MosaicoField
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MosaicoField">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Basic usage
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullability-and-parquet-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Nullability and Parquet V2
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Architecture
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#serializable-the-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>Serializable</code> (The Factory)
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-the-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>Message</code> (The Envelope)
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Message (The Envelope)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standalone-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Standalone Messages
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedded-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Embedded Fields
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mixins-uncertainty-robustness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Mixins: Uncertainty &amp; Robustness
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mixins: Uncertainty &amp; Robustness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#covariancemixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>CovarianceMixin</code>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variancemixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>VarianceMixin</code>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-with-mixins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Extending with Mixins
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#querying-data-ontology-with-the-query-q-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Querying Data Ontology with the Query (<code>.Q</code>) Proxy
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Querying Data Ontology with the Query (.Q) Proxy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-proxy-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          How the Proxy Works
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#queryability-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Queryability Examples
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Practical Usage
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-the-ontology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Customizing the Ontology
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customizing the Ontology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-inheritance-and-mixins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          1. Inheritance and Mixins
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-define-the-wire-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          2. Define the Wire Schema
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Define the Wire Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-serialization-format-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          2.1 Serialization Format Optimization
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customization-example-environmentsensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Customization Example: <code>EnvironmentSensor</code>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5_3" id="__nav_2_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Handling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data Handling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handling/data-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing & Reading Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handling/writing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Writing Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handling/reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Reading Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Query Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5_5" id="__nav_2_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bridges
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges/ml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Machine Learning & Analytics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges/ros/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ROS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/comm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Communication Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/enum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Enum Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Types Module
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6_5" id="__nav_2_6_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Handling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_6_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data Handling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/handlers/reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Retrieval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/handlers/writing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6_6" id="__nav_2_6_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query Module
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_6_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Query Module
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/query/builders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query Builders
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/query/internal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internal Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/query/response/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query Response
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6_7" id="__nav_2_6_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_6_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/models/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Models and Mixins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/models/data_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/models/futures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Futures Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/models/geometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/models/platform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/models/sensors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6_8" id="__nav_2_6_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_6_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bridges
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Machine Learning Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6_8_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6_8_2" id="__nav_2_6_8_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ROS-Bridge
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_6_8_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6_8_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ROS-Bridge
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/ros/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ROS Bridge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/custom_ontology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ROS Custom Ontology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6_8_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6_8_2_3" id="__nav_2_6_8_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapters
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="5" aria-labelledby="__nav_2_6_8_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6_8_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Adapters
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/adapters/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/adapters/std_msgs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std_msgs Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/adapters/geometry_msgs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    geometry_msgs Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/adapters/sensor_msgs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    sensor_msgs Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/adapters/nav_msgs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nav_msgs Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/adapters/tf2_msgs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    tf2_msgs Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_reference/bridges/ros/adapters/override_msgs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    override_msgs Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../daemon/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daemon
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Daemon
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Setup
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/api_key/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      API keys
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Custom Actions
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/ingestion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Ingestion
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/retrieval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Retrieval
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Queries
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      CLI Reference
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/tls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      TLS Support
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daemon/env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Environment Variables
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/release_cycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Release Cycle
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/testing_and_dev/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <span class="md-typeset">
+      Testing &amp; Development
+    </span>
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Core Philosophy
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-ontology-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Available Ontology Classes
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available Ontology Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#base-data-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Base Data Models
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geometry-kinematics-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Geometry &amp; Kinematics Models
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sensor-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Sensor Models
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sensor Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#futures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Futures
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaicotype-mosaicofield" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          MosaicoType &amp; MosaicoField
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MosaicoType &amp; MosaicoField">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaicotype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          MosaicoType
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MosaicoType">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scalar-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Scalar types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explicit-type-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Explicit type definition
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-fallback-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Using Fallback types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          List types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matrix-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Matrix types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tensor3d-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Tensor3d types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-arrow-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Custom Arrow types
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaicofield" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          MosaicoField
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MosaicoField">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Basic usage
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullability-and-parquet-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Nullability and Parquet V2
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Architecture
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#serializable-the-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>Serializable</code> (The Factory)
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-the-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>Message</code> (The Envelope)
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Message (The Envelope)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standalone-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Standalone Messages
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedded-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Embedded Fields
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mixins-uncertainty-robustness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Mixins: Uncertainty &amp; Robustness
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mixins: Uncertainty &amp; Robustness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#covariancemixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>CovarianceMixin</code>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variancemixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <code>VarianceMixin</code>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extending-with-mixins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Extending with Mixins
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#querying-data-ontology-with-the-query-q-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Querying Data Ontology with the Query (<code>.Q</code>) Proxy
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Querying Data Ontology with the Query (.Q) Proxy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-proxy-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          How the Proxy Works
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#queryability-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Queryability Examples
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Practical Usage
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-the-ontology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Customizing the Ontology
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customizing the Ontology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-inheritance-and-mixins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          1. Inheritance and Mixins
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-define-the-wire-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          2. Define the Wire Schema
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Define the Wire Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-serialization-format-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          2.1 Serialization Format Optimization
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customization-example-environmentsensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Customization Example: <code>EnvironmentSensor</code>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    SDK
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../client/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    In Depth
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Data Models & Ontology</h1>
+
+<p>The <strong>Mosaico Data Ontology</strong> is the semantic backbone of the SDK. 
+It defines the structural "rules" that transform raw binary streams into meaningful physical data, such as GPS coordinates, 
+inertial measurements, or camera frames.</p>
+<p>By using a strongly-typed ontology, Mosaico ensures that your data remains consistent, validatable, 
+and highly optimized for both high-throughput transport and complex queries.</p>
+<h2 id="core-philosophy">Core Philosophy<a class="headerlink" href="#core-philosophy" title="Permanent link">&para;</a></h2>
+<p>The ontology is designed to solve the "generic data" problem in robotics by ensuring every data object is:</p>
+<ol>
+<li><strong>Validatable</strong>: Uses Pydantic for strict runtime type checking of sensor fields.</li>
+<li><strong>Serializable</strong>: Automatically maps Python objects to efficient <strong>PyArrow</strong> schemas for high-speed binary transport.</li>
+<li><strong>Queryable</strong>: Injects a fluent API (<code>.Q</code>) into every class, allowing you to filter databases based on physical values (e.g., <code>IMU.Q.acceleration.x &gt; 6.0</code>).</li>
+<li><strong>Middleware-Agnostic</strong>: Acts as an abstraction layer so that your analysis code doesn't care if the data originally came from ROS, a simulator, or a custom logger.</li>
+</ol>
+<h2 id="available-ontology-classes">Available Ontology Classes<a class="headerlink" href="#available-ontology-classes" title="Permanent link">&para;</a></h2>
+<p>The Mosaico SDK provides a comprehensive library of models that transform raw binary streams into validated, queryable Python objects. These are grouped by their physical and logical application below.</p>
+<h3 id="base-data-models">Base Data Models<a class="headerlink" href="#base-data-models" title="Permanent link">&para;</a></h3>
+<details class="question">
+<summary>API Reference</summary>
+<p><a href="../API_reference/models/data_types/">Base Data Types</a></p>
+</details>
+<p>These models serve as timestamped, metadata-aware wrappers for standard primitives. They allow simple diagnostic or scalar values to be treated as first-class members of the platform.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Classes</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primitives</strong></td>
+<td><a class="autorefs autorefs-internal" title="String" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.String"><code>String</code></a>, <a class="autorefs autorefs-internal" title="LargeString" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.LargeString"><code>LargeString</code></a></td>
+<td>UTF-8 text data for logs or status messages.</td>
+</tr>
+<tr>
+<td><strong>Booleans</strong></td>
+<td><a class="autorefs autorefs-internal" title="Boolean" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Boolean"><code>Boolean</code></a></td>
+<td>Logic flags (True/False).</td>
+</tr>
+<tr>
+<td><strong>Signed Integers</strong></td>
+<td><a class="autorefs autorefs-internal" title="Integer8" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Integer8"><code>Integer8</code></a>, <a class="autorefs autorefs-internal" title="Integer16" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Integer16"><code>Integer16</code></a>, <a class="autorefs autorefs-internal" title="Integer32" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Integer32"><code>Integer32</code></a>, <a class="autorefs autorefs-internal" title="Integer64" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Integer64"><code>Integer64</code></a></td>
+<td>Signed whole numbers of varying bit-depth.</td>
+</tr>
+<tr>
+<td><strong>Unsigned Integers</strong></td>
+<td><a class="autorefs autorefs-internal" title="Unsigned8" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Unsigned8"><code>Unsigned8</code></a>, <a class="autorefs autorefs-internal" title="Unsigned16" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Unsigned16"><code>Unsigned16</code></a>, <a class="autorefs autorefs-internal" title="Unsigned32" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Unsigned32"><code>Unsigned32</code></a>, <a class="autorefs autorefs-internal" title="Unsigned64" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Unsigned64"><code>Unsigned64</code></a></td>
+<td>Non-negative integers for counters or IDs.</td>
+</tr>
+<tr>
+<td><strong>Floating Point</strong></td>
+<td><a class="autorefs autorefs-internal" title="Floating16" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Floating16"><code>Floating16</code></a>, <a class="autorefs autorefs-internal" title="Floating32" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Floating32"><code>Floating32</code></a>, <a class="autorefs autorefs-internal" title="Floating64" href="../API_reference/models/data_types/#mosaicolabs.models.data.base_types.Floating64"><code>Floating64</code></a></td>
+<td>Real numbers for high-precision physical values.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="geometry-kinematics-models">Geometry &amp; Kinematics Models<a class="headerlink" href="#geometry-kinematics-models" title="Permanent link">&para;</a></h3>
+<details class="question">
+<summary>API Reference</summary>
+<p><a href="../API_reference/models/geometry/">Geometry Models</a></p>
+</details>
+<p>These structures define spatial relationships and the movement states of objects in 2D or 3D coordinate frames.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Classes</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Points &amp; Vectors</strong></td>
+<td><a class="autorefs autorefs-internal" title="Vector2d" href="../API_reference/models/geometry/#mosaicolabs.models.data.geometry.Vector2d"><code>Vector2d/3d/4d</code></a>, <a class="autorefs autorefs-internal" title="Point2d" href="../API_reference/models/geometry/#mosaicolabs.models.data.geometry.Point2d"><code>Point2d/3d</code></a></td>
+<td>Fundamental spatial directions and locations.</td>
+</tr>
+<tr>
+<td><strong>Rotations</strong></td>
+<td><a class="autorefs autorefs-internal" title="Quaternion" href="../API_reference/models/geometry/#mosaicolabs.models.data.geometry.Quaternion"><code>Quaternion</code></a></td>
+<td>Compact, singularity-free 3D orientation ().</td>
+</tr>
+<tr>
+<td><strong>Spatial State</strong></td>
+<td><a class="autorefs autorefs-internal" title="Pose" href="../API_reference/models/geometry/#mosaicolabs.models.data.geometry.Pose"><code>Pose</code></a>, <a class="autorefs autorefs-internal" title="Transform" href="../API_reference/models/geometry/#mosaicolabs.models.data.geometry.Transform"><code>Transform</code></a></td>
+<td>Absolute positions or relative coordinate frame shifts.</td>
+</tr>
+<tr>
+<td><strong>Motion</strong></td>
+<td><a class="autorefs autorefs-internal" title="Velocity" href="../API_reference/models/geometry/#mosaicolabs.models.data.kinematics.Velocity"><code>Velocity</code></a>, <a class="autorefs autorefs-internal" title="Acceleration" href="../API_reference/models/geometry/#mosaicolabs.models.data.kinematics.Acceleration"><code>Acceleration</code></a></td>
+<td>Linear and angular movement rates (Twists and Accels).</td>
+</tr>
+<tr>
+<td><strong>Aggregated State</strong></td>
+<td><a class="autorefs autorefs-internal" title="MotionState" href="../API_reference/models/geometry/#mosaicolabs.models.data.kinematics.MotionState"><code>MotionState</code></a></td>
+<td>An atomic snapshot combining Pose, Velocity, and Acceleration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sensor-models">Sensor Models<a class="headerlink" href="#sensor-models" title="Permanent link">&para;</a></h3>
+<details class="question">
+<summary>API Reference</summary>
+<p><a href="../API_reference/models/sensors/">Sensor Models</a></p>
+</details>
+<p>High-level models representing physical hardware devices and their processed outputs.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Classes</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Inertial</strong></td>
+<td><a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.IMU" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.IMU"><code>IMU</code></a></td>
+<td>6-DOF inertial data: linear acceleration and angular velocity.</td>
+</tr>
+<tr>
+<td><strong>Navigation</strong></td>
+<td><a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.GPS" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.GPS"><code>GPS</code></a>, <a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.GPSStatus" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.GPSStatus"><code>GPSStatus</code></a>, <a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.NMEASentence" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.NMEASentence"><code>NMEASentence</code></a></td>
+<td>Geodetic fixes (WGS 84), signal quality, and raw NMEA strings.</td>
+</tr>
+<tr>
+<td><strong>Vision</strong></td>
+<td><a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.Image" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.Image"><code>Image</code></a>, <a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.CompressedImage" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.CompressedImage"><code>CompressedImage</code></a>, <a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.CameraInfo" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.CameraInfo"><code>CameraInfo</code></a>, <a class="autorefs autorefs-internal" title="mosaicolabs.models.data.ROI" href="../API_reference/models/data_types/#mosaicolabs.models.data.ROI"><code>ROI</code></a></td>
+<td>Raw pixels, encoded streams (JPEG/H264), calibration, and regions of interest.</td>
+</tr>
+<tr>
+<td><strong>Environment</strong></td>
+<td><a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.Temperature" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.Temperature"><code>Temperature</code></a>, <a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.Pressure" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.Pressure"><code>Pressure</code></a>, <a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.Range" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.Range"><code>Range</code></a></td>
+<td>Thermal readings (K), pressure (Pa), and distance intervals (m).</td>
+</tr>
+<tr>
+<td><strong>Dynamics</strong></td>
+<td><a class="autorefs autorefs-internal" title="ForceTorque" href="../API_reference/models/geometry/#mosaicolabs.models.data.dynamics.ForceTorque"><code>ForceTorque</code></a></td>
+<td>3D force and torque vectors for load sensing.</td>
+</tr>
+<tr>
+<td><strong>Magnetic</strong></td>
+<td><a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.Magnetometer" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.Magnetometer"><code>Magnetometer</code></a></td>
+<td>Magnetic field vectors measured in microTesla ().</td>
+</tr>
+<tr>
+<td><strong>Robotics</strong></td>
+<td><a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.RobotJoint" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.RobotJoint"><code>RobotJoint</code></a></td>
+<td>States (position, velocity, effort) for index-aligned actuator arrays.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="futures">Futures<a class="headerlink" href="#futures" title="Permanent link">&para;</a></h4>
+<details class="question">
+<summary>API Reference</summary>
+<p><a href="../API_reference/models/futures/">Futures Models</a></p>
+</details>
+<p>Prospective high-level models representing emerging or not yet fully standardized sensor hardware. The <code>futures</code> module acts as a <strong>transitional space</strong> where experimental ontologies are introduced and iteratively refined before being promoted to the stable, production-ready ontology set.</p>
+<p>The following sensors are supported as first-class data types in this module:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LiDAR</strong></td>
+<td>3D point cloud data from laser-based ranging sensors, supporting full spatial geometry and optional intensity/RGB fields.</td>
+</tr>
+<tr>
+<td><strong>Radar</strong></td>
+<td>Range, velocity, and azimuth measurements from radio-frequency sensors, including Doppler-based target detection.</td>
+</tr>
+<tr>
+<td><strong>LaserScan</strong></td>
+<td>2D planar sweep data from single-line laser rangefinders, encoded as ordered range and intensity arrays.</td>
+</tr>
+<tr>
+<td><strong>Multi-Echo LaserScan</strong></td>
+<td>Extension of LaserScan supporting multiple return echoes per beam, enabling richer surface characterization.</td>
+</tr>
+<tr>
+<td><strong>RGBD Camera</strong></td>
+<td>Paired color and depth frames from structured-light or time-of-flight RGB-D sensors.</td>
+</tr>
+<tr>
+<td><strong>Stereo Camera</strong></td>
+<td>Synchronized left/right image pairs from stereo rigs, suitable for disparity estimation and 3D reconstruction.</td>
+</tr>
+<tr>
+<td><strong>ToF Camera</strong></td>
+<td>Per-pixel depth and amplitude data from time-of-flight imaging sensors.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Experimental Ontologies</p>
+<p>The <code>futures</code> module is a transitional area where ontologies under active experimentation are hosted before graduating to the stable ontology set. Field definitions, unit conventions, and structural relationships are <strong>not yet considered final</strong> and will be refined based on feedback from real-world integrations and adopters. Once an ontology reaches sufficient maturity and coverage, it will be promoted out of <code>futures</code> and into the core, production-ready modules.</p>
+</div>
+<h2 id="mosaicotype-mosaicofield">MosaicoType &amp; MosaicoField<a class="headerlink" href="#mosaicotype-mosaicofield" title="Permanent link">&para;</a></h2>
+<p>When defining ontologies in the Mosaico SDK, every class attribute carries two pieces of information:</p>
+<ul>
+<li><strong>Python type</strong> used by Pydantic for validation and IDE support.</li>
+<li><strong>PyArrow type</strong> used for efficient columnar serialization to Parquet/Arrow.</li>
+</ul>
+<p><code>MosaicoType</code> and <code>MosaicoField</code> let you express both in a single annotation, providing a clean <strong>single-source-of-truth API</strong> for ontology field declarations.</p>
+<p>You annotate each attribute once, and the Arrow schema is derived automatically at class-definition time by introspecting Pydantic's <code>model_fields</code>: no separate schema declaration to maintain, no risk of the two representations drifting apart.</p>
+<p>Because the whole mechanism is built on top of <strong>Pydantic model fields</strong> via <code>Annotated</code> metadata, extending or customising field behaviour is as simple as adding standard Pydantic <code>Field</code> kwargs: no subclassing, no metaclass magic, no separate schema registry to maintain.</p>
+<h3 id="mosaicotype">MosaicoType<a class="headerlink" href="#mosaicotype" title="Permanent link">&para;</a></h3>
+<details class="question">
+<summary>API Reference</summary>
+<p><a class="autorefs autorefs-internal" title="mosaicolabs.models.MosaicoType" href="../API_reference/models/base/#mosaicolabs.models.MosaicoType"><code>mosaicolabs.models.MosaicoType</code></a></p>
+</details>
+<p><code>MosaicoType</code> is a collection of <code>Annotated</code> type aliases. Each alias bundles the corresponding Python primitive type with its PyArrow counterpart as inline metadata, making the Arrow type immediately visible to the schema auto-builder without any additional configuration.</p>
+<h4 id="scalar-types">Scalar types<a class="headerlink" href="#scalar-types" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Alias</th>
+<th>Python type</th>
+<th>Arrow type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MosaicoType.uint8</code></td>
+<td><code>int</code></td>
+<td><code>pa.uint8()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.int8</code></td>
+<td><code>int</code></td>
+<td><code>pa.int8()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.uint16</code></td>
+<td><code>int</code></td>
+<td><code>pa.uint16()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.int16</code></td>
+<td><code>int</code></td>
+<td><code>pa.int16()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.uint32</code></td>
+<td><code>int</code></td>
+<td><code>pa.uint32()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.int32</code></td>
+<td><code>int</code></td>
+<td><code>pa.int32()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.uint64</code></td>
+<td><code>int</code></td>
+<td><code>pa.uint64()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.int64</code></td>
+<td><code>int</code></td>
+<td><code>pa.int64()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.float16</code></td>
+<td><code>float</code></td>
+<td><code>pa.float16()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.float32</code></td>
+<td><code>float</code></td>
+<td><code>pa.float32()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.float64</code></td>
+<td><code>float</code></td>
+<td><code>pa.float64()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.bool</code></td>
+<td><code>bool</code></td>
+<td><code>pa.bool_()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.string</code></td>
+<td><code>str</code></td>
+<td><code>pa.string()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.large_string</code></td>
+<td><code>str</code></td>
+<td><code>pa.large_string()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.binary</code></td>
+<td><code>bytes</code></td>
+<td><code>pa.binary()</code></td>
+</tr>
+<tr>
+<td><code>MosaicoType.large_binary</code></td>
+<td><code>bytes</code></td>
+<td><code>pa.large_binary()</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="explicit-type-definition">Explicit type definition<a class="headerlink" href="#explicit-type-definition" title="Permanent link">&para;</a></h4>
+<p>Using <a class="autorefs autorefs-internal" title="mosaicolabs.models.MosaicoType" href="../API_reference/models/base/#mosaicolabs.models.MosaicoType"><code>MosaicoType</code></a> provides precise control over the underlying PyArrow schema:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">MosaicoType</span><span class="p">,</span> <span class="n">Serializable</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">x</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span></code></pre></div>
+<ul>
+<li><code>x</code>: defined directly, will be converted in a <strong>not nullable</strong> PyArrow field.</li>
+<li><code>y</code>: wrapped in <code>Optional[...]</code>, will be converted in a <strong>nullable</strong> PyArrow field.</li>
+</ul>
+<h4 id="using-fallback-types">Using Fallback types<a class="headerlink" href="#using-fallback-types" title="Permanent link">&para;</a></h4>
+<p>You can also use standard Python type hints.
+<code>Mosaico</code> automatically maps these to specific PyArrow types.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">x</span><span class="p">:</span> <span class="nb">int</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</span></code></pre></div>
+<p>In this scenario, the types are resolved using the following <strong>fallback mapping</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Python type</th>
+<th>PyArrow equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>int</code></td>
+<td><code>pa.int64()</code></td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td><code>pa.float64()</code></td>
+</tr>
+<tr>
+<td><code>str</code></td>
+<td><code>pa.string()</code></td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td><code>pa.bool_()</code></td>
+</tr>
+<tr>
+<td><code>bytes</code></td>
+<td><code>pa.bytes()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Just like with explicit types, using <code>Optional</code> with fallback types will correctly define the PyArrow field as <strong>nullable</strong>. If <code>Optional</code> is not used, the field is defined as <strong>not nullable</strong>.</p>
+</div>
+<h4 id="list-types">List types<a class="headerlink" href="#list-types" title="Permanent link">&para;</a></h4>
+<p>For list fields, <code>MosaicoType</code> exposes a <a class="autorefs autorefs-internal" title="list_
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.list_"><code>list_()</code></a> static method that wraps a scalar type, either a <code>MosaicoType</code> alias or a raw Python primitive, into the appropriate <code>pa.list_</code> Arrow type.</p>
+<p>An optional <code>list_size</code> parameter produces a fixed-size list (<code>pa.list_(type, size)</code>), omitting it yields a variable-length list.</p>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">Serializable</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="c1"># Variable-length list of float32</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">list_</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="c1"># Fixed-size list of 3 float32 (e.g. an RGB vector)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">color</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">list_</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">list_size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="c1"># Works with raw Python primitives too</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">tags</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">list_</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="c1"># Works with other Pydantic models with pyarrow struct</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">vec</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">list_</span><span class="p">(</span><span class="n">Vector3d</span><span class="p">)</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="c1"># Fallback List</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="n">vec2</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Vector2d</span><span class="p">]</span>
+</span></code></pre></div>
+Using Python's built-in <code>list</code> (or <code>List</code> from <code>typing</code>) generates a <strong>list of unfixed size</strong> in the underlying Arrow schema.
+This means:</p>
+<ul>
+<li>The list can hold <strong>any number of elements</strong> at runtime.</li>
+<li>No size constraint is enforced at the schema level.</li>
+<li>This is equivalent to calling <code>MosaicoType.list_(str)</code> with no <code>size</code> argument.</li>
+</ul>
+<p><a class="autorefs autorefs-internal" title="list_
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.list_"><code>MosaicoType.list_()</code></a> accepts an optional <code>size</code> parameter. When provided, it maps to an Arrow <strong>fixed-size list</strong> (<code>pa.list_(type, list_size=N)</code>), which enforces that every value in the column contains exactly <code>N</code> elements.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>list[str]</code></th>
+<th><code>MosaicoType.list_(str)</code></th>
+<th><code>MosaicoType.list_(str, 3)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arrow type</td>
+<td><code>pa.list_(pa.string())</code></td>
+<td><code>pa.list_(pa.string())</code></td>
+<td><code>pa.list_(pa.string(), 3)</code></td>
+</tr>
+<tr>
+<td>Size enforced</td>
+<td>No</td>
+<td>No</td>
+<td>Yes, exactly 3</td>
+</tr>
+<tr>
+<td>Interoperable with Pydantic</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Supports nested models</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>Use <a class="autorefs autorefs-internal" title="list_
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.list_"><code>MosaicoType.list_()</code></a> with a <code>size</code> argument when:</p>
+<ul>
+<li>The list represents a <strong>fixed-dimensional structure</strong>, such as a vector, a coordinate
+  tuple, or an RGB triplet.</li>
+<li>You want the Arrow schema to <strong>statically encode the size</strong>, enabling optimised
+  columnar storage and stricter validation.</li>
+<li>You are working with <strong>embedding vectors</strong> or other ML features where dimensionality
+  is always known and constant.</li>
+</ul>
+<p>If you do <strong>not</strong> pass a <code>size</code> argument, <code>MosaicoType.list_(T)</code> and <code>list[T]</code> produce
+an identical Arrow schema. The choice then becomes a matter of style or explicitness:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>               <span class="c1"># idiomatic Python - preferred for readability</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">tags</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">list_</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>  <span class="c1"># explicit Mosaico style - equivalent result</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Explicit type definition and fallback types properties are hold in this case.</p>
+</div>
+<h4 id="matrix-types">Matrix types<a class="headerlink" href="#matrix-types" title="Permanent link">&para;</a></h4>
+<p>For 2-D matrix fields, <code>MosaicoType</code> exposes a <a class="autorefs autorefs-internal" title="matrix
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.matrix"><code>matrix()</code></a> static method that composes two nested <a class="autorefs autorefs-internal" title="list_
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.list_"><code>list_()</code></a> calls to represent a rectangular grid of shape <code>(rows, cols)</code>.
+Both dimensions are optional: omitting a dimension produces a variable-length axis, while supplying an integer value produces a fixed-size axis via Arrow's <code>pa.list_(type, list_size=N)</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">Serializable</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="c1"># Fully variable matrix of float32</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">heatmap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="c1"># Fixed 4×4 matrix</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">t</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="c1"># Fixed-width rows, variable number of rows (e.g. token embeddings)</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">embeddings</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">768</span><span class="p">)</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="c1"># Works with raw Python primitives too</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">grid</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="c1"># Works also with other ontologies</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">onto</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">Vector3d</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>matrix(T)</code></th>
+<th><code>matrix(T, cols=N)</code></th>
+<th><code>matrix(T, rows=M, cols=N)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arrow type</td>
+<td><code>pa.list_(pa.list_(T))</code></td>
+<td><code>pa.list_(pa.list_(T, N))</code></td>
+<td><code>pa.list_(pa.list_(T, N), M)</code></td>
+</tr>
+<tr>
+<td>Row count enforced</td>
+<td>No</td>
+<td>No</td>
+<td>Yes, exactly M</td>
+</tr>
+<tr>
+<td>Column count enforced</td>
+<td>No</td>
+<td>Yes, exactly N</td>
+<td>Yes, exactly N</td>
+</tr>
+<tr>
+<td>Interoperable with Pydantic</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Support nested models</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>Use <a class="autorefs autorefs-internal" title="matrix
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.matrix"><code>MosaicoType.matrix()</code></a> with explicit <code>rows</code> and/or <code>cols</code> when:</p>
+<ul>
+<li>The field represents a <strong>fixed-shape 2-D structure</strong>.</li>
+<li>You want the Arrow schema to <strong>statically encode both dimensions</strong>, enabling optimised columnar storage and stricter validation.</li>
+<li>You are working with <strong>fixed-width embedding matrices</strong> where the column dimension (feature size) is always constant but the number of rows may vary.</li>
+</ul>
+<p>If neither dimension is provided, <code>MosaicoType.matrix(T)</code> produces a fully variable nested list, equivalent to <code>list[list[T]]</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Explicit type definition and fallback type properties apply here as well.</p>
+</div>
+<h4 id="tensor3d-types">Tensor3d types<a class="headerlink" href="#tensor3d-types" title="Permanent link">&para;</a></h4>
+<p>For 3-D tensor fields, <code>MosaicoType</code> exposes a <a class="autorefs autorefs-internal" title="tensor3d
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.tensor3d"><code>tensor3d()</code></a> static method that composes a <a class="autorefs autorefs-internal" title="matrix
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.matrix"><code>matrix()</code></a> call with an outer <a class="autorefs autorefs-internal" title="list_
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.list_"><code>list_()</code></a> call to represent a volume of shape <code>(depth, rows, cols)</code>.
+All three dimensions are optional and follow the same convention as <code>matrix()</code>: omitting a dimension yields a variable-length axis; supplying an integer value produces a fixed-size axis.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">Serializable</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="c1"># Fully variable 3-D tensor of float32</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">volume</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">tensor3d</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="c1"># Fixed-depth stack of variable matrices</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">f</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">tensor3d</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="c1"># Fully fixed tensor</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">j</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">tensor3d</span><span class="p">(</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="c1"># Works with raw Python primitives too</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">cube</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">tensor3d</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="c1"># Works also with other Ontology model</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span class="n">onto</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">tensor3d</span><span class="p">(</span><span class="n">Vector3d</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>tensor3d(T)</code></th>
+<th><code>tensor3d(T, depth=D)</code></th>
+<th><code>tensor3d(T, depth=D, rows=M, cols=N)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arrow type</td>
+<td><code>pa.list_(pa.list_(pa.list_(T)))</code></td>
+<td><code>pa.list_(pa.list_(pa.list_(T)), D)</code></td>
+<td><code>pa.list_(pa.list_(pa.list_(T, N), M), D)</code></td>
+</tr>
+<tr>
+<td>Depth enforced</td>
+<td>No</td>
+<td>Yes, exactly D</td>
+<td>Yes, exactly D</td>
+</tr>
+<tr>
+<td>Row count enforced</td>
+<td>No</td>
+<td>No</td>
+<td>Yes, exactly M</td>
+</tr>
+<tr>
+<td>Column count enforced</td>
+<td>No</td>
+<td>No</td>
+<td>Yes, exactly N</td>
+</tr>
+<tr>
+<td>Interoperable with Pydantic</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Supoprt nested model</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>Use <a class="autorefs autorefs-internal" title="tensor3d
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.tensor3d"><code>MosaicoType.tensor3d()</code></a> with explicit dimensions when:</p>
+<ul>
+<li>The field represents a <strong>fixed-shape volumetric structure</strong>.</li>
+<li>You want the Arrow schema to <strong>statically encode all three dimensions</strong>, enabling stricter schema validation and more efficient columnar storage.</li>
+<li>You are working with <strong>multi-channel ML features</strong> (e.g. convolutional layer outputs) where depth, height, and width are always known and constant.</li>
+</ul>
+<p>If none of the dimensions are provided, <code>MosaicoType.tensor3d(T)</code> produces a fully variable nested list, equivalent to three nested <code>list[list[list[T]]]</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Explicit type definition and fallback type properties apply here as well. When all dimensions are fixed, the Arrow schema enforces shape constraints at the column level, making <code>tensor3d</code> the recommended choice for any ML pipeline where tensor dimensionality is statically known.</p>
+</div>
+<h4 id="custom-arrow-types">Custom Arrow types<a class="headerlink" href="#custom-arrow-types" title="Permanent link">&para;</a></h4>
+<p>For specialised Arrow types not covered by the built-in aliases, you can always use <a class="autorefs autorefs-internal" title="annotate
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.annotate"><code>MosaicoType.annotate()</code></a> method.
+This utility allows you to embed a raw PyArrow type directly into your ontology while maintaining full compatibility with the Mosaico schema builder.</p>
+<p><a class="autorefs autorefs-internal" title="annotate
+
+
+  
+      staticmethod
+  " href="../API_reference/models/base/#mosaicolabs.models.MosaicoType.annotate"><code>MosaicoType.annotate()</code></a> is a helper designed to bridge standard Python types with specific PyArrow configurations
+(like timestamp precision or timezones). It requires two arguments:</p>
+<ul>
+<li><strong>The Python Fallback Type</strong>: Used for runtime validation and Python-side type hinting (e.g., int, str).</li>
+<li><strong>The PyArrow Type</strong>: The specific pyarrow type object to be used in the schema.</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Serializable</span><span class="p">,</span> <span class="n">MosaicoField</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">ts</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">))</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;UTC timestamp.&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Migration Note</p>
+<p>Using <code>MosaicoType.annotate(int, ...)</code> is functionally equivalent to the standard <code>Annotated[int, ...]</code>, but it provides a more explicit and optimized path for the Mosaico schema builder to resolve complex Arrow types.</p>
+</div>
+<h3 id="mosaicofield">MosaicoField<a class="headerlink" href="#mosaicofield" title="Permanent link">&para;</a></h3>
+<details class="question">
+<summary>API Reference</summary>
+<p><a class="autorefs autorefs-internal" title="mosaicolabs.models.types.MosaicoField" href="../API_reference/models/base/#mosaicolabs.models.types.MosaicoField"><code>mosaicolabs.models.types.MosaicoField</code></a></p>
+</details>
+<p><code>MosaicoField</code> is a factory function that returns a standard Pydantic <code>Field</code> instance, adding Mosaico-specific semantics on top of the native <code>pydantic.Field</code>. Because the return type is a native Pydantic <code>Field</code>, every standard Pydantic feature like validators, aliases, <code>model_fields</code> introspection,  works out of the box.</p>
+<h4 id="basic-usage">Basic usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosaicoType</span><span class="p">,</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">Serializable</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyPointOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">x</span><span class="p">:</span>     <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;X coordinate&quot;</span><span class="p">)</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">y</span><span class="p">:</span>     <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Y coordinate&quot;</span><span class="p">)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">string</span><span class="p">]</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Point label&quot;</span><span class="p">)</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">score</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+<p>With <code>MosaicoField</code> you can define the <code>default</code> value of your attribute, the <code>nullable</code> attribute of pyarrow field and also a <code>description</code>.
+In particular you can omit <code>nullable</code> if your <code>default = None</code>, in this case <code>nullable</code> will be set to <code>True</code> automatically.</p>
+<h3 id="nullability-and-parquet-v2">Nullability and Parquet V2<a class="headerlink" href="#nullability-and-parquet-v2" title="Permanent link">&para;</a></h3>
+<p>The <code>nullable</code> flag in <code>MosaicoField</code> controls whether the Arrow schema emits the field
+as nullable. The default is <code>False</code>, fields are non-nullable unless explicitly stated
+otherwise.</p>
+<p>The distinction matters most when a reusable struct ontology is embedded inside a parent
+ontology as an optional field. Consider a <code>Quaternion</code>: its individual components
+(<code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>) are logically required — a quaternion with missing components is
+meaningless and cannot be constructed.</p>
+<p>However, all four leaf fields must be declared as nullable due to how ParquetV2 handles
+<code>null</code> optional columns during data reading. Consider a parent class such as <code>IMU</code>,
+where <code>orientation</code> is declared as <code>Optional[Quaternion]</code>. If that column is <code>null</code> in
+the Parquet file but the inner fields are <strong>not</strong> nullable in the schema, ParquetV2
+cannot represent the absent struct correctly and instead reconstructs it as a
+zero-initialised instance:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># wrong — should be None</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Declaring all leaf fields as nullable prevents this silent corruption: a fully-null
+struct is preserved as <code>None</code> through the read/write round-trip, matching the original
+intent of the <code>Optional</code> annotation.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Quaternion</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">x</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;X component&quot;</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">y</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Y component&quot;</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">z</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Z component&quot;</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">w</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;W component&quot;</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+<p>A parent ontology may choose to include the quaternion as an optional field — for
+example, a detection without orientation data is still valid. In that case the <em>struct</em>
+itself must also be nullable in the Arrow schema:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DetectionOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">position</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Position&quot;</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="c1"># The quaternion struct as a whole is optional in this ontology,</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="c1"># but its internal fields remain required when it is present.</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">orientation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QuaternionOntology</span><span class="p">]</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<p>The ontology architecture relies on three primary abstractions: the <strong>Factory</strong> (<code>Serializable</code>), the <strong>Envelope</strong> (<code>Message</code>) and the <strong>Mixins</strong></p>
+<h3 id="serializable-the-factory"><code>Serializable</code> (The Factory)<a class="headerlink" href="#serializable-the-factory" title="Permanent link">&para;</a></h3>
+<details class="question">
+<summary>API Reference</summary>
+<p><a class="autorefs autorefs-internal" title="mosaicolabs.models.Serializable" href="../API_reference/models/base/#mosaicolabs.models.Serializable"><code>mosaicolabs.models.Serializable</code></a></p>
+</details>
+<p>Every data payload in Mosaico inherits from the <code>Serializable</code> class. It manages the global registry of data types and ensures that the system knows exactly how to convert a string tag like <code>"imu"</code> back into a Python class with a specific binary schema.
+<code>Serializable</code> uses the <code>__pydantic_init_subclass__</code> hook, which is automatically called whenever a developer defines a new subclass.</p>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyCustomSensor</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>  <span class="c1"># &lt;--- __pydantic_init_subclass__ triggers here</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="o">...</span>
+</span></code></pre></div>
+When this happens, <code>Serializable</code> performs the following steps automatically:</p>
+<ol>
+<li><strong>Generate the schema:</strong> Introspect <code>model_fields</code> to extract the PyArrow type embedded in each field's <code>Annotated</code> metadata via <code>MosaicoType</code> aliases or raw <code>Annotated[T, pa.SomeType()]</code> annotations and build the <code>__msco_pyarrow_struct__</code> automatically. </li>
+<li><strong>Generates Tag:</strong> If the class doesn't define <code>__ontology_tag__</code>, it auto-generates one from the class name (e.g., <code>MyCustomSensor</code> -&gt; <code>"my_custom_sensor"</code>).</li>
+<li><strong>Registers Class:</strong> It adds the new class to the global types registry.</li>
+<li><strong>Injects Query Proxy:</strong> It dynamically adds a <code>.Q</code> attribute to the class, enabling the fluent query syntax (e.g., <code>MyCustomSensor.Q.voltage &gt; 12.0</code>).</li>
+</ol>
+<h3 id="message-the-envelope"><code>Message</code> (The Envelope)<a class="headerlink" href="#message-the-envelope" title="Permanent link">&para;</a></h3>
+<details class="question">
+<summary>API Reference</summary>
+<p><a class="autorefs autorefs-internal" title="mosaicolabs.models.Message" href="../API_reference/models/base/#mosaicolabs.models.Message"><code>mosaicolabs.models.Message</code></a></p>
+</details>
+<p>The <strong><code>Message</code></strong> class is the universal transport envelope for all data within the Mosaico platform. It acts as the "Source of Truth" for synchronization and spatial context, combining specific sensor data (the payload) with critical middleware-level metadata. By centralizing metadata at the envelope level, Mosaico ensures that every data point—regardless of its complexity—carries a consistent temporal and spatial identity.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Time</span><span class="p">,</span> <span class="n">Temperature</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1"># Create a Temperature message with unified envelope metadata</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">meas_time</span> <span class="o">=</span> <span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">temp_msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">timestamp_ns</span><span class="o">=</span><span class="n">meas_time</span><span class="o">.</span><span class="n">to_nanoseconds</span><span class="p">(),</span>  <span class="c1"># Primary synchronization clock</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">frame_id</span><span class="o">=</span><span class="s2">&quot;comp_case&quot;</span><span class="p">,</span>                     <span class="c1"># Spatial reference frame</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">seq_id</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span>                               <span class="c1"># Optional sequence ID for ordering</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="n">data</span><span class="o">=</span><span class="n">Temperature</span><span class="o">.</span><span class="n">from_celsius</span><span class="p">(</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">value</span><span class="o">=</span><span class="mi">57</span><span class="p">,</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="n">variance</span><span class="o">=</span><span class="mf">0.03</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="p">)</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>While logically a <code>Message</code> contains a <code>data</code> object, the physical representation on the wire (PyArrow/Parquet) is <strong>flattened</strong>, 
+ensuring zero-overhead access to nested data during queries while maintaining a clean, object-oriented API in Python.</p>
+<ul>
+<li><strong>Logical:</strong> <code>Message(timestamp_ns=123, frame_id="map", data=IMU(acceleration=Vector3d(x=1.0,...)))</code></li>
+<li><strong>Physical:</strong> <code>Struct(timestamp_ns=123, frame_id="map", seq_id=null, acceleration, ...)</code></li>
+</ul>
+<p>The <code>Message</code> mechanism enables a flexible dual-usage pattern for every Mosaico ontology type, supporting both <strong>Standalone Messages</strong> and <strong>Embedded Fields</strong>.</p>
+<h4 id="standalone-messages">Standalone Messages<a class="headerlink" href="#standalone-messages" title="Permanent link">&para;</a></h4>
+<p>Any <code>Serializable</code> type (from elementary types like <code>String</code> and <code>Float32</code> to complex sensors like <code>IMU</code>) can be used as a standalone message. When assigned to the <code>data</code> field of a <code>Message</code> envelope, the type represents an independent data stream with its own global timestamp and metadata, that can be pushed via a dedicated <a class="autorefs autorefs-internal" title="mosaicolabs.handlers.TopicWriter" href="../API_reference/handlers/writing/#mosaicolabs.handlers.TopicWriter"><code>TopicWriter</code></a>.</p>
+<p>This is ideal for pushing processed signals, debug values, or simple sensor readings.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Sending a raw Vector3d as a timestamped standalone message with its own uncertainty</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">accel_msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">timestamp_ns</span><span class="o">=</span><span class="n">ts</span><span class="p">,</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">frame_id</span><span class="o">=</span><span class="s2">&quot;base_link&quot;</span><span class="p">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">data</span><span class="o">=</span><span class="n">Vector3d</span><span class="p">(</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>        <span class="n">x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> 
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>        <span class="n">y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> 
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>        <span class="n">z</span><span class="o">=</span><span class="mf">9.81</span><span class="p">,</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>        <span class="n">covariance</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">]</span>  <span class="c1"># 3x3 Diagonal matrix</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="p">)</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="p">)</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="n">accel_writer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">accel_msg</span><span class="p">)</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="c1"># Sending a raw String as a timestamped standalone message</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="n">log_msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>    <span class="n">timestamp_ns</span><span class="o">=</span><span class="n">ts</span><span class="p">,</span>
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>    <span class="n">frame_id</span><span class="o">=</span><span class="s2">&quot;base_link&quot;</span><span class="p">,</span>
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>    <span class="n">data</span><span class="o">=</span><span class="n">String</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s2">&quot;Waypoint-miss in navigation detected!&quot;</span><span class="p">)</span>
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="p">)</span>
+</span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>
+</span><span id="__span-13-22"><a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="n">log_writer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">log_msg</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="embedded-fields">Embedded Fields<a class="headerlink" href="#embedded-fields" title="Permanent link">&para;</a></h4>
+<p><code>Serializable</code> types can also be embedded as internal fields within a larger structure. In this context, they behave as standard data types. While the parent <code>Message</code> provides the global temporal context, the embedded fields can carry their own granular attributes, such as unique uncertainty matrices.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Embedding Vector3d inside a complex IMU model</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">imu_payload</span> <span class="o">=</span> <span class="n">IMU</span><span class="p">(</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="c1"># Embedded Field 1: Acceleration with its own specific uncertainty</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="c1"># Here the Vector3d instance inherits the timestamp and frame_id</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="c1"># from the parent IMU Message.</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">acceleration</span><span class="o">=</span><span class="n">Vector3d</span><span class="p">(</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">9.8</span><span class="p">,</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>        <span class="n">covariance</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>    <span class="p">),</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="c1"># Embedded Field 2: Angular Velocity</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>    <span class="n">angular_velocity</span><span class="o">=</span><span class="n">Vector3d</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="p">)</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="c1"># Wrap the complex payload in the Message envelope</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="n">imu_writer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Message</span><span class="p">(</span><span class="n">timestamp_ns</span><span class="o">=</span><span class="n">ts</span><span class="p">,</span> <span class="n">frame_id</span><span class="o">=</span><span class="s2">&quot;imu_link&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">imu_payload</span><span class="p">))</span>
+</span></code></pre></div>
+<h3 id="mixins-uncertainty-robustness">Mixins: Uncertainty &amp; Robustness<a class="headerlink" href="#mixins-uncertainty-robustness" title="Permanent link">&para;</a></h3>
+<p>Mosaico uses <strong>Mixins</strong> to inject standard uncertainty fields across different data types, ensuring a consistent interface for sensor fusion and error analysis. These fields are typically used to represent the precision of the sensor data.</p>
+<h4 id="covariancemixin"><code>CovarianceMixin</code><a class="headerlink" href="#covariancemixin" title="Permanent link">&para;</a></h4>
+<details class="question">
+<summary>API Reference</summary>
+<p><a class="autorefs autorefs-internal" title="mosaicolabs.models.CovarianceMixin" href="../API_reference/models/base/#mosaicolabs.models.CovarianceMixin"><code>mosaicolabs.models.mixins.CovarianceMixin</code></a></p>
+</details>
+<p>Injects multidimensional uncertainty fields, typically used for flattened covariance matrices (e.g., 3x3 or 6x6) in sensor fusion applications.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MySensor</span><span class="p">(</span><span class="n">Serializable</span><span class="p">,</span> <span class="n">CovarianceMixin</span><span class="p">):</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="c1"># Automatically receives covariance and covariance_type fields</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="o">...</span>
+</span></code></pre></div>
+<h4 id="variancemixin"><code>VarianceMixin</code><a class="headerlink" href="#variancemixin" title="Permanent link">&para;</a></h4>
+<details class="question">
+<summary>API Reference</summary>
+<p><a class="autorefs autorefs-internal" title="mosaicolabs.models.VarianceMixin" href="../API_reference/models/base/#mosaicolabs.models.VarianceMixin"><code>mosaicolabs.models.mixins.VarianceMixin</code></a></p>
+</details>
+<p>Injects monodimensional uncertainty fields, useful for sensors with 1-dimensional uncertain data like <code>Temperature</code> or <code>Pressure</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MySensor</span><span class="p">(</span><span class="n">Serializable</span><span class="p">,</span> <span class="n">VarianceMixin</span><span class="p">):</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="c1"># Automatically receives variance and variance_type fields</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="o">...</span>
+</span></code></pre></div>
+<p>By leveraging these mixins, the platform can perform deep analysis on data quality—such as filtering for only "high-confidence" segments—without requiring unique logic for every sensor type.</p>
+<h3 id="extending-with-mixins">Extending with Mixins<a class="headerlink" href="#extending-with-mixins" title="Permanent link">&para;</a></h3>
+<p>One of the most powerful consequences of building on top of Pydantic model fields is how natural <strong>mixin composition</strong> becomes. Because every field, including its Arrow type metadata, lives in <code>model_fields</code>, you can split concerns into focused mixin classes and combine them freely without any additional registration or schema merging step.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">MosaicoType</span><span class="p">,</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">Serializable</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">GeometryMixin</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">x</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;X coordinate&quot;</span><span class="p">)</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="n">y</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Y coordinate&quot;</span><span class="p">)</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">z</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Z coordinate&quot;</span><span class="p">)</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">ConfidenceMixin</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>    <span class="n">confidence</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Detection score [0, 1]&quot;</span><span class="p">)</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="k">class</span><span class="w"> </span><span class="nc">MetadataMixin</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>    <span class="n">label</span><span class="p">:</span>     <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">string</span><span class="p">]</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>    <span class="n">sensor_id</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">string</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Source sensor identifier&quot;</span><span class="p">)</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>    <span class="n">ts</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)]</span>
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>
+</span><span id="__span-17-18"><a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="c1"># Combine mixins, the Arrow schema aggregates all fields automatically</span>
+</span><span id="__span-17-19"><a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a><span class="k">class</span><span class="w"> </span><span class="nc">DetectionOntology</span><span class="p">(</span><span class="n">Serializable</span><span class="p">,</span> <span class="n">GeometryMixin</span><span class="p">,</span> <span class="n">ConfidenceMixin</span><span class="p">,</span> <span class="n">MetadataMixin</span><span class="p">):</span>
+</span><span id="__span-17-20"><a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>    <span class="k">pass</span>
+</span></code></pre></div>
+<p>When <code>DetectionOntology</code> is defined, <code>__pydantic_init_subclass__</code> calls <code>_build_ontology_struct</code>, which walks the full <code>model_fields</code> MRO chain, extracts the PyArrow metadata from each <code>Annotated</code> annotation, and produces a single consolidated <code>pa.struct</code>, no extra code required.</p>
+<p>This makes ontology composition <strong>additive by default</strong>: add a mixin to inherit its fields, remove it to drop them. The schema stays consistent with zero boilerplate.</p>
+<h2 id="querying-data-ontology-with-the-query-q-proxy">Querying Data Ontology with the Query (<code>.Q</code>) Proxy<a class="headerlink" href="#querying-data-ontology-with-the-query-q-proxy" title="Permanent link">&para;</a></h2>
+<p>The Mosaico SDK allows you to perform deep discovery directly on the physical content of your sensor streams. Every class inheriting from <a class="autorefs autorefs-internal" title="mosaicolabs.models.Serializable" href="../API_reference/models/base/#mosaicolabs.models.Serializable"><code>Serializable</code></a>, including standard sensors, geometric primitives, and custom user models, is automatically injected with a static <strong><code>.Q</code> proxy</strong> attribute.</p>
+<p>This proxy acts as a type-safe bridge between your Python data models and the platform's search engine, enabling you to construct complex filters using standard Python dot notation.</p>
+<h3 id="how-the-proxy-works">How the Proxy Works<a class="headerlink" href="#how-the-proxy-works" title="Permanent link">&para;</a></h3>
+<p>The <code>.Q</code> proxy recursively inspects the model’s schema to expose every queryable field path. It identifies the data type of each field and provides only the operators valid for that type (e.g., numeric comparisons for acceleration, substring matches for frame IDs).</p>
+<ul>
+<li><strong>Direct Field Access</strong>: Filter based on primary values, such as <code>Temperature.Q.value.gt(25.0)</code>.</li>
+<li><strong>Nested Navigation</strong>: Traverse complex, embedded structures. For example, in the <a class="autorefs autorefs-internal" title="mosaicolabs.models.sensors.GPS" href="../API_reference/models/sensors/#mosaicolabs.models.sensors.GPS"><code>GPS</code></a> model, you can drill down into the status sub-field: <code>GPS.Q.status.satellites.geq(8)</code>.</li>
+<li><strong>Mixin Integration</strong>: Fields inherited from mixins are automatically included in the proxy. This allows you to query uncertainty metrics (from <code>VarianceMixin</code> or <code>CovarianceMixin</code>) across any model.</li>
+</ul>
+<h3 id="queryability-examples">Queryability Examples<a class="headerlink" href="#queryability-examples" title="Permanent link">&para;</a></h3>
+<p>The following table illustrates how the proxy flattens complex hierarchies into queryable paths:</p>
+<table>
+<thead>
+<tr>
+<th>Type Field Path</th>
+<th>Proxy Field Path</th>
+<th>Source Type</th>
+<th>Queryable Type</th>
+<th>Supported Operators</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IMU.acceleration.x</code></td>
+<td><code>IMU.Q.acceleration.x</code></td>
+<td><code>float</code></td>
+<td><strong>Numeric</strong></td>
+<td><code>.eq()</code>, <code>.neq()</code>, <code>.lt()</code>, <code>.gt()</code>, <code>.leq()</code>, <code>.geq()</code>, <code>.in_()</code>, <code>.between()</code></td>
+</tr>
+<tr>
+<td><code>GPS.status.hdop</code></td>
+<td><code>GPS.Q.status.hdop</code></td>
+<td><code>float</code></td>
+<td><strong>Numeric</strong></td>
+<td><code>.eq()</code>, <code>.neq()</code>, <code>.lt()</code>, <code>.gt()</code>, <code>.leq()</code>, <code>.geq()</code>, <code>.in_()</code>, <code>.between()</code></td>
+</tr>
+<tr>
+<td><code>IMU.frame_id</code></td>
+<td><code>IMU.Q.frame_id</code></td>
+<td><code>str</code></td>
+<td><strong>String</strong></td>
+<td><code>.eq()</code>, <code>.neq()</code>, <code>.match()</code>, <code>.in_()</code></td>
+</tr>
+<tr>
+<td><code>GPS.covariance_type</code></td>
+<td><code>GPS.Q.covariance_type</code></td>
+<td><code>int</code></td>
+<td><strong>Numeric</strong></td>
+<td><code>.eq()</code>, <code>.neq()</code>, <code>.lt()</code>, <code>.gt()</code>, <code>.leq()</code>, <code>.geq()</code>, <code>.in_()</code>, <code>.between()</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="practical-usage">Practical Usage<a class="headerlink" href="#practical-usage" title="Permanent link">&para;</a></h3>
+<p>To execute these filters, pass the expressions generated by the proxy to the <a class="autorefs autorefs-internal" title="QueryOntologyCatalog" href="../API_reference/query/builders/#mosaicolabs.models.query.builders.QueryOntologyCatalog"><code>QueryOntologyCatalog</code></a> builder.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosaicoClient</span><span class="p">,</span> <span class="n">IMU</span><span class="p">,</span> <span class="n">GPS</span><span class="p">,</span> <span class="n">QueryOntologyCatalog</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="k">with</span> <span class="n">MosaicoClient</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="mi">6726</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="c1"># orchestrate a query filtering by physical thresholds AND metadata</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">qresponse</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>        <span class="n">QueryOntologyCatalog</span><span class="p">(</span><span class="n">include_timestamp_range</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># Ask for the start/end timestamps of occurrences</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>        <span class="o">.</span><span class="n">with_expression</span><span class="p">(</span><span class="n">IMU</span><span class="o">.</span><span class="n">Q</span><span class="o">.</span><span class="n">acceleration</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="mf">15.0</span><span class="p">))</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>        <span class="o">.</span><span class="n">with_expression</span><span class="p">(</span><span class="n">GPS</span><span class="o">.</span><span class="n">Q</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="p">)</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="c1"># The server returns a QueryResponse grouped by Sequence for structured data management</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="k">if</span> <span class="n">qresponse</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">qresponse</span><span class="p">:</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>            <span class="c1"># &#39;item.sequence&#39; contains the name for the matched sequence</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sequence: </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> 
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>            <span class="c1"># &#39;item.topics&#39; contains only the topics and time-segments </span>
+</span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>            <span class="c1"># that satisfied the QueryOntologyCatalog criteria</span>
+</span><span id="__span-18-19"><a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>            <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">topics</span><span class="p">:</span>
+</span><span id="__span-18-20"><a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>                <span class="c1"># Access high-precision timestamps for the data segments found</span>
+</span><span id="__span-18-21"><a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>                <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">timestamp_range</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">topic</span><span class="o">.</span><span class="n">timestamp_range</span><span class="o">.</span><span class="n">end</span>
+</span><span id="__span-18-22"><a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Topic: </span><span class="si">{</span><span class="n">topic</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> | Match Window: </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>For a comprehensive list of all supported operators and advanced filtering strategies (such as query chaining), see the <strong><a href="../query/">Full Query Documentation</a></strong> and the Ontology types SDK Reference in the <strong>API Reference</strong>:</p>
+<details class="question">
+<summary>API Reference</summary>
+<ul>
+<li><a href="../API_reference/models/data_types/">Base Data Models</a></li>
+<li><a href="../API_reference/models/sensors/">Sensors Models</a></li>
+<li><a href="../API_reference/models/geometry/">Geometry Models</a></li>
+<li><a href="../API_reference/models/platform/">Platform Models</a></li>
+</ul>
+</details>
+<h2 id="customizing-the-ontology">Customizing the Ontology<a class="headerlink" href="#customizing-the-ontology" title="Permanent link">&para;</a></h2>
+<p>The Mosaico SDK is built for extensibility, allowing you to define domain-specific data structures that can be registered to the platform and live alongside standard types.
+Custom types are automatically validatable, serializable, and queryable once registered in the platform.</p>
+<p>Follow these three steps to implement a compatible custom data type:</p>
+<h3 id="1-inheritance-and-mixins">1. Inheritance and Mixins<a class="headerlink" href="#1-inheritance-and-mixins" title="Permanent link">&para;</a></h3>
+<p>Your custom class <strong>must</strong> inherit from <code>Serializable</code> to enable auto-registration, factory creation, and the queryability of the model. 
+To align with the Mosaico ecosystem, use the following mixins:</p>
+<ul>
+<li><strong><code>CovarianceMixin</code></strong>: Used for data including measurement uncertainty, standardizing the storage of covariance matrices.</li>
+</ul>
+<h3 id="2-define-the-wire-schema">2. Define the Wire Schema<a class="headerlink" href="#2-define-the-wire-schema" title="Permanent link">&para;</a></h3>
+<p>Annotate each field with a <code>MosaicoType</code> alias and wrap it with <code>MosaicoField</code>. Fields and schema are declared together in a single annotation — the <code>__msco_pyarrow_struct__</code> is derived automatically from <code>model_fields</code> at class-definition time, so there is no separate schema declaration to maintain.</p>
+<h4 id="21-serialization-format-optimization">2.1 Serialization Format Optimization<a class="headerlink" href="#21-serialization-format-optimization" title="Permanent link">&para;</a></h4>
+<details class="question">
+<summary>API Reference</summary>
+<p><a class="autorefs autorefs-internal" title="mosaicolabs.enum.SerializationFormat" href="../API_reference/enum/#mosaicolabs.enum.SerializationFormat"><code>mosaicolabs.enum.SerializationFormat</code></a></p>
+</details>
+<p>You can optimize remote server performance by overriding the <code>__serialization_format__</code> attribute. This controls how the server compresses and organizes your data.</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Identifier</th>
+<th>Use Case Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Default</strong></td>
+<td><code>"default"</code></td>
+<td><strong>Standard Table</strong>: Fixed-width data with a constant number of fields.</td>
+</tr>
+<tr>
+<td><strong>Ragged</strong></td>
+<td><code>"ragged"</code></td>
+<td><strong>Variable Length</strong>: Best for lists, sequences, or point clouds.</td>
+</tr>
+<tr>
+<td><strong>Image</strong></td>
+<td><code>"image"</code></td>
+<td><strong>Blobs</strong>: Raw or compressed images requiring specialized codec handling.</td>
+</tr>
+</tbody>
+</table>
+<p>If not explicitly set, the system defaults to <code>Default</code> format.</p>
+<h3 id="customization-example-environmentsensor">Customization Example: <code>EnvironmentSensor</code><a class="headerlink" href="#customization-example-environmentsensor" title="Permanent link">&para;</a></h3>
+<p>This example demonstrates a custom sensor for environmental monitoring that tracks temperature, humidity, and pressure.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># file: custom_ontology.py</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosaicoField</span><span class="p">,</span> <span class="n">MosaicoType</span><span class="p">,</span> <span class="n">Serializable</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">EnvironmentSensor</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="sd">    Custom sensor reading for Temperature, Humidity, and Pressure.</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>    <span class="c1"># --- 1. Define the Wire Schema ---</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span class="n">temperature</span><span class="p">:</span> <span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>    <span class="n">humidity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>            <span class="n">default</span><span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>
+</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>    <span class="n">pressure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MosaicoType</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">=</span> <span class="n">MosaicoField</span><span class="p">(</span>
+</span><span id="__span-19-19"><a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a>            <span class="n">default</span><span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-19-20"><a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>
+</span><span id="__span-19-21"><a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a>
+</span><span id="__span-19-22"><a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a><span class="c1"># --- Usage Example ---</span>
+</span><span id="__span-19-23"><a id="__codelineno-19-23" name="__codelineno-19-23" href="#__codelineno-19-23"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mosaicolabs.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Header</span><span class="p">,</span> <span class="n">Time</span>
+</span><span id="__span-19-24"><a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a>
+</span><span id="__span-19-25"><a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a><span class="c1"># Initialize with standard metadata</span>
+</span><span id="__span-19-26"><a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a><span class="n">meas</span> <span class="o">=</span> <span class="n">EnvironmentSensor</span><span class="p">(</span>
+</span><span id="__span-19-27"><a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a>    <span class="n">header</span><span class="o">=</span><span class="n">Header</span><span class="p">(</span><span class="n">stamp</span><span class="o">=</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="n">frame_id</span><span class="o">=</span><span class="s2">&quot;lab_sensor_1&quot;</span><span class="p">),</span>
+</span><span id="__span-19-28"><a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mf">23.5</span><span class="p">,</span>
+</span><span id="__span-19-29"><a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a>    <span class="n">humidity</span><span class="o">=</span><span class="mf">0.45</span>
+</span><span id="__span-19-30"><a id="__codelineno-19-30" name="__codelineno-19-30" href="#__codelineno-19-30"></a><span class="p">)</span>
+</span><span id="__span-19-31"><a id="__codelineno-19-31" name="__codelineno-19-31" href="#__codelineno-19-31"></a>
+</span><span id="__span-19-32"><a id="__codelineno-19-32" name="__codelineno-19-32" href="#__codelineno-19-32"></a><span class="c1"># Ready for streaming or querying</span>
+</span><span id="__span-19-33"><a id="__codelineno-19-33" name="__codelineno-19-33" href="#__codelineno-19-33"></a><span class="c1"># writer.push(Message(timestamp_ns=ts, data=meas))</span>
+</span></code></pre></div>
+<figure>
+  <img alt="Ontology customization example" src="../../assets/ontology_customization.png" />
+<br />
+<figcaption>Schema for defining a custom ontology model.</figcaption>
+</figure>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../client/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Client">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Client
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../handling/data-handling/" class="md-footer__link md-footer__link--next" aria-label="Next: Writing &amp; Reading Data">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Writing & Reading Data
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "content.code.annotate", "navigation.instant", "navigation.path", "navigation.indexes", "navigation.tabs", "navigation.footer"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
