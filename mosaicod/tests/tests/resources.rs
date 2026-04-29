@@ -72,7 +72,7 @@ async fn test_sequence_flight_info(pool: sqlx::Pool<db::DatabaseType>) {
     );
     assert_ne!(sequence_metadata.created_at.as_i64(), 0);
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (session_locator, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -92,7 +92,7 @@ async fn test_sequence_flight_info(pool: sqlx::Pool<db::DatabaseType>) {
     );
     assert_ne!(sequence_manifest.created_at.as_i64(), 0);
     assert_eq!(sequence_manifest.sessions.len(), 1);
-    assert_eq!(sequence_manifest.sessions[0].uuid, session_uuid);
+    assert_eq!(sequence_manifest.sessions[0].locator, session_locator);
     assert_ne!(sequence_manifest.sessions[0].created_at.as_i64(), 0);
     assert!(sequence_manifest.sessions[0].completed_at.is_none());
     assert!(sequence_manifest.sessions[0].topics.is_empty());
@@ -135,11 +135,14 @@ async fn test_sequence_flight_info(pool: sqlx::Pool<db::DatabaseType>) {
     );
     assert_ne!(sequence_manifest.created_at.as_i64(), 0);
     assert_eq!(sequence_manifest.sessions.len(), 1);
-    assert_eq!(sequence_manifest.sessions[0].uuid, session_uuid);
+    assert_eq!(sequence_manifest.sessions[0].locator, session_locator);
     assert_ne!(sequence_manifest.sessions[0].created_at.as_i64(), 0);
     assert!(sequence_manifest.sessions[0].completed_at.is_none());
     assert_eq!(sequence_manifest.sessions[0].topics.len(), 1);
-    assert_eq!(sequence_manifest.sessions[0].topics[0], topic_name);
+    assert_eq!(
+        sequence_manifest.sessions[0].topics[0].to_string(),
+        topic_name
+    );
 
     let _ = actions::session_finalize(&mut client, &session_uuid).await;
 
@@ -159,11 +162,11 @@ async fn test_sequence_flight_info(pool: sqlx::Pool<db::DatabaseType>) {
     assert_ne!(sequence_manifest.created_at.as_i64(), 0);
     assert_eq!(sequence_manifest.sessions.len(), 1);
     let sm = &sequence_manifest.sessions[0];
-    assert_eq!(sm.uuid, session_uuid);
+    assert_eq!(sm.locator, session_locator);
     assert_ne!(sm.created_at.as_i64(), 0);
     assert_ne!(sm.completed_at.unwrap().as_i64(), 0);
     assert_eq!(sm.topics.len(), 1);
-    assert_eq!(sm.topics[0].clone(), topic_name);
+    assert_eq!(sm.topics[0].to_string(), topic_name);
 
     assert_eq!(info.endpoint.len(), 1);
     let ep_metadata: marshal::flight::TopicAppMetadata =
@@ -198,10 +201,17 @@ async fn test_session_create(pool: sqlx::Pool<db::DatabaseType>) -> sqlx::Result
     actions::sequence_create(&mut client, sequence_name, None)
         .await
         .unwrap();
-    let uuid = actions::session_create(&mut client, sequence_name)
+
+    let (session_locator, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
-    assert!(uuid.is_valid());
+    assert!(session_uuid.is_valid());
+    assert_eq!(session_locator.sequence, sequence_name);
+    assert_eq!(session_locator.to_string().split(':').count(), 2);
+    let session_locator_str = session_locator.to_string();
+    let mut split = session_locator_str.split(':');
+    split.next();
+    assert!(split.next().unwrap().parse::<ulid::Ulid>().is_ok());
 
     server.shutdown().await;
     Ok(())
@@ -223,7 +233,7 @@ async fn test_topic_create(pool: sqlx::Pool<db::DatabaseType>) -> sqlx::Result<(
         .await
         .unwrap();
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -315,7 +325,7 @@ async fn test_topic_delete(pool: sqlx::Pool<db::DatabaseType>) -> sqlx::Result<(
         .await
         .unwrap();
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -358,7 +368,7 @@ async fn test_topic_flight_info(pool: sqlx::Pool<db::DatabaseType>) {
         .await
         .unwrap();
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -494,12 +504,12 @@ async fn test_do_put(pool: sqlx::Pool<db::DatabaseType>) {
         .await
         .unwrap();
 
-    let uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
-    assert!(uuid.is_valid());
+    assert!(session_uuid.is_valid());
 
-    let uuid = actions::topic_create(&mut client, &uuid, "test_sequence/my_topic", None)
+    let uuid = actions::topic_create(&mut client, &session_uuid, "test_sequence/my_topic", None)
         .await
         .unwrap();
     assert!(uuid.is_valid());
@@ -544,7 +554,7 @@ async fn test_session_finalize(pool: sqlx::Pool<db::DatabaseType>) {
         .await
         .unwrap();
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -579,7 +589,7 @@ async fn test_session_finalize(pool: sqlx::Pool<db::DatabaseType>) {
         .unwrap();
 
     // Finalize on an empty session should fail.
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -610,7 +620,7 @@ async fn test_session_delete(pool: sqlx::Pool<db::DatabaseType>) {
         .await
         .unwrap();
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (session_locator, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -630,18 +640,18 @@ async fn test_session_delete(pool: sqlx::Pool<db::DatabaseType>) {
         panic!("Received a not-empty response!");
     }
 
-    // Delete must work on both unlocked and locked sessions.
+    // Delete must work on both open and finalized sessions.
     actions::session_finalize(&mut client, &session_uuid)
         .await
         .unwrap();
-    actions::session_delete(&mut client, &session_uuid)
+    actions::session_delete(&mut client, &session_locator)
         .await
         .unwrap();
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (session_locator, _) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
-    actions::session_delete(&mut client, &session_uuid)
+    actions::session_delete(&mut client, &session_locator)
         .await
         .unwrap();
 
@@ -664,7 +674,7 @@ async fn test_sequence_delete(pool: sqlx::Pool<db::DatabaseType>) {
         .await
         .unwrap();
 
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     assert!(session_uuid.is_valid());
@@ -829,7 +839,7 @@ async fn test_topic_notification_create(pool: sqlx::Pool<db::DatabaseType>) {
     actions::sequence_create(&mut client, sequence_name, None)
         .await
         .unwrap();
-    let session_uuid = actions::session_create(&mut client, sequence_name)
+    let (_, session_uuid) = actions::session_create(&mut client, sequence_name)
         .await
         .unwrap();
     let topic_uuid = actions::topic_create(&mut client, &session_uuid, topic_name, None)

@@ -27,6 +27,7 @@ futures = { workspace = true }
 arrow = { workspace = true }
 url = { workspace = true }
 tower = { workspace = true }
+ulid = { workspace = true }
 
 [dev-dependencies]
 mosaicod-marshal = { workspace = true }
