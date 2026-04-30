@@ -3,8 +3,7 @@ name: mosaicod Precompiled Binaries
 on:
   push:
     tags:
-      - 'mosaicod/v[0-9]+.[0-9]+.[0-9]+'
-      - 'mosaicod/v[0-9]+.[0-9]+.[0-9]+-*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
   contents: write
