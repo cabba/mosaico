@@ -1,0 +1,168 @@
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+
+require('dotenv').config();
+
+// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+const config: Config = {
+  title: 'Mosaico Doc',
+  tagline: 'The Data Platform for Robotics and Physical AI',
+  favicon: 'img/favicon.png',
+
+  // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
+  future: {
+    v4: true, // Improve compatibility with the upcoming Docusaurus v4
+  },
+
+  // Set the production url of your site here
+  url: 'https://docs.mosaico.dev',
+  // Set the /<baseUrl>/ pathname under which your site is served
+  // For GitHub pages deployment, it is often '/<projectName>/'
+  baseUrl: '/',
+
+  // GitHub pages deployment config.
+  // If you aren't using GitHub pages, you don't need these.
+  organizationName: 'mosaico-labs', // Usually your GitHub org/user name.
+  projectName: 'mosaico', // Usually your repo name.
+
+  onBrokenLinks: 'throw',
+
+  // Even if you don't use internationalization, you can use this field to set
+  // useful metadata like html lang. For example, if your site is Chinese, you
+  // may want to replace "en" with "zh-Hans".
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  stylesheets: [
+    {
+      href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap',
+      type: 'text/css',
+    },
+    {
+      href: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap',
+      type: 'text/css',
+    },
+    {
+      href: 'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap',
+      type: 'text/css',
+    },
+  ],
+  
+  plugins: [[
+    'docusaurus-plugin-llms',
+    {
+      generateLLMsTxt: true,
+      generateLLMsFullTxt: true
+    }
+  ]],
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          // Please change this to your repo.
+          // Remove this to remove the "edit this page" links.
+          routeBasePath: "/",
+          editUrl:
+            'https://github.com/mosaico-labs/mosaico',
+          breadcrumbs: false, // This disables breadcrumbs globally
+        },
+        blog: {
+          showReadingTime: true,
+          feedOptions: {
+            type: ['rss', 'atom'],
+            xslt: true,
+          },
+          // Please change this to your repo.
+          // Remove this to remove the "edit this page" links.
+          editUrl:
+            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          // Useful options to enforce blogging best practices
+          onInlineTags: 'warn',
+          onInlineAuthors: 'warn',
+          onUntruncatedBlogPosts: 'warn',
+        },
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themeConfig: {
+    // Replace with your project's social card
+    image: 'img/docusaurus-social-card.jpg',
+    colorMode: {
+      defaultMode: "dark",
+      disableSwitch: true,
+      respectPrefersColorScheme: true,
+    },
+    navbar: {
+      logo: {
+        alt: 'Mosaico',
+        src: 'img/logo.svg',
+      },
+      items: [
+        {
+          type: 'docSidebar',
+          sidebarId: 'tutorialSidebar',
+          position: 'left',
+          label: 'MOSAICO',
+        },
+        {
+          to: 'https://docs.mosaico.dev/SDK/',
+          label: 'SDK',
+          target: "_self",
+          position: 'left'
+        },
+        {
+          label: process.env.BUILD_TARGET,
+          type: "dropdown",
+          position: "right",
+          items: [
+            {
+              label: 'Latest',
+              to: 'https://docs.mosaico.dev',
+            },
+            {
+              label: 'Nightly',
+              to: 'https://docs.mosaico.dev/nightly',
+            }
+          ]
+        },
+        {
+          href: 'https://github.com/facebook/docusaurus',
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          // A single flat list of links
+          items: [
+            { label: 'Website', href: 'https://mosaico.dev' },
+            { label: 'Privacy', href: 'https://github.com/mosaico-labs/mosaico' },
+            { label: 'llm.txt', href: '#' },
+            { label: 'llm-full.txt', href: '#' },
+          ],
+        },
+      ],
+      copyright: `© ${new Date().getFullYear()} Mosaico. All your base are belong to us.`,
+    },
+    prism: {
+      theme: prismThemes.palenight,
+      darkTheme: prismThemes.vsDark,
+    },
+  } satisfies Preset.ThemeConfig,
+
+};
+
+export default config;
