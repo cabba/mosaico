@@ -19,11 +19,11 @@ jobs:
         uses: snok/install-poetry@v1
 
       - name: Install dependencies
-        working-directory: docs/mosaico-py
+        working-directory: docs/py
         run: poetry install --no-root
 
       - name: Build MkDocs
-        working-directory: docs/mosaico-py
+        working-directory: docs/py
         run: poetry run mkdocs build
 
       - name: Upload to Bucket
