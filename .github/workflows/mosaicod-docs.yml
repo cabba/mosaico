@@ -22,6 +22,8 @@ jobs:
         run: npm ci
 
       - name: Build Docusaurus
+        env:
+          BUILD_TARGET: Latest
         working-directory: docs/main
         run: npm run build
 
@@ -30,7 +32,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: |
-          aws s3 sync docs/main/build s3://mosaico-docs/main/ \
+          aws s3 sync docs/main/build s3://mosaico-docs/latest \
             --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com \
             --region auto \
             --delete
