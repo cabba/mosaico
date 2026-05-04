@@ -31,7 +31,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [../mosaico-sdk-py/src]
+          paths: [../../mosaico-sdk-py/src]
           options:
             filters:
               - "!^__"
