@@ -51,6 +51,7 @@ nav:
   - SDK:
     - index.md
     - code_contributing.md
+    - llms.md
   - How-To:
       - SDK/howto/serialized_writing_from_csv.md
       - SDK/howto/serialized_writing_from_multi_csv.md
