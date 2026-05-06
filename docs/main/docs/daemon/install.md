@@ -3,11 +3,15 @@ title: Setup
 sidebar_position: 2
 ---
 
+## Precompiled Binaries
+
+Precompiled binaries for `mosaicod` are available for several platforms and can be downloaded directly from the [GitHub Releases page](https://github.com/mosaico-labs/mosaico/releases). 
+
 ## Running with Containers
 
 For rapid prototyping, we provide a standard Docker Compose configuration. This creates an isolated network environment containing the `mosaicod` server and its required PostgreSQL database.
 
-```yaml title="daemon_compose_file", {25,34-37,50}
+```yaml title="compose.yml", {25,34-37,50}
 name: "mosaico"
 services:
   

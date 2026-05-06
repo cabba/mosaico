@@ -34,7 +34,7 @@ The SDK operates on a **Synchronous Processing Model**, where serialization and 
 The Security Layer manages the confidentiality and integrity of the communication channel. It is composed of two primary mechanisms that work in tandem to harden the connection.
 
 ### 1. Encryption (TLS)
-For deployments over public or shared networks, the client supports [**Transport Layer Security (TLS)**](../daemon/tls.md). Two connection modes are available via SDK, depending on the configuratiom of the Mosaico server:
+For deployments over public or shared networks, the client supports [**Transport Layer Security (TLS)**](https://docs.mosaico.dev/daemon/tls). Two connection modes are available via SDK, depending on the configuratiom of the Mosaico server:
 
 * **One-way TLS**, server authenticated only
   ```python
@@ -50,7 +50,7 @@ On the other hand, the **Two-way TLS** mode is available by passing the TLS cert
 In such a case, there is no need to set the `enable_tls=True` flag.
 
 ### 2. Authentication (API Key)
-Mosaico uses an [**API Key** system](../daemon/api_key.md) to authorize every operation. When a key is provided, the client automatically attaches your unique credentials to the metadata of every gRPC and Flight call. This ensures that even if your endpoint is public, only requests with a valid, non-revoked key are processed by the server.
+Mosaico uses an [**API Key** system](https://docs.mosaico.dev/daemon/api_key) to authorize every operation. When a key is provided, the client automatically attaches your unique credentials to the metadata of every gRPC and Flight call. This ensures that even if your endpoint is public, only requests with a valid, non-revoked key are processed by the server.
 
 The client supports 4 permission levels, each with increasing privileges:
 

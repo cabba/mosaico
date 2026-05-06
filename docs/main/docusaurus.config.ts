@@ -55,7 +55,13 @@ const config: Config = {
     'docusaurus-plugin-llms',
     {
       generateLLMsTxt: true,
-      generateLLMsFullTxt: true
+      generateLLMsFullTxt: true,
+      customSections: [
+        {
+          title: 'SDKs',
+          content: '- [Python SDK](https://github.com/your-repo/python-sdk) - The official Python client for our API.',
+        }
+      ],
     }
   ]],
 
@@ -65,27 +71,10 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
           routeBasePath: "/",
-          editUrl:
-            'https://github.com/mosaico-labs/mosaico',
-          breadcrumbs: false, // This disables breadcrumbs globally
-        },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
+          breadcrumbs: false, // This disables breadcrumbs globally
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -149,9 +138,8 @@ const config: Config = {
           // A single flat list of links
           items: [
             { label: 'Website', href: 'https://mosaico.dev' },
-            { label: 'Privacy', href: 'https://github.com/mosaico-labs/mosaico' },
-            { label: 'llm.txt', href: '#' },
-            { label: 'llm-full.txt', href: '#' },
+            { label: 'llm.txt', to: 'https://docs.mosaico.dev/llms.txt' },
+            { label: 'llm-full.txt', to: 'https://docs.mosaico.dev/llms-full.txt' },
           ],
         },
       ],
@@ -160,6 +148,28 @@ const config: Config = {
     prism: {
       theme: prismThemes.palenight,
       darkTheme: prismThemes.vsDark,
+    },
+    algolia: {
+      // The application ID provided by Algolia
+      appId: 'L83UJF4D2C',
+
+      // Public API key: it is safe to commit it
+      apiKey: 'f2da1153b86c45b9ab7f0418f8dafbd1',
+
+      indexName: 'test_MAINDOC',
+
+      // Optional: see doc section below
+      contextualSearch: true,
+
+      // Optional: Algolia search parameters
+      searchParameters: {},
+
+      // Optional: path for search page that enabled by default (`false` to disable it)
+      searchPagePath: 'search',
+
+      // Optional: whether the insights feature is enabled or not on Docsearch (`false` by default)
+      insights: false,
+
     },
   } satisfies Preset.ThemeConfig,
 

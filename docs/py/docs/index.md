@@ -1,87 +1,70 @@
+---
+title: Mosaico SDK
+description: Architecture and design of the mosaico python SDK.
+---
 
-<style>
-  .md-typeset h1,
-  .md-content__button {
-    display: none;
-  }
-</style>
+The Mosaico SDK is a Python interface designed specifically for managing **Physical AI and Robotics data**. Its purpose is to handle the complete lifecycle of information, from the moment it is captured by a sensor to the moment it is used to train a neural network or analyze a robot's behavior.
 
-![Mosaico logo](assets/doc_title.png)
+The SDK is built on the philosophy that robotics data is **unique**. Whether it comes from a autonomous car, a drone, or a factory arm, this data is multi-modal, highly frequent, and deeply interconnected in space and time. The Mosaico SDK provides the infrastructure to treat this data as a *first-class citizen* rather than just a collection of generic numbers. It understands the geometric and physical semantics of complex data types such as LIDAR point clouds, IMU readings, high-resolution camera feeds, and rigid-body transformations.
 
-**Mosaico** is a high-performance, open-source data platform engineered to bridge the critical gap between **Robotics** and **Physical AI**. 
+## Installation
+Install the SDK via `pip`:
 
-Traditional robotic workflows often struggle with monolithic file formats like [ROS bag](https://wiki.ros.org/Bags), which are linear and difficult to search, index, or stream efficiently. Mosaico replaces these linear files with a structured, queryable archive powered by Rust and Python, designed specifically for the high-throughput demands of multi-modal sensor data.
-
-The platform adopts a strictly **code-first approach**. We believe engineers shouldn't have to learn a proprietary SQL-like sublanguage to move data around. Instead, Mosaico provides native Python SDK that allows you to query, upload, and manipulate data using the programming languages you already know and love.
-
-## Streamlining Data for Physical AI
-The transition from classical robotics to Physical AI represents a fundamental shift in data requirements.
-
-![Mosaico Bridge to Physical AI](assets/ros_physical_ai.png)
-
-**Classical Robotics** operates in an event-driven world. Data is asynchronous, sparse, and stored in monolithic sequential files (like ROS bags). A Lidar might fire at 10Hz, an IMU at 100Hz, and a camera at 30Hz, all drifting relative to one another.
-
-
-**Physical AI** requires synchronous, dense, and tabular data. Models expect fixed-size tensors arriving at a constant frequency (e.g., a batch of state vectors at exactly 50Hz).
-
-Mosaico’s [ML module](SDK/bridges/ml.md) automates this tedious *data plumbing*. It ingests raw, unsynchronized data and transforms it on the fly into the aligned, flattened formats ready for model training, eliminating the need for massive intermediate CSV files.
-
-## Core Concepts
-
-To effectively use Mosaico, it is essential to understand the three pillars of its architecture: **Ontology**, **Topic**, and **Sequence**. These concepts transform raw binary streams into semantic, structured assets.
-
-### The Ontology
-
-The Ontology is the structural backbone of Mosaico. 
-It serves as a semantic representation of all data used within your application, whether that consists of simple sensor readings or the complex results of an algorithmic process.
-
-In Mosaico, all data is viewed through the lens of **time series**. 
-Even a single data point is treated as a singular case of a time series. 
-The ontology defines the *shape* of this data. It can represent base types (such as integers, floats, or strings) as well as complex structures (such as specific sensor arrays or processing results).
-
-This abstraction allows Mosaico to understand what your data *is*, rather than just storing it as raw bytes. 
-By using an ontology to inject and index data, you enable the platform to perform ad-hoc processing, such as custom compression or semantic indexing, tailored specifically to the type of data you have ingested.
-
-Mosaico provides a series of [Ontology Models](SDK/ontology.md) for all the main sensors and applications in robotics. These are specific data structures representing a single data type. For example, a GPS sensor might be modeled as follows:
-
-```python
-class GPS:
-    latitude: MosaicoType.float32
-    longitude: MosaicoType.float32
-    altitude: MosaicoType.float32
+```bash
+pip install mosaicolabs
 ```
 
-An image classification algorithm can be represented with an ontology model like:
+*Note: Requires Python 3.10 or higher.*
 
-```python
-class SimpleImageClassification:
-    top_left_corner: mosaicolabs.Vector2d
-    bottom_right: mosaicolabs.Vector2d
-    label: MosaicoType.string
-    confidence: MosaicoType.float32
-```
+## Overview
 
-Users can easily extend the platform by defining their own [Ontology Models](SDK/ontology.md). 
+The SDK is built on the following core principles:
 
-### Topics and Sequences
+### Middleware Independence
 
-Once you have an Ontology Model, you need a way to instantiate it and store actual data. This is where the **Topic** comes in. 
-*A Topic is a concrete instance of a specific ontology model.*
-It functions as a container for a particular time series holding that specific data model. There is a strict one-to-one relationship here: one Topic corresponds to exactly one Ontology Model. This relationship allows you to query specific topics within the platform based on their semantic structure.
+Mosaico is middleware-agnostic. While the SDK provides robust tools for ROS, it exists because robotics data itself is complex, regardless of the collection method. The platform serves as a standardized hub that can ingest data from:
 
-However, data rarely exists in isolation. Topics are usually part of a larger context. In Mosaico, this context is provided by the **Sequence**. A Sequence is a collection of logically related Topics.
+* **Existing Frameworks**: Such as ROS 1, ROS 2, `.mcap` and `.db3` files.
+* **Custom Collectors**: Proprietary data loggers or direct hardware drivers.
+* **Simulators**: Synthetic data generated in virtual environments.
 
-To visualize this, think of a *ROS bag* or a recording of a robot's run. The recording session itself is the Sequence. Inside that Sequence, you have readings from a Lidar sensor, a GPS unit, and an accelerometer. Each of those individual sensor streams is a Topic, and each Topic follows the structure defined by its Ontology Model. Both Topics and Sequences can hold metadata to further describe their contents.
+### Ontology
 
-## Architecture
+The [Mosaico Data Ontology](SDK/ontology.md) acts as the abstraction layer between your specific data collection system and your storage. Instead of saving "Topic A from Robot B" you save a `Pose`, an `IMU` reading, or an `Image`. 
+Once data is in the platform, its origin becomes secondary to its universal, semantic format. Moreover, the ontology is designed to be extensible with no effort, to meet the needs of any domain; the custom types are automatically validatable, serializable, and queryable alongside standard types.
 
-Mosaico follows a client-server architecture where users interact with the platform through the Python SDK to query, read, and write data. The SDK communicates with the Mosaico daemon a.k.a. `mosaicod`, a high-performance server written in Rust, using [Apache Arrow](https://arrow.apache.org/) for efficient columnar data exchange without serialization overhead.
+### High-Performance
 
-`mosaicod` daemon handles all core data operations including [ingestion](daemon/ingestion.md), [retrieval](daemon/retrieval.md), and [query](daemon/query.md). It uses a database instance to accelerate metadata queries, manage system state, and implement an event queue for processing asynchronous tasks. Data files themselves are stored in an [object store](https://en.wikipedia.org/wiki/Object_storage) (such as [S3](https://aws.amazon.com/s3/), [MinIO](https://www.min.io/), or local filesystem) for durable, long-term persistence and scalability.
+Leveraging [Apache Arrow](https://arrow.apache.org/) for zero-copy performance, the SDK moves massive data volumes from the network to analysis tools without the CPU overhead of traditional data conversion. Every piece of data is time-synchronized, allowing the SDK to *replay* a session from dozens of sensors in the exact chronological order they occurred.
 
-This design enables Mosaico to efficiently manage complex multi-modal sensor data while providing a simple, code-first interface for developers.
+## Key Operations
+
+### Data Ingestion
+
+You can push data into Mosaico through two primary pathways, both designed to ensure your data is validated and standardized before storage:
+
+**Native Ontology Ingestion**. This approach allows you to stream data directly from your application, providing the highest level of control over serialization and real-time performance.
+
+**Ecosystem Adapters & Bridges**. Use specialized adapters to translate data from existing middleware and log formats into Mosaico sequences. Mosaico currently supports ROS 1 bags (`.bag`) and more recent formats like `.mcap` and `.db3`.
+
 
 <figure markdown="span">
-  ![Mosaico general flow](assets/general_flow.svg)
+    ![Ingestion flow](assets/ingestion_flow.svg){ width="500" }
 </figure>
 
+### Data Retrieval
+
+Retrieving data goes beyond simple downloading. It is possible to stream and merge multiple topics into a single, time-ordered timeline, which is essential for sensor fusion. 
+Connect directly to a specific sensor, such as just the front-facing camera, to save bandwidth and memory. 
+The SDK fetches data in batches, allowing you to process datasets that are much larger than your computer's RAM.
+
+### Querying & Discovery
+
+Mosaico allows you to find data based on *what* happened, not just *when* it happened. You can search for specific sequences by metadata tags (like `robot_id` or `location`) or query the actual contents of the sensor data (e.g., *"Find all sequences where the vehicle acceleration exceeded 4 m/s^2"*).
+
+### Machine Learning & Analytics
+
+The [ML Module](SDK/bridges/ml.md) transforms raw, sparse sensor streams into the tabular formats required by modern AI:
+
+* **Flattening**: Converts nested sensor data into organized tables (e.g. [`pandas.DataFrames`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html)).
+* **Temporal Resampling**: Aligns sensors running at different speeds (e.g., a 100Hz IMU and a 5Hz GPS) onto a uniform time grid with custom frame-rate for model training.

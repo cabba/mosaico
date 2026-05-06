@@ -17,7 +17,7 @@ By following this guide, you will learn how to:
 !!! example "Experiment Yourself"
     This guide is **fully executable**.
 
-    1. **[Start the Mosaico Infrastructure](../../daemon/install.md)**
+    1. **[Start the Mosaico Infrastructure](https://docs.mosaico.dev/daemon/install)**
     2. **Run the example**
     ```bash
     mosaicolabs.examples data_inspection

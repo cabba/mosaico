@@ -26,8 +26,8 @@ The CLI supports several global flags to control the execution environment:
 | :--- | :--- | :--- |
 | `--host` | `localhost` | The hostname of your Mosaico Server. |
 | `--port` | `6726` | The Flight port of your Mosaico Server. |
-| `--tls` | -- | Enables the [one-way TLS](../client.md#1-encryption-tls) (server authenticated only - for server runing in [TLS mode](../../daemon/tls.md)). |
-| `--api-key` | -- | The Mosaico API-Key (for server runing in [auth mode](../../daemon/api_key.md)). |
+| `--tls` | -- | Enables the [one-way TLS](../client.md#1-encryption-tls) (server authenticated only - for server runing in [TLS mode](https://docs.mosaico.dev/daemon/tls)). |
+| `--api-key` | -- | The Mosaico API-Key (for server runing in [auth mode](https://docs.mosaico.dev/daemon/api_key)). |
 | `--log-level` | `INFO` | Set verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
 
 **Example with custom server:**
@@ -62,7 +62,7 @@ We recommend exploring the examples in the following order to understand the pla
 ### Infrastructure Prerequisite
 
 Before running any example, ensure your Mosaico infrastructure is active. The easiest way to start is using the provided **Quick Start environment**.
-Please, refer to the **[daemon Setup](../../daemon/install.md)** for setting up the environment.
+Please, refer to the **[daemon Setup](https://docs.mosaico.dev/daemon/install)** for setting up the environment.
 
 ### Ready to start?
 We recommend beginning with the **[ROS Ingestion Guide](./ros_injection.md)** to populate your local server with high-fidelity robotics data. The other examples will run on the data ingested via the ROS Ingestion example.

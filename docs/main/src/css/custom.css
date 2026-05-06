@@ -21,6 +21,7 @@
   --ifm-font-color-base: rgba(255, 255, 255, 0.7);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 
+
   /* Set global border radius to 0 for a sharp look */
   --ifm-button-border-radius: 0;
 
@@ -43,6 +44,11 @@
   --ifm-font-family-base: 'Noto Sans', sans-serif;
   --ifm-heading-font-family: 'Space Grotesk', sans-serif;
   --ifm-font-family-monospace: 'JetBrains Mono', monospace;
+
+  --docsearch-highlight-color: rgb(var(--mosaico-color-blue));
+  --docsearch-subtle-color: var(--mosaico-border-color);
+  --docsearch-modal-background: var(--mosaico-background);
+  --docsearch-icon-color: white;
 }
 
 
@@ -60,6 +66,19 @@
   --ifm-navbar-background-color: var(--mosaico-background);
 }
 
+.hidden {
+  display: none !important;
+}
+
+article a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+article a:hover {
+  text-decoration-thickness: 2px;
+}
+
 h1,
 h2,
 h3,
@@ -71,7 +90,6 @@ h6,
   color: #ffffff;
   opacity: 1;
 }
-
 
 /** Navbar **/
 
@@ -130,6 +148,7 @@ h6,
 
 .menu {
   border-right: 1px solid var(--mosaico-border-color);
+  scrollbar-gutter: auto;
 }
 
 .menu__link {
@@ -137,6 +156,18 @@ h6,
   font-weight: 400;
   opacity: 0.75;
 }
+
+.dropdown__menu {
+  border-radius: 0px;
+  border: 1px solid var(--mosaico-border-color);
+  background-color: var(--mosaico-background);
+}
+
+.dropdown__menu a:hover {
+  background-color: transparent;
+  color: white;
+}
+
 
 .menu__list-item-collapsible>.menu__link {
   font-size: 0.9rem;
@@ -357,4 +388,53 @@ h6,
     rgb(var(--mosaico-color-purple)),
     rgb(var(--mosaico-color-blue))
   ) 1;
+}
+
+/** Search Bar **/
+
+.DocSearch-Button {
+  border: 1px solid var(--mosaico-border-color);
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius:  0px;
+  font-family: 'JetBrains Mono', monospace;
+  
+}
+
+.DocSearch-Button-Placeholder{
+font-size: 0.9rem;
+}
+
+.DocSearch-Modal {
+  border: 1px solid var(--mosaico-border-color);
+  font-family: 'JetBrains Mono', monospace;
+  border-radius: 0px;
+}
+
+.DocSearch-Form {
+  border-radius: 0px;
+}
+
+.DocSearch-Footer {
+  border-radius: 0px;
+}
+
+.DocSearch-Clear {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.DocSearch-Clear:hover {
+  color: white;
+}
+
+.DocSearch-Screen-Icon {
+  display: none;
+}
+
+.DocSearch-Button-Key, .DocSearch-Commands-Key{
+  background-color: rgba(255, 255, 255, 0.05);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  border: 1px solid var(--mosaico-border-color);
+  border-radius: 0px;
+  color: white;
 }
