@@ -509,7 +509,7 @@ While the `.Q` proxy is highly versatile, it enforces specific rules on which da
 
 ### Querying List Fields
 
-List fields **can't be compared directly**. The proxy requires narrowing the list to a single element first, using one of three quantifiers, before chaining a regular operator for the element's type:
+List fields **can't be compared directly**. The proxy requires narrowing the list to a single element first, using one of three quantifiers, before chaining an operator for the element's type:
 
 | Quantifier | Meaning |
 | --- | --- |
@@ -540,6 +540,71 @@ with MosaicoClient.connect("localhost", 6726) as client:
 
 ??? question "API Reference"
     [`mosaicolabs.models.sensors.RobotJoint`][mosaicolabs.models.sensors.RobotJoint--querying-with-the-q-proxy]
+
+### Aggregators
+
+Simple and aggregated expressions are evaluated at two different levels:
+
+* A **simple expression** works on the **single samples**: the condition is checked on each sample of the field, and a topic matches if at least one of its samples satisfies it.
+* An **aggregated expression** works on the **whole topic**: the aggregator first combines all the samples of the field in the topic into a single value (e.g. their maximum), and the condition is checked once on that value.
+
+For example:
+
+* `IMU.Q.acceleration.x.lt(20.0)` matches the topics where **at least one** sample of `acceleration.x` is below `20.0`;
+* `IMU.Q.acceleration.x.max().lt(20.0)` matches the topics whose maximum `acceleration.x` is below `20.0`, i.e. where **every** sample is below `20.0`.
+
+```
+<Ontology>.Q.<field_path>.<aggregator>().<operator>(value)
+```
+
+| Aggregator | Description | Data Types |
+| --- | --- | --- |
+| [`.max()`][mosaicolabs.query.queryable_fields.QueryableNumeric.max] | Maximum value of the field over the topic | Numeric, String |
+| [`.min()`][mosaicolabs.query.queryable_fields.QueryableNumeric.min] | Minimum value of the field over the topic | Numeric, String |
+| [`.range()`][mosaicolabs.query.queryable_fields.QueryableNumeric.range] | Spread of the field over the topic, i.e. `max() - min()` | Numeric |
+
+On **String** fields, `.max()` and `.min()` compare values lexicographically. On **Boolean** fields, `.max().eq(True)` matches the topics where **at least one** sample is `True`, while `.min().eq(True)` matches the topics where **every** sample is `True`.
+
+An aggregator returns the same queryable field, so it's followed by the usual comparison operators of the field type (`.eq()`, `.neq()`, `.lt()`, `.leq()`, `.gt()`, `.geq()`, `.in_()`, `.between()`, `.outside()`, `.match()`).
+
+**Example** Finding the IMU recordings whose acceleration never exceeded 15 m/s², while the vertical axis stayed nearly constant
+
+```python
+from mosaicolabs import MosaicoClient, QueryOntologyCatalog, IMU
+
+with MosaicoClient.connect("localhost", 6726) as client:
+    qresponse = client.query(
+        QueryOntologyCatalog(
+            IMU.Q.acceleration.x.max().lt(15.0),   # Every sample below 15 m/s²
+            IMU.Q.acceleration.z.range().lt(0.5),  # Vertical acceleration nearly constant
+        )
+    )
+
+    if qresponse is not None:
+        for item in qresponse:
+            print(f"Sequence: {item.sequence.name}")
+            print(f"Topics: {[topic.name for topic in item.topics]}")
+```
+
+Simple and aggregated expressions can target the same field in the same query:
+
+```python
+QueryOntologyCatalog(
+    IMU.Q.acceleration.x.gt(5.0),         # At least one sample above 5 m/s²...
+    IMU.Q.acceleration.x.max().lt(20.0),  # ...and never above 20 m/s²
+)
+```
+
+Aggregated expressions are resolved by the server on the statistics stored for each data chunk at ingestion time, without scanning the recorded data.
+
+!!! note "Aggregators and temporal windows"
+    An aggregator describes the topic as a whole, not single samples, so it selects **which topics** match but not **when** they match.
+    Computing the [temporal windows](#temporal-windows) of a response (`clusterize`, `intersect`) is currently not supported for queries containing aggregated expressions, and the server returns an error.
+    Support for aggregators that resolve to an actual time sample (e.g. `min`, `max`) is being discussed in [this open discussion](https://github.com/mosaico-labs/mosaico/discussions/897).
+
+The following constraint applies to aggregators:
+
+* **One aggregator per expression**: aggregators can't be chained, e.g. `.max().min()` raises a `TypeError`.
 
 ## Class-Free Queries
 
@@ -604,6 +669,8 @@ with MosaicoClient.connect("localhost", 6726) as client:
 | [`QueryableString`][mosaicolabs.query.queryable_fields.QueryableString] | `.eq()`, `.match()`, `.lt()`, `.leq()`, `.gt()`, `.geq()`, `.in_()`, `.between()`, `.outside()` | `str` |
 | [`QueryableBool`][mosaicolabs.query.queryable_fields.QueryableBool] | `.eq()` | `bool` |
 
+[Aggregators](#aggregators) work the same way, e.g. `QueryableNumeric("GyroRaw.gyro.x").max().gt(0.5)`: `QueryableNumeric` supports `.max()`, `.min()` and `.range()`, while `QueryableString` supports `.max()` and `.min()`.
+
 ### Querying List Fields (Class-Free)
 
 Querying list fields is possible for unmodeled ontology schemas also, exactly the same way it is done with hand-authored ontology classes. As in this case, a list field isn't a leaf value the server can compare against, so when setting the path of the list field to query against, it is necessary to select *which* element(s) the condition targets before a `Queryable*` type can wrap anything. An index selector, appended directly after the list field's name, "exposes" one conceptual element of the list, turning `list_field` (a list) into a single addressable slot the same way `.field` does for a struct.
@@ -617,7 +684,7 @@ Querying list fields is possible for unmodeled ontology schemas also, exactly th
 Once a selector has exposed an element, what comes next depends on what the list actually holds:
 
 - **Simple lists** (a list of a basic type, e.g. `covariance: List[float]`): the exposed element *is* the leaf value, so wrap the selected path directly in the `Queryable*` type matching that type - `QueryableNumeric` for a list of floats, `QueryableString` for a list of strings, and so on.
-- **Struct lists** (a list of nested structs, e.g. `detections: List[Detection]`): the exposed element is itself a struct, so continue with a regular `.field.subfield` path to reach one of *its* leaves, then wrap that in the `Queryable*` type matching that leaf's type.
+- **Struct lists** (a list of nested structs, e.g. `detections: List[Detection]`): the exposed element is itself a struct, so continue with a `.field.subfield` path to reach one of *its* leaves, then wrap that in the `Queryable*` type matching that leaf's type.
 
 Either way, by the time a `Queryable*` type is constructed, the path always resolves to a single scalar value per matched element.
 
@@ -842,24 +909,36 @@ Use `clusterize_all()` when you need to inspect or debug each sensor's activity 
 
 ## Constraints & Limitations
 
-While fully functional, the current implementation (v0.x) has a **Single Occurrence Constraint**.
+### Multiple conditions on the same field
 
-* **Constraint**: A specific data field path may appear **only once** within a single query builder instance. You cannot chain two separate conditions on the same field (e.g., `.gt(0.5)` and `.lt(1.0)`).
-    ```python
-    # INVALID: The same field (acceleration.x) is used twice in the constructor
-    QueryOntologyCatalog() \
-        .with_expression(IMU.Q.acceleration.x.gt(0.5)) \
-        .with_expression(IMU.Q.acceleration.x.lt(1.0)) # <- Error! Duplicate field path
+`QueryOntologyCatalog` has no **Single Occurrence Constraint**: the same field path can appear in more than one expression in a single builder, with or without [aggregators](#aggregators). All expressions are combined with a logical **AND**.
 
-    ```
-* **Solution**: Use the built-in **`.between([min, max])`** operator to perform range filtering on a single field path.
-* **Note**: You can still query multiple *different* fields from the same sensor model (e.g., `acceleration.x` and `acceleration.y`) in one builder.
-    ```python
-    # VALID: Each expression targets a unique field path
-    QueryOntologyCatalog(
-        IMU.Q.acceleration.x.gt(0.5),              # Unique field
-        IMU.Q.acceleration.y.lt(1.0),              # Unique field
-        IMU.Q.angular_velocity.x.between([0, 1]),   # Correct way to do ranges
-    )
+```python
+# VALID: Two conditions on the same field path
+QueryOntologyCatalog() \
+    .with_expression(IMU.Q.acceleration.x.gt(0.5)) \
+    .with_expression(IMU.Q.acceleration.x.lt(1.0))
 
-    ```
+# VALID: The same aggregator used twice on the same field path
+QueryOntologyCatalog(
+    IMU.Q.acceleration.x.max().gt(0.5),
+    IMU.Q.acceleration.x.max().lt(1.0),
+)
+```
+
+!!! tip
+    For a simple range on a single field, the **`.between([min, max])`** operator is still the most compact form, e.g. `IMU.Q.acceleration.x.between([0.5, 1.0])`.
+
+### Single Occurrence Constraint on `QueryTopic` and `QuerySequence`
+
+`QueryTopic` and `QuerySequence` still apply the **Single Occurrence Constraint**: a key (e.g. a user metadata path) may appear **only once** in a single builder instance, and a duplicate raises a `NotImplementedError`.
+
+```python
+# INVALID: The same metadata key is used twice
+QuerySequence() \
+    .with_user_metadata("environment.visibility", gt=10) \
+    .with_user_metadata("environment.visibility", lt=50)  # <- Error! Duplicate key
+
+# VALID: Use a range operator on a single occurrence
+QuerySequence().with_user_metadata("environment.visibility", between=[10, 50])
+```

@@ -103,6 +103,35 @@ fn condition_from_proto<T: PartialOrd + IsSupportedOp>(
     Ok(op)
 }
 
+fn aggregator(aggr: Option<i32>) -> Result<Option<query::Aggregator>, query::AggregatorError> {
+    use proto_query::Aggregator;
+
+    let Some(aggr) = aggr else {
+        return Ok(None);
+    };
+
+    let aggregator = match Aggregator::try_from(aggr) {
+        Ok(Aggregator::Max) => query::Aggregator::Max,
+        Ok(Aggregator::Min) => query::Aggregator::Min,
+        Ok(Aggregator::Count) => query::Aggregator::Count,
+        Ok(Aggregator::Range) => query::Aggregator::Range,
+        Ok(Aggregator::First) => query::Aggregator::First,
+        Ok(Aggregator::Last) => query::Aggregator::Last,
+        Ok(Aggregator::Std) => query::Aggregator::Std,
+        Ok(Aggregator::Mean) => query::Aggregator::Mean,
+        Ok(Aggregator::Diff) => query::Aggregator::Diff,
+        Ok(Aggregator::Rate) => query::Aggregator::Rate,
+        Ok(Aggregator::P50) => query::Aggregator::P50,
+        Ok(Aggregator::P90) => query::Aggregator::P90,
+        Ok(Aggregator::P99) => query::Aggregator::P99,
+        Ok(Aggregator::Unspecified) | Err(_) => {
+            return Err(query::AggregatorError::UnsupportedAggregator);
+        }
+    };
+
+    Ok(Some(aggregator))
+}
+
 /// Converts an optional field condition.
 fn optional_condition_from_proto<T: PartialOrd + IsSupportedOp>(
     field: &str,
@@ -222,7 +251,22 @@ pub fn ontology_filter_from_proto(
                     err: e,
                 })?;
 
-            Ok((query::OntologyField::try_new(p.field)?, condition).into())
+            let aggr = aggregator(p.aggregator).map_err(|e| query::Error::AggregatorError {
+                field: p.field.clone(),
+                err: e,
+            })?;
+
+            let field = query::OntologyField::try_new(p.field.clone())?;
+
+            if let Some(aggr) = &aggr {
+                aggr.validate(&field, &condition)
+                    .map_err(|e| query::Error::AggregatorError {
+                        field: p.field.clone(),
+                        err: e,
+                    })?;
+            }
+
+            Ok((field, condition, aggr).into())
         })
         .collect::<Result<_, query::Error>>()
         .map_err(to_err)?;
@@ -484,5 +528,102 @@ mod tests {
             err,
             query::Error::OpError { ref field, err: query::OpError::UnsupportedOperation } if field == "topic.name"
         ));
+    }
+
+    fn aggregated_filter(
+        field: &str,
+        aggregator: proto_query::Aggregator,
+        condition: proto_query::Condition,
+    ) -> Result<query::OntologyFilter, crate::Error> {
+        ontology_filter_from_proto(proto_query::OntologyFilter {
+            predicates: vec![proto_query::OntologyPredicate {
+                field: field.to_owned(),
+                aggregator: Some(aggregator as i32),
+                condition: Some(condition),
+            }],
+        })
+    }
+
+    fn assert_aggregator_err(res: Result<query::OntologyFilter, crate::Error>, msg: &str) {
+        let Err(crate::Error::DeserializationError(err)) = res else {
+            panic!("expected a deserialization error, got: {res:?}");
+        };
+        assert!(err.contains(msg), "expected `{msg}`, got: {err}");
+    }
+
+    #[test]
+    fn test_aggregator_accepts_supported_predicates() {
+        use proto_query::{Aggregator, Operator};
+
+        aggregated_filter("mock.x", Aggregator::Max, int_condition(Operator::Gt, 5)).unwrap();
+        aggregated_filter("mock.x", Aggregator::Range, int_condition(Operator::Lt, 5)).unwrap();
+        aggregated_filter(
+            "mock.x",
+            Aggregator::Range,
+            condition(Operator::Outside, integers(vec![1, 5])),
+        )
+        .unwrap();
+        aggregated_filter("mock.s", Aggregator::Min, text_condition(Operator::Lt, "b")).unwrap();
+        aggregated_filter(
+            "mock.s",
+            Aggregator::Max,
+            text_condition(Operator::Match, "a*"),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn test_aggregator_rejects_unsupported_operation() {
+        use proto_query::{Aggregator, Operator};
+
+        assert_aggregator_err(
+            aggregated_filter(
+                "mock.s",
+                Aggregator::Range,
+                text_condition(Operator::Match, "a*"),
+            ),
+            "unsupported operation for the given aggregator",
+        );
+        assert_aggregator_err(
+            aggregated_filter("mock.x", Aggregator::Max, condition(Operator::Ex, None)),
+            "unsupported operation for the given aggregator",
+        );
+    }
+
+    #[test]
+    fn test_aggregator_rejects_unsupported_value_type() {
+        use proto_query::{Aggregator, Operator};
+
+        assert_aggregator_err(
+            aggregated_filter(
+                "mock.s",
+                Aggregator::Range,
+                text_condition(Operator::Gt, "a"),
+            ),
+            "unsupported value type for the given aggregator",
+        );
+
+        for aggregator in [Aggregator::Max, Aggregator::Min, Aggregator::Range] {
+            assert_aggregator_err(
+                aggregated_filter(
+                    "mock.b",
+                    aggregator,
+                    condition(Operator::Eq, Some(proto_query::value::Kind::Boolean(true))),
+                ),
+                "unsupported value type for the given aggregator",
+            );
+        }
+    }
+
+    #[test]
+    fn test_aggregator_rejects_list_fields() {
+        use proto_query::{Aggregator, Operator};
+
+        for field in ["mock.v[?]", "mock.v[!]", "mock.v[0]"] {
+            assert_aggregator_err(
+                aggregated_filter(field, Aggregator::Max, int_condition(Operator::Gt, 5)),
+                "aggregators are not supported on list fields",
+            );
+        }
     }
 }

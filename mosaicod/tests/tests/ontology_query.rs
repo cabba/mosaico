@@ -1,10 +1,12 @@
 #![allow(unused_crate_dependencies)]
 use arrow::array::{
-    BooleanBuilder, Int64Array, Int64Builder, ListBuilder, RecordBatch, StringArray, StringBuilder,
+    BooleanArray, BooleanBuilder, Int64Array, Int64Builder, ListBuilder, RecordBatch, StringArray,
+    StringBuilder,
 };
 use arrow::datatypes::{DataType, Field, Schema};
 use mosaicod_db as db;
 use mosaicod_proto::v1::query as proto_query;
+use proto_query::Aggregator;
 use std::sync::Arc;
 use tests::{actions, common, filter};
 use tonic::Code;
@@ -309,6 +311,22 @@ fn string_batch(ts_start: i64, values: &[&str]) -> RecordBatch {
     .unwrap()
 }
 
+fn bool_batch(ts_start: i64, values: &[bool]) -> RecordBatch {
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("timestamp_ns", DataType::Int64, false),
+        Field::new("flag", DataType::Boolean, false),
+    ]));
+    let timestamps: Vec<i64> = (0..values.len() as i64).map(|i| ts_start + i * 5).collect();
+    RecordBatch::try_new(
+        schema,
+        vec![
+            Arc::new(Int64Array::from(timestamps)),
+            Arc::new(BooleanArray::from(values.to_vec())),
+        ],
+    )
+    .unwrap()
+}
+
 fn no_value_batch(ts_start: i64, count: usize) -> RecordBatch {
     let schema = Arc::new(Schema::new(vec![
         Field::new("timestamp_ns", DataType::Int64, false),
@@ -348,6 +366,31 @@ fn topic_locators(items: &[mosaicod_marshal::responses::ResponseQueryItem]) -> V
         .iter()
         .flat_map(|item| item.topics.iter().map(|t| t.locator.clone()))
         .collect()
+}
+
+async fn query_topics_by_aggregator(
+    client: &mut common::Client,
+    field: &str,
+    aggr: proto_query::Aggregator,
+    cond: proto_query::Condition,
+) -> Result<Vec<String>, tonic::Status> {
+    let ontology = proto_query::OntologyFilter {
+        predicates: vec![proto_query::OntologyPredicate {
+            field: field.to_owned(),
+            aggregator: Some(aggr as i32),
+            condition: Some(cond),
+        }],
+    };
+
+    actions::query(
+        client,
+        proto_query::Filter {
+            ontology: Some(ontology),
+            ..Default::default()
+        },
+    )
+    .await
+    .map(|items| topic_locators(&items))
 }
 
 #[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
@@ -3191,6 +3234,535 @@ async fn test_ontology_text_comparison_ascii(pool: sqlx::Pool<db::DatabaseType>)
         locators.contains(&format!("{seq}/topic_lower")),
         "topic_lower should match ('apple' > 'Banana' bytewise)"
     );
+
+    server.shutdown().await;
+}
+
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_max_aggregator(pool: sqlx::Pool<db::DatabaseType>) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_1";
+    // topic_a elements: [1, 2, 3, 4, 5, 6] (min=1, max=6)
+    // topic_b elements: [10, 20, 30] (min=10, max=30)
+    setup_topics(
+        &mut client,
+        seq,
+        vec![
+            ("topic_a", int_batch(10_000, &[1, 2, 3, 4, 5, 6])),
+            ("topic_b", int_batch(20_000, &[10, 20, 30])),
+        ],
+    )
+    .await;
+
+    let res =
+        query_topics_by_aggregator(&mut client, "mock.value", Aggregator::Max, filter::gt(25))
+            .await
+            .unwrap();
+    assert!(
+        !res.contains(&format!("{seq}/topic_a")),
+        "$gt 25: max(a)=6, excluded"
+    );
+
+    let res = query_topics_by_aggregator(&mut client, "mock.value", Aggregator::Max, filter::gt(3))
+        .await
+        .unwrap();
+    assert!(
+        res.contains(&format!("{seq}/topic_a")) && res.contains(&format!("{seq}/topic_b")),
+        "result must contain both topics"
+    );
+
+    let res = query_topics_by_aggregator(
+        &mut client,
+        "mock.value",
+        Aggregator::Max,
+        filter::matches("ciao"),
+    )
+    .await
+    .unwrap();
+    assert!(res.is_empty());
+
+    let res =
+        query_topics_by_aggregator(&mut client, "mock.value", Aggregator::Max, filter::gt(30))
+            .await
+            .unwrap();
+    assert_eq!(res.len(), 0);
+
+    server.shutdown().await;
+}
+
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_min_aggregator(pool: sqlx::Pool<db::DatabaseType>) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_1";
+    // topic_a elements: [1, 2, 3, 4, 5, 6] (min=1, max=6)
+    // topic_b elements: [10, 20, 30] (min=10, max=30)
+    setup_topics(
+        &mut client,
+        seq,
+        vec![
+            ("topic_a", int_batch(10_000, &[1, 2, 3, 4, 5, 6])),
+            ("topic_b", int_batch(20_000, &[10, 20, 30])),
+        ],
+    )
+    .await;
+
+    let res =
+        query_topics_by_aggregator(&mut client, "mock.value", Aggregator::Min, filter::gt(25))
+            .await
+            .unwrap();
+    assert!(res.is_empty());
+
+    let res = query_topics_by_aggregator(&mut client, "mock.value", Aggregator::Min, filter::gt(3))
+        .await
+        .unwrap();
+    assert!(
+        res.contains(&format!("{seq}/topic_b")),
+        "result must contain topic_b"
+    );
+
+    let res = query_topics_by_aggregator(
+        &mut client,
+        "mock.value",
+        Aggregator::Min,
+        filter::matches("ciao"),
+    )
+    .await
+    .unwrap();
+    assert!(res.is_empty());
+
+    let res =
+        query_topics_by_aggregator(&mut client, "mock.value", Aggregator::Min, filter::gt(30))
+            .await
+            .unwrap();
+    assert_eq!(res.len(), 0);
+
+    server.shutdown().await;
+}
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_text_aggregator(pool: sqlx::Pool<db::DatabaseType>) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_text_aggr";
+    // topic_a: min=apple,  max=kiwi
+    // topic_b: min=banana, max=zebra
+    // topic_c: min=max=Zulu
+    setup_topics(
+        &mut client,
+        seq,
+        vec![
+            ("topic_a", string_batch(10_000, &["kiwi", "apple"])),
+            ("topic_b", string_batch(20_000, &["zebra", "banana"])),
+            ("topic_c", string_batch(30_000, &["Zulu"])),
+        ],
+    )
+    .await;
+
+    // bytewise: "kiwi" < "m" ('k' < 'm'), "zebra" > "m", "Zulu" < "m" ('Z'=90 < 'm'=109)
+    let res =
+        query_topics_by_aggregator(&mut client, "mock.name", Aggregator::Max, filter::gt("m"))
+            .await
+            .unwrap();
+    assert_eq!(
+        res,
+        vec![format!("{seq}/topic_b")],
+        "only max(b)=\"zebra\" is > \"m\""
+    );
+
+    // bytewise: "apple" < "b", "banana" > "b", "Zulu" < "b" ('Z'=90 < 'b'=98)
+    let res =
+        query_topics_by_aggregator(&mut client, "mock.name", Aggregator::Min, filter::lt("b"))
+            .await
+            .unwrap();
+    assert!(
+        res.contains(&format!("{seq}/topic_a")) && res.contains(&format!("{seq}/topic_c")),
+        "min(a)=\"apple\" and min(c)=\"Zulu\" are < \"b\", got: {res:?}"
+    );
+    assert_eq!(
+        res.len(),
+        2,
+        "min(b)=\"banana\" is not < \"b\", got: {res:?}"
+    );
+
+    let res = query_topics_by_aggregator(
+        &mut client,
+        "mock.name",
+        Aggregator::Max,
+        filter::matches("z*"),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        res,
+        vec![format!("{seq}/topic_b")],
+        "only max(b)=\"zebra\" matches \"z*\""
+    );
+
+    let res = query_topics_by_aggregator(
+        &mut client,
+        "mock.name",
+        Aggregator::Min,
+        filter::matches("a*"),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        res,
+        vec![format!("{seq}/topic_a")],
+        "only min(a)=\"apple\" matches \"a*\""
+    );
+
+    let err = query_topics_by_aggregator(
+        &mut client,
+        "mock.name",
+        Aggregator::Range,
+        filter::matches("a*"),
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(
+        err.code(),
+        Code::InvalidArgument,
+        "match is not supported by range"
+    );
+
+    let err =
+        query_topics_by_aggregator(&mut client, "mock.name", Aggregator::Range, filter::gt("a"))
+            .await
+            .unwrap_err();
+    assert_eq!(
+        err.code(),
+        Code::InvalidArgument,
+        "range is not defined on text"
+    );
+
+    server.shutdown().await;
+}
+
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_range_aggregator(pool: sqlx::Pool<db::DatabaseType>) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_1";
+    // topic_a elements: [1, 2, 3, 4, 5, 6] (min=1, max=6)
+    // topic_b elements: [10, 20, 30] (min=10, max=30)
+    setup_topics(
+        &mut client,
+        seq,
+        vec![
+            ("topic_a", int_batch(10_000, &[1, 2, 3, 4, 5, 6])),
+            ("topic_b", int_batch(20_000, &[10, 20, 30])),
+        ],
+    )
+    .await;
+
+    let res =
+        query_topics_by_aggregator(&mut client, "mock.value", Aggregator::Range, filter::gt(6))
+            .await
+            .unwrap();
+    assert!(
+        !res.contains(&format!("{seq}/topic_a")),
+        "$gt 6: min(a)= 1 max(a)=6, excluded"
+    );
+    assert!(
+        res.contains(&format!("{seq}/topic_b")),
+        "$gt 6: min(b)= 10 max(a)=30, excluded"
+    );
+
+    // range(a) = 5, range(b) = 20
+    let mut res = query_topics_by_aggregator(
+        &mut client,
+        "mock.value",
+        Aggregator::Range,
+        filter::outside([6, 19]),
+    )
+    .await
+    .unwrap();
+    res.sort();
+    assert_eq!(
+        res,
+        vec![format!("{seq}/topic_a"), format!("{seq}/topic_b")],
+        "$outside [6, 19]: range(a)=5 and range(b)=20 are both outside"
+    );
+
+    let res = query_topics_by_aggregator(
+        &mut client,
+        "mock.value",
+        Aggregator::Range,
+        filter::outside([4, 10]),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        res,
+        vec![format!("{seq}/topic_b")],
+        "$outside [4, 10]: only range(b)=20 is outside"
+    );
+
+    server.shutdown().await;
+}
+
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_aggregator_rejects_unsupported_predicates(
+    pool: sqlx::Pool<db::DatabaseType>,
+) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_aggr_invalid";
+    setup_topics(
+        &mut client,
+        seq,
+        vec![(
+            "topic_a",
+            int_list_batch(10_000, &[1, 2], &[vec![1, 2], vec![3]]),
+        )],
+    )
+    .await;
+
+    for field in [
+        "mock.list_test[?]",
+        "mock.list_test[!]",
+        "mock.list_test[0]",
+    ] {
+        let err = query_topics_by_aggregator(&mut client, field, Aggregator::Max, filter::gt(1))
+            .await
+            .unwrap_err();
+        assert_eq!(
+            err.code(),
+            Code::InvalidArgument,
+            "aggregators are not supported on list field `{field}`"
+        );
+    }
+
+    server.shutdown().await;
+}
+
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_bool_aggregator_is_rejected(pool: sqlx::Pool<db::DatabaseType>) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_bool_aggr";
+    setup_topics(
+        &mut client,
+        seq,
+        vec![("topic_a", bool_batch(10_000, &[true, false]))],
+    )
+    .await;
+
+    for aggr in [
+        proto_query::Aggregator::Max,
+        proto_query::Aggregator::Min,
+        proto_query::Aggregator::Range,
+    ] {
+        let ontology = proto_query::OntologyFilter {
+            predicates: vec![proto_query::OntologyPredicate {
+                field: "mock.flag".to_owned(),
+                aggregator: Some(aggr as i32),
+                condition: Some(filter::eq(true)),
+            }],
+        };
+
+        let err = actions::query(
+            &mut client,
+            proto_query::Filter {
+                ontology: Some(ontology),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(
+            err.code(),
+            Code::InvalidArgument,
+            "{aggr:?} is not supported on booleans"
+        );
+    }
+
+    server.shutdown().await;
+}
+
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_aggregated_and_regular_predicates(pool: sqlx::Pool<db::DatabaseType>) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_aggr_mixed";
+    // topic_a: [1, 2, 3, 4, 5, 6] (min=1, max=6)
+    // topic_b: [10, 20, 30] (min=10, max=30)
+    // topic_c: [2, 50] (min=2, max=50)
+    setup_topics(
+        &mut client,
+        seq,
+        vec![
+            ("topic_a", int_batch(10_000, &[1, 2, 3, 4, 5, 6])),
+            ("topic_b", int_batch(20_000, &[10, 20, 30])),
+            ("topic_c", int_batch(30_000, &[2, 50])),
+        ],
+    )
+    .await;
+
+    // Each predicate is a (aggregator, condition) pair on `mock.value`,
+    // a `None` aggregator makes it a regular predicate
+    macro_rules! query_locs {
+        ($client:expr, [$(($aggr:expr, $cond:expr)),+ $(,)?]) => {{
+            let ontology = proto_query::OntologyFilter {
+                predicates: vec![$(proto_query::OntologyPredicate {
+                    field: "mock.value".to_owned(),
+                    aggregator: {
+                        let aggr: Option<proto_query::Aggregator> = $aggr;
+                        aggr.map(|a| a as i32)
+                    },
+                    condition: Some($cond),
+                }),+],
+            };
+
+            let mut locs = actions::query(
+                $client,
+                proto_query::Filter {
+                    ontology: Some(ontology),
+                    ..Default::default()
+                },
+            )
+            .await
+            .map(|items| topic_locators(&items))
+            .unwrap();
+            locs.sort();
+            locs
+        }};
+    }
+
+    // Regular and aggregated predicates on the same field
+    let locs = query_locs!(
+        &mut client,
+        [
+            (None, filter::gt(5)),
+            (Some(Aggregator::Max), filter::lt(40)),
+        ]
+    );
+    assert_eq!(
+        locs,
+        vec![format!("{seq}/topic_a"), format!("{seq}/topic_b")],
+        "some sample > 5 and max < 40: max(c)=50 is excluded"
+    );
+
+    let locs = query_locs!(
+        &mut client,
+        [
+            (None, filter::gt(25)),
+            (Some(Aggregator::Max), filter::lt(40)),
+        ]
+    );
+    assert_eq!(
+        locs,
+        vec![format!("{seq}/topic_b")],
+        "some sample > 25 and max < 40: no sample of a is > 25, max(c)=50"
+    );
+
+    // Several aggregated predicates
+    let locs = query_locs!(
+        &mut client,
+        [
+            (Some(Aggregator::Min), filter::gt(1)),
+            (Some(Aggregator::Max), filter::lt(40)),
+        ]
+    );
+    assert_eq!(
+        locs,
+        vec![format!("{seq}/topic_b")],
+        "min > 1 and max < 40: min(a)=1, max(c)=50"
+    );
+
+    // No topic satisfies the aggregated predicates
+    let locs = query_locs!(
+        &mut client,
+        [
+            (None, filter::gt(0)),
+            (Some(Aggregator::Max), filter::gt(100)),
+        ]
+    );
+    assert!(locs.is_empty(), "no max is > 100, got: {locs:?}");
+
+    server.shutdown().await;
+}
+
+#[sqlx::test(migrator = "mosaicod_db::testing::MIGRATOR")]
+async fn test_ontology_aggregator_rejected_by_clusterize(pool: sqlx::Pool<db::DatabaseType>) {
+    let server = common::ServerBuilder::new(common::HOST, pool).build().await;
+    let mut client = common::ClientBuilder::new(common::HOST, server.port())
+        .build()
+        .await;
+
+    let seq = "seq_aggr_clusterize";
+    setup_topics(
+        &mut client,
+        seq,
+        vec![("topic_a", int_batch(10_000, &[1, 2, 3]))],
+    )
+    .await;
+
+    let aggregated = proto_query::OntologyPredicate {
+        field: "mock.value".to_owned(),
+        aggregator: Some(proto_query::Aggregator::Max as i32),
+        condition: Some(filter::gt(1)),
+    };
+    let regular = proto_query::OntologyPredicate {
+        field: "mock.value".to_owned(),
+        aggregator: None,
+        condition: Some(filter::gt(1)),
+    };
+
+    for predicates in [
+        vec![aggregated.clone()],
+        vec![regular.clone(), aggregated.clone()],
+    ] {
+        let err = actions::topic_filter_clusterize(
+            &mut client,
+            &format!("{seq}/topic_a"),
+            50,
+            proto_query::OntologyFilter { predicates },
+            None,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(err.code(), Code::InvalidArgument);
+    }
+
+    // Same check on every topic of intersect
+    let params = |predicates| mosaicod_marshal::requests::TopicClusterizeParams {
+        locator: format!("{seq}/topic_a"),
+        clustering_dt_ns: 50,
+        ontology: Some(proto_query::OntologyFilter { predicates }),
+        timestamp_range: None,
+    };
+    let err = actions::topic_filter_intersect(
+        &mut client,
+        vec![params(vec![regular]), params(vec![aggregated])],
+        0,
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(err.code(), Code::InvalidArgument);
 
     server.shutdown().await;
 }

@@ -742,7 +742,15 @@ where
     let mut ret: Option<Expr> = None;
 
     for predicate in filter.into_iter() {
-        let (field, op) = predicate.into_parts();
+        let (field, op, aggr) = predicate.into_parts();
+        // Only plain predicates are allowed here: aggregated predicates must be split out with
+        // `split_by_aggregator` and compiled by `TopicAggregateQueryBuilder`
+        if aggr.is_some() {
+            return Err(Error::AggregatorError {
+                field: field.field_str(),
+                err: super::AggregatorError::UnexpectedAggregator,
+            });
+        }
         let parsed = field.field_path();
 
         let expr = match parsed.specifier() {
@@ -872,6 +880,7 @@ mod tests {
             (
                 OntologyField::try_new("tag.value".to_owned()).unwrap(),
                 Op::Between(Range::try_new(3, 5).unwrap()),
+                None,
             )
                 .into(),
         ]);

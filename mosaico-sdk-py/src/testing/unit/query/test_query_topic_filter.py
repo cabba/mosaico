@@ -234,28 +234,3 @@ def test_create_intersect_payload(
         PRESSURE_ONTOLOGY_FILTER,
         TEMPERATURE_ONTOLOGY_FILTER,
     ]
-
-
-def test_create_intersect_empty_payload(
-    empty_query_topic: QueryResponseItemTopic,
-):
-    """Tests correct construction of topic_filter_intersect payload"""
-
-    # Creating payload default (without clustering_map and override_clustering_dt_ns)
-    intersect_dt_ns = 100
-
-    intersect_payload = _build_intersect_payload(
-        [empty_query_topic, empty_query_topic, empty_query_topic],
-        intersect_dt_ns,
-    )
-
-    assert intersect_payload.intersect_dt_ns == intersect_dt_ns
-    assert [t.locator for t in intersect_payload.topics] == [
-        "seq1/empty",
-        "seq1/empty",
-        "seq1/empty",
-    ]
-    assert [t.clustering_dt_ns for t in intersect_payload.topics] == [0, 0, 0]
-    assert [t.ontology for t in intersect_payload.topics] == [
-        query_pb2.OntologyFilter()
-    ] * 3

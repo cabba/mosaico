@@ -117,7 +117,16 @@ impl ClausesCompiler {
         }
 
         for predicate in filter.into_iter() {
-            let (ontology_field, op) = predicate.into_parts();
+            let (ontology_field, op, aggr) = predicate.into_parts();
+            // Only plain predicates are allowed here: aggregated predicates must be split out with
+            // `split_by_aggregator` and compiled by `TopicAggregateQueryBuilder`
+            if aggr.is_some() {
+                self.error = Some(Error::AggregatorError {
+                    field: ontology_field.field_str(),
+                    err: super::AggregatorError::UnexpectedAggregator,
+                });
+                return self;
+            }
             let field = formatter.ontology_column_fmt(&ontology_field);
             self = self.expr(&field, op, formatter);
         }
