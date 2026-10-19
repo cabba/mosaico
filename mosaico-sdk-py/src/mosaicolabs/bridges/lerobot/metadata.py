@@ -344,22 +344,36 @@ class LeRobotDatasetMeta:
     json_files: Dict[str, Any]
     """Every `meta/*.json` file, as loaded by `json.load`, keyed by file stem (e.g. `info`, `stats`)."""
 
-    codebase_version: str
-    """The LeRobot dataset format version (`codebase_version` in `meta/info.json`)."""
-
-    fps: float
-    """The dataset frame rate."""
-
     features: Dict[str, LeRobotFeature]
     """The dataset features, keyed by name."""
 
-    episodes: Dict[int, LeRobotEpisode]
+    episodes_map: Dict[int, LeRobotEpisode]
     """The dataset episodes, keyed by episode index."""
 
     @property
     def info(self) -> Dict[str, Any]:
         """The content of `meta/info.json`."""
         return self.json_files[_INFO_FILE_STEM]
+
+    @property
+    def codebase_version(self) -> str:
+        """The LeRobot dataset format version (`codebase_version` in `meta/info.json`)."""
+        return self.info["codebase_version"]
+
+    @property
+    def n_episodes(self) -> int:
+        """The total number of episodes."""
+        return self.info["total_episodes"]
+
+    @property
+    def episode_indexes(self) -> List[int]:
+        """Return all the episodes by their associated index"""
+        return list(self.episodes_map.keys())
+
+    @property
+    def fps(self) -> float:
+        """The dataset frame rate."""
+        return self.info["fps"]
 
     @classmethod
     def load(cls, root: Path) -> "LeRobotDatasetMeta":
@@ -421,8 +435,6 @@ class LeRobotDatasetMeta:
         return cls(
             root=Path(root),
             json_files=json_files,
-            codebase_version=codebase_version,
-            fps=info["fps"],
             features=features,
-            episodes=dict(sorted(episodes.items())),
+            episodes_map=dict(sorted(episodes.items())),
         )
