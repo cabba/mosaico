@@ -3,6 +3,7 @@
     <a href="https://mosaico.dev"><img alt="Mosaico logo" src="https://mosaico.dev/github-hero.webp" width="600px"></a>
   </picture>
 </div>
+
 <br/>
 
 <p align="center">
