@@ -1,6 +1,6 @@
 [project]
 name = "mosaicolabs"
-version = "0.9.0-dev"
+version = "0.10.0-dev"
 description = "Python SDK for Mosaico Data-Platform"
 authors = [{ name = "Mosaico Labs", email = "info@mosaico.dev" }]
 readme = "README.md"
