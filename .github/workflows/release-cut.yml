@@ -1,0 +1,124 @@
+name: Release Cut
+
+# Runs when the pull request opened by `scripts/release-cut` is merged: creates
+# release/vX.Y from the main commit before the merge and sets its version to
+# X.Y.0-rc. This workflow never writes to main: main is only updated by
+# merging the release cut pull request.
+#
+# Pushes made with GITHUB_TOKEN do not trigger other workflows, so the workflows
+# that run on release/v* are dispatched explicitly on the new branch. Later
+# pushes to the branch trigger them as usual.
+
+on:
+  pull_request:
+    branches: ["main"]
+    types: [closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-cut
+  cancel-in-progress: false
+
+jobs:
+  cut:
+    name: "Cut release branch"
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.head_ref, 'release-cut/v') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.13.1"
+
+      - name: Create release branch
+        id: cut
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+
+          fail() { echo "::error::$1"; exit 1; }
+
+          # Example: the merged PR came from release-cut/v0.8 and moved main
+          # from 0.8.0-dev to 0.9.0-dev.
+
+          # 1. The branch name tells which release is cut: release-cut/v0.8
+          #    means release/v0.8 must be created with versions at 0.8.0-rc.
+          [[ "$(./scripts/workflows/version.sh branch --kind "$HEAD_REF" 2> /dev/null)" == release-cut ]] \
+            || fail "Branch '$HEAD_REF' is not release-cut/vX.Y."
+          MAJOR=$(./scripts/workflows/version.sh branch --major "$HEAD_REF")
+          MINOR=$(./scripts/workflows/version.sh branch --minor "$HEAD_REF")
+          RELEASE_BRANCH="release/v${MAJOR}.${MINOR}"
+          RC="${MAJOR}.${MINOR}.0-rc"
+
+          # 2. Find where to cut: main right before the merge, still on
+          #    0.8.0-dev. release-cut-check.yml requires a single commit in
+          #    the PR, so with any merge strategy this is the first parent of
+          #    the merge commit. Both components must be on 0.8.0-dev there,
+          #    otherwise the cut point is wrong and nothing is created.
+          CUT_POINT=$(git rev-parse "${MERGE_SHA}^1")
+          for component in --mosaicod --py; do
+            [[ "$(./scripts/workflows/version.sh get "$component" "$CUT_POINT")" == "${MAJOR}.${MINOR}.0-dev" ]] \
+              || fail "Version ($component) at cut point $CUT_POINT is not ${MAJOR}.${MINOR}.0-dev."
+          done
+
+          # 3. Never overwrite a release branch: release/v0.8 must not exist yet.
+          if git ls-remote --exit-code --heads origin "$RELEASE_BRANCH" > /dev/null; then
+            fail "$RELEASE_BRANCH already exists."
+          fi
+
+          # 4. Create release/v0.8 from the cut point and set both components
+          #    to 0.8.0-rc, with their lock files.
+          git checkout --quiet -b "$RELEASE_BRANCH" "$CUT_POINT"
+          ./scripts/workflows/version.sh set "$RC"
+
+          # 5. Commit and push the new branch. main is never written here: it
+          #    was only updated by merging the release cut PR.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mosaicod/Cargo.toml mosaicod/Cargo.lock mosaico-sdk-py/pyproject.toml mosaico-sdk-py/uv.lock
+          git commit --quiet -m "chore: cut release branch $RELEASE_BRANCH at $RC"
+          git push origin "$RELEASE_BRANCH"
+          echo "branch=$RELEASE_BRANCH" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Release branch created"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Branch | \`$RELEASE_BRANCH\` |"
+            echo "| Version | \`$RC\` |"
+            echo "| Cut from | \`${CUT_POINT::7}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dispatch release branch workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_BRANCH: ${{ steps.cut.outputs.branch }}
+        run: |
+          set -euo pipefail
+          # 6. The push above used GITHUB_TOKEN, so it triggered nothing: start
+          #    the workflows that run on release/v* explicitly on the new
+          #    branch. Later pushes to the branch trigger them as usual.
+          for workflow in ci.yml py-ci.yml mosaicod-rc-docker.yml; do
+            gh workflow run "$workflow" --ref "$RELEASE_BRANCH"
+            echo "| Dispatched | \`$workflow\` |" >> "$GITHUB_STEP_SUMMARY"
+          done
