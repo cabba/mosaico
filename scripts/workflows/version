@@ -1,0 +1,207 @@
+#!/bin/bash
+#
+# INTERNAL USE: called by scripts/release-cut, scripts/workflows/changelog.sh
+# and the release-cut, release-cut-check and release workflows. Do not run
+# `set` by hand to release: use scripts/release-cut or the Release workflow.
+#
+# Reads, sets and checks the version of mosaicod and the Python SDK, and parses
+# release branch names.
+
+set -euo pipefail
+
+FILE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PROJECT_DIR=$( cd -- "${FILE_DIR}/../.." &> /dev/null && pwd )
+CARGO_TOML="mosaicod/Cargo.toml"
+PYPROJECT="mosaico-sdk-py/pyproject.toml"
+
+show_help() {
+    cat << EOF
+Mosaico version tool. Reads, sets and checks the version of mosaicod and the Python SDK, and parses release branch names.
+
+Usage: version <COMMAND> [OPTIONS] <ARG>
+
+Commands:
+
+    get [OPTIONS] [<git-ref>]
+        Print the versions, read from the working tree or from <git-ref>. Without options, prints one line per component: 'mosaicod <version>' and 'python <version>'.
+        --mosaicod              Only print the mosaicod version number
+        --py                    Only print the Python SDK version number
+
+    branch [OPTIONS] <branch>
+        Print a part of a release-cut/vX.Y or release/vX.Y branch name. Fails for any other branch.
+        --kind                  Print 'release-cut' or 'release' (default)
+        --major                 Print X
+        --minor                 Print Y
+
+    set [OPTIONS] <X.Y.Z[-dev|-rc]>
+        Set the version and refresh the lock files. Without options, sets both components.
+        --mosaicod              Only set mosaicod
+        --py                    Only set the Python SDK
+
+    check [OPTIONS] <X.Y.Z[-dev|-rc]>
+        Change nothing. Fail unless the files are on this version and the lock files are in sync. Without options, checks both components.
+        --mosaicod              Only check mosaicod
+        --py                    Only check the Python SDK
+
+    --help                      Show this help message
+EOF
+}
+
+die() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# Prints the first top-level `version = "..."` of the TOML file on stdin.
+# In Cargo.toml this is the [workspace.package] version shared by every crate.
+toml_version() {
+    awk -F '"' '!found && /^version = "/ { print $2; found = 1 } END { if (!found) exit 1 }'
+}
+
+# Prints the version in a TOML file, read from the working tree or from a git ref.
+read_version() {
+    local file="$1" ref="$2"
+    if [[ -z "$ref" ]]; then
+        toml_version < "${PROJECT_DIR}/${file}" || die "no version found in $file."
+    else
+        git -C "$PROJECT_DIR" show "${ref}:${file}" | toml_version || die "no version found in $file at $ref."
+    fi
+}
+
+cmd_get() {
+    local component="both" ref="" mosaicod py
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --mosaicod) component="mosaicod" ;;
+            --py) component="py" ;;
+            -*) die "unknown option '$1'." ;;
+            *) [[ -z "$ref" ]] || die "too many arguments."; ref="$1" ;;
+        esac
+        shift
+    done
+
+    case "$component" in
+        mosaicod) read_version "$CARGO_TOML" "$ref" ;;
+        py) read_version "$PYPROJECT" "$ref" ;;
+        both)
+            mosaicod=$(read_version "$CARGO_TOML" "$ref")
+            py=$(read_version "$PYPROJECT" "$ref")
+            echo "mosaicod $mosaicod"
+            echo "python $py"
+            ;;
+    esac
+}
+
+cmd_branch() {
+    local field="kind" branch=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --kind) field="kind" ;;
+            --major) field="major" ;;
+            --minor) field="minor" ;;
+            -*) die "unknown option '$1'." ;;
+            *) [[ -z "$branch" ]] || die "too many arguments."; branch="$1" ;;
+        esac
+        shift
+    done
+
+    [[ "$branch" =~ ^(release-cut|release)/v([0-9]+)\.([0-9]+)$ ]] \
+        || die "'$branch' is not a release-cut/vX.Y or release/vX.Y branch."
+
+    case "$field" in
+        kind) echo "${BASH_REMATCH[1]}" ;;
+        major) echo "${BASH_REMATCH[2]}" ;;
+        minor) echo "${BASH_REMATCH[3]}" ;;
+    esac
+}
+
+# Parses the arguments shared by `set` and `check`.
+DO_MOSAICOD=true
+DO_PY=true
+VERSION=""
+parse_components() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --mosaicod) DO_PY=false ;;
+            --py) DO_MOSAICOD=false ;;
+            -*) die "unknown option '$1'." ;;
+            *) [[ -z "$VERSION" ]] || die "too many arguments."; VERSION="$1" ;;
+        esac
+        shift
+    done
+
+    [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-dev|-rc)?$ ]] \
+        || die "invalid version '$VERSION' (expected X.Y.Z, X.Y.Z-dev or X.Y.Z-rc)."
+}
+
+set_toml_version() {
+    local file="${PROJECT_DIR}/$1" tmp
+    tmp=$(mktemp)
+    awk -v v="$VERSION" '
+        !done && /^version = "/ { print "version = \"" v "\""; done = 1; next }
+        { print }
+    ' "$file" > "$tmp"
+    cat "$tmp" > "$file"
+    rm -f "$tmp"
+}
+
+cmd_set() {
+    parse_components "$@"
+
+    if [ "$DO_MOSAICOD" = true ]; then
+        set_toml_version "$CARGO_TOML"
+        # Only the workspace crates are updated, third-party dependencies stay pinned.
+        cargo update --workspace --quiet --manifest-path "${PROJECT_DIR}/${CARGO_TOML}"
+        echo "mosaicod set to $VERSION"
+    fi
+
+    if [ "$DO_PY" = true ]; then
+        set_toml_version "$PYPROJECT"
+        uv lock --quiet --project "${PROJECT_DIR}/mosaico-sdk-py"
+        echo "Python SDK set to $VERSION"
+    fi
+}
+
+cmd_check() {
+    parse_components "$@"
+    local failed=false current
+
+    if [ "$DO_MOSAICOD" = true ]; then
+        current=$(cmd_get --mosaicod)
+        if [[ "$current" != "$VERSION" ]]; then
+            echo "Error: $CARGO_TOML is on $current, not $VERSION." >&2
+            failed=true
+        elif ! cargo update --workspace --locked --quiet --manifest-path "${PROJECT_DIR}/${CARGO_TOML}"; then
+            echo "Error: mosaicod/Cargo.lock is not in sync with $VERSION." >&2
+            failed=true
+        fi
+    fi
+
+    if [ "$DO_PY" = true ]; then
+        current=$(cmd_get --py)
+        if [[ "$current" != "$VERSION" ]]; then
+            echo "Error: $PYPROJECT is on $current, not $VERSION." >&2
+            failed=true
+        elif ! uv lock --check --quiet --project "${PROJECT_DIR}/mosaico-sdk-py"; then
+            echo "Error: mosaico-sdk-py/uv.lock is not in sync with $VERSION." >&2
+            failed=true
+        fi
+    fi
+
+    [ "$failed" = false ] || exit 1
+    echo "Version files are on $VERSION and lock files are in sync"
+}
+
+case "${1:-}" in
+    get|branch|set|check)
+        command="$1"
+        shift
+        "cmd_${command}" "$@"
+        ;;
+    --help|-h|"")
+        show_help
+        ;;
+    *)
+        die "unknown command '$1'. Run 'version --help'."
+        ;;
+esac

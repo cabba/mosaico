@@ -1,0 +1,132 @@
+#!/bin/bash
+#
+# MANUAL USE: run it by hand from main to cut a release. Not used by CI.
+#
+# Opens the pull request that starts a new release cycle. See
+# docs/main/docs/dev/how_to_release.md for the full process.
+
+set -euo pipefail
+
+FILE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PROJECT_DIR=$( cd -- "${FILE_DIR}/.." &> /dev/null && pwd )
+VERSION_TOOL="${FILE_DIR}/workflows/version"
+
+show_help() {
+    cat << EOF
+Mosaico release-cut tool. Opens the pull request that cuts release vX.Y from main.
+
+Usage: release-cut [--help]
+
+The current version is read from Cargo.toml and pyproject.toml: both must be
+X.Y.0-dev. The script pushes a 'release-cut/vX.Y' branch that bumps main to
+X.(Y+1).0-dev and opens a pull request against main.
+
+Once the pull request is merged, CI creates 'release/vX.Y' from the commit
+before the merge and sets its version to X.Y.0-rc.
+
+Requires git, gh, cargo and uv.
+EOF
+}
+
+if [[ $# -gt 0 ]]; then
+    show_help
+    [[ "$1" == "--help" || "$1" == "-h" ]] && exit 0 || exit 1
+fi
+
+for cmd in git gh cargo uv; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "Error: '$cmd' is required but not installed."
+        exit 1
+    fi
+done
+
+if ! gh auth status &> /dev/null; then
+    echo "Error: gh is not authenticated. Run 'gh auth login' first."
+    exit 1
+fi
+
+cd "$PROJECT_DIR"
+
+# Must run from an up-to-date, clean main
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$CURRENT_BRANCH" != "main" ]]; then
+    echo "Error: must be run from the 'main' branch (currently on '$CURRENT_BRANCH')."
+    exit 1
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Error: uncommitted changes detected. Please commit or stash them before cutting a release."
+    exit 1
+fi
+
+git fetch --quiet origin main
+if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]]; then
+    echo "Error: local main is not in sync with origin/main. Pull or reset it first."
+    exit 1
+fi
+
+CURRENT=$("$VERSION_TOOL" get --mosaicod)
+PY_CURRENT=$("$VERSION_TOOL" get --py)
+
+if [[ ! "$CURRENT" =~ ^([0-9]+)\.([0-9]+)\.0-dev$ ]]; then
+    echo "Error: mosaicod version '$CURRENT' is not an X.Y.0-dev version. Aborting."
+    exit 1
+fi
+MAJOR="${BASH_REMATCH[1]}"
+MINOR="${BASH_REMATCH[2]}"
+
+if [[ "$PY_CURRENT" != "$CURRENT" ]]; then
+    echo "Error: version mismatch — mosaicod is on $CURRENT but Python SDK is on $PY_CURRENT."
+    exit 1
+fi
+
+RELEASE="v${MAJOR}.${MINOR}"
+NEXT_DEV="${MAJOR}.$((MINOR + 1)).0-dev"
+CUT_BRANCH="release-cut/${RELEASE}"
+
+if git ls-remote --exit-code --heads origin "release/${RELEASE}" &> /dev/null; then
+    echo "Error: release/${RELEASE} already exists on origin."
+    exit 1
+fi
+if git ls-remote --exit-code --heads origin "$CUT_BRANCH" &> /dev/null; then
+    echo "Error: ${CUT_BRANCH} already exists on origin. Is a cut already in progress?"
+    exit 1
+fi
+
+echo "Cutting release ${RELEASE}"
+echo ""
+echo "  main             ${CURRENT} → ${NEXT_DEV} (via PR from ${CUT_BRANCH})"
+echo "  release/${RELEASE}   ${CURRENT} → ${MAJOR}.${MINOR}.0-rc (created by CI after merge)"
+echo ""
+read -r -p "Continue? [y/N] " confirm
+[[ ! "$confirm" =~ ^[yY]$ ]] && echo "Aborted." && exit 0
+
+git checkout --quiet -b "$CUT_BRANCH"
+"$VERSION_TOOL" set "$NEXT_DEV"
+
+VERSION_FILES=(mosaicod/Cargo.toml mosaicod/Cargo.lock mosaico-sdk-py/pyproject.toml mosaico-sdk-py/uv.lock)
+UNEXPECTED=$(git status --porcelain --untracked-files=all | cut -c4- | grep -vxF -f <(printf '%s\n' "${VERSION_FILES[@]}") || true)
+if [[ -n "$UNEXPECTED" ]]; then
+    echo "Error: unexpected changes outside version and lock files:"
+    echo "$UNEXPECTED"
+    exit 1
+fi
+git add "${VERSION_FILES[@]}"
+
+git commit --quiet -m "chore: cut release ${RELEASE}, bump main to ${NEXT_DEV}"
+git push --quiet -u origin "$CUT_BRANCH"
+
+gh pr create \
+    --base main \
+    --head "$CUT_BRANCH" \
+    --title "chore: cut release ${RELEASE}" \
+    --body "$(cat << EOF
+Bumps \`main\` to \`${NEXT_DEV}\` and starts the release of \`${RELEASE}\`.
+
+Merging this PR creates \`release/${RELEASE}\` from the commit before the merge, with \`mosaicod\` and the Python SDK set to \`${MAJOR}.${MINOR}.0-rc\`.
+
+Opened by \`scripts/release-cut\`.
+EOF
+)"
+
+git checkout --quiet main
