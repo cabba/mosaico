@@ -25,6 +25,7 @@ pub const DEFAULT_TLS_CERT_FILE: &str = "";
 pub const DEFAULT_TLS_PRIVATE_KEY_FILE: &str = "";
 pub const DEFAULT_STORE_ENDPOINT: &str = "";
 pub const DEFAULT_STORE_BUCKET: &str = "";
+pub const DEFAULT_STORE_REGION: &str = "";
 pub const DEFAULT_STORE_SECRET_KEY: &str = "";
 pub const DEFAULT_STORE_ACCESS_KEY: &str = "";
 pub const DEFAULT_STORE_OPTIMIZER_MEMORY_POOL_SIZE: usize = 0;
@@ -206,11 +207,16 @@ where
 /// Reads env var `name`, unless `ignore_env` is `true`, in which case it behaves as if
 /// the variable were unset (used to bypass the environment tier entirely, e.g. for
 /// deterministic tests — see [`ParamsLoadOptions::ignore_env`]).
+/// An empty value (e.g. `NAME=`) is treated as unset, so it falls through to the next
+/// tier instead of overriding it with an empty string.
 fn env_var(name: &str, ignore_env: bool) -> Result<String, env::VarError> {
     if ignore_env {
-        Err(env::VarError::NotPresent)
-    } else {
-        env::var(name)
+        return Err(env::VarError::NotPresent);
+    }
+
+    match env::var(name) {
+        Ok(value) if value.is_empty() => Err(env::VarError::NotPresent),
+        result => result,
     }
 }
 
@@ -397,6 +403,10 @@ pub struct Params {
 
     pub store_endpoint: Param<String>,
     pub store_bucket: Param<String>,
+
+    /// Region of the S3-compatible object store. When empty, the object store client
+    /// default is used. Ignored by the local filesystem backend.
+    pub store_region: Param<String>,
 
     /// May also be set via `MOSAICOD_STORE_SECRET_KEY_FILE` (see [`Param::optional_or_file`])
     pub store_secret_key: Param<String, Hidden>,
@@ -646,6 +656,12 @@ pub fn load_params(config: ParamsLoadOptions) -> error::PublicResult<()> {
             cfg.store.bucket.clone(),
             DEFAULT_STORE_BUCKET.to_owned(),
         ),
+        store_region: Param::optional(
+            "MOSAICOD_STORE_REGION",
+            ignore_env,
+            cfg.store.region.clone(),
+            DEFAULT_STORE_REGION.to_owned(),
+        ),
         store_secret_key: Param::optional_or_file(
             "MOSAICOD_STORE_SECRET_KEY",
             ignore_env,
@@ -768,6 +784,7 @@ mod tests {
             max_db_connections: param(DEFAULT_MAX_DB_CONNECTIONS),
             store_endpoint: param(DEFAULT_STORE_ENDPOINT.to_owned()),
             store_bucket: param(DEFAULT_STORE_BUCKET.to_owned()),
+            store_region: param(DEFAULT_STORE_REGION.to_owned()),
             store_secret_key: param_hidden(DEFAULT_STORE_SECRET_KEY.to_owned()),
             store_access_key: param(DEFAULT_STORE_ACCESS_KEY.to_owned()),
             store_optimizer_memory_pool_size: param(DEFAULT_STORE_OPTIMIZER_MEMORY_POOL_SIZE),
@@ -999,6 +1016,21 @@ mod tests {
     }
 
     #[test]
+    fn optional_empty_env_falls_back_to_config_file_value() {
+        // e.g. `MOSAICOD_*=` is treated as unset, so the config file value
+        // is used instead of being overridden by an empty string.
+        let name = "TEST_OPTIONAL_EMPTY_ENV_OVER_CONFIG_FILE";
+        unsafe { env::set_var(name, "") };
+
+        let result =
+            Param::<String>::optional(name, false, Some("value".to_owned()), String::new());
+
+        unsafe { env::remove_var(name) };
+
+        assert_eq!(result.value, "value");
+    }
+
+    #[test]
     fn optional_falls_back_to_default_when_env_and_file_unset() {
         let name = "TEST_OPTIONAL_NEITHER_ENV_NOR_FILE";
 
@@ -1140,6 +1172,7 @@ mod tests {
             store: config::StoreConfig {
                 endpoint: Some("https://store.example".to_owned()),
                 bucket: Some("bucket-name".to_owned()),
+                region: Some("eu-south-1".to_owned()),
                 access_key: Some("access-key".to_owned()),
                 secret_key_file: Some(secret_key_path.to_str().unwrap().to_owned()),
             },
@@ -1206,6 +1239,7 @@ mod tests {
 
         assert_eq!(p.store_endpoint.value, "https://store.example");
         assert_eq!(p.store_bucket.value, "bucket-name");
+        assert_eq!(p.store_region.value, "eu-south-1");
         assert_eq!(p.store_access_key.value, "access-key");
         assert_eq!(p.store_secret_key.value, "secret-key-from-file");
 
@@ -1222,7 +1256,7 @@ mod tests {
         assert_eq!(p.cleanup_time_interval.value, 120);
         assert_eq!(p.cleanup_retention_duration.value, 3600);
 
-        assert!(matches!(p.log_level.value, LogLevel::Debug));
-        assert!(matches!(p.log_format.value, LogFormat::Json));
+        assert_eq!(p.log_level.value, LogLevel::Debug);
+        assert_eq!(p.log_format.value, LogFormat::Json);
     }
 }

@@ -8,6 +8,8 @@ import Link from '@docusaurus/Link';
 
 Here we provide a complete list of environment variables that can be used to configure the daemon. These variables allow you to customize various aspects of the daemon's behavior, including database connections, storage options and more.
 
+A variable set to an empty value (e.g. `MOSAICOD_STORE_BUCKET=`) is treated as unset: it does not override the [config file](config.md) value, and falls through to it or to the default instead.
+
 ## General
 
 - <Link id="mosaicod-grpc-max-decode-message-size" />`MOSAICOD_GRPC_MAX_DECODE_MESSAGE_SIZE`: The maximum allowed size, in bytes, of an incoming [gRPC](https://grpc.io/) message (the server's decode limit). If a message exceeds this size, a protocol error will be returned. Default is `50 MiB`. Must be between `4 MiB` and `512 MiB`. If you need to update this value be aware that it is tipically smaller than `MOSAICOD_PARQUET_IN_MEMORY_ENCODING_BUFFER_SIZE`. The server's outgoing message size is fixed independently of this value, so lowering it later never affects the retrievability of previously-accepted data.
@@ -67,6 +69,8 @@ Here we provide a complete list of environment variables that can be used to con
 - <Link id="mosaicod-store-endpoint" />`MOSAICOD_STORE_ENDPOINT`: Endpoint URL for the object storage service (e.g., S3). Use `file:///some/absolute/path` to set up a local storage directory. **Required**.
 
 - <Link id="mosaicod-store-bucket" />`MOSAICOD_STORE_BUCKET`: Name of the bucket in the object storage service where data will be stored. When using the local filesystem endpoint, the system creates a new directory named after the bucket within the endpoint path. **Required**.
+
+- <Link id="mosaicod-store-region" />`MOSAICOD_STORE_REGION`: Region of the object storage service. Only used with S3-compatible endpoints, ignored when using the local filesystem endpoint. When empty, the object store client default (`us-east-1`) is used. Default is an empty string.
 
 - <Link id="mosaicod-store-access-key" />`MOSAICOD_STORE_ACCESS_KEY`: Access key for the object storage service. Default is an empty string.
 
